@@ -50,7 +50,7 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 | Client | Version |
 |---|---|
-| Telegram | 12.8.3 (69222) |
+| Telegram (Google Play) | 12.10.5 (71052; source checked, device test pending) |
 | Telegram Beta | 12.9.0 (69579) |
 | Telegram Web | 12.8.3 (69229) |
 | TG Connect | 11.13.1 (11130109) |
