@@ -18,6 +18,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix ".test"
+            versionNameSuffix "-12.10.5-test1"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -44,7 +48,7 @@ tasks.register("copyLargestDexAsJava") {
     dependsOn(":settingsadapter:assembleDebug")
 
     doLast {
-        def apkFile = fileTree("$rootDir/settingsadapter/build/intermediates/apk/debug")
+        def apkFile = fileTree("$rootDir/settingsadapter/build/outputs/apk/debug")
                 .matching { include "*.apk" }
                 .singleFile
 
