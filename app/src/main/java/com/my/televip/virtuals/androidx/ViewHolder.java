@@ -2,7 +2,7 @@ package com.my.televip.virtuals.androidx;
 
 import android.view.View;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ViewHolder {
 

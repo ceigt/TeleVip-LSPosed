@@ -2,7 +2,7 @@ package com.my.televip.base;
 
 import com.my.televip.logging.Logger;
 
-import de.robv.android.xposed.XC_MethodHook;
+import com.my.televip.compat.XC_MethodHook;
 
 public abstract class BaseMethodHook extends XC_MethodHook {
 

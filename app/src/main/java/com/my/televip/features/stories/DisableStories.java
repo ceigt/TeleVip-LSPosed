@@ -9,7 +9,7 @@ import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 
-import de.robv.android.xposed.XposedBridge;
+import com.my.televip.compat.XposedBridge;
 
 public class DisableStories {
 

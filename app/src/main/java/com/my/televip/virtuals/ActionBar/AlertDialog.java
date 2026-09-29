@@ -12,7 +12,7 @@ import com.my.televip.utils.Utils;
 
 import java.lang.reflect.Proxy;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class AlertDialog {
 

@@ -21,7 +21,7 @@ import com.my.televip.virtuals.ActionBar.AlertDialog;
 import com.my.televip.virtuals.ActionBar.Theme;
 import com.my.televip.virtuals.ui.ChatActivity;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ChatHook {
 
@@ -31,9 +31,12 @@ public class ChatHook {
         if (initialized || ClientManager.is(ClientManager.Client.Nagram) || ClientManager.is(ClientManager.Client.TelegramPlus)) return;
 
         Class<?> clazz = ClassLoad.getClass(className);
-        if (clazz == null) FeatureStateManager.reset();
+        if (clazz == null) {
+            FeatureStateManager.reset();
+            Logger.e(new IllegalStateException("Chat menu listener missing: " + className));
+            return;
+        }
         try {
-            initialized = true;
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY), Obfuscate.getMethodName("ChatActivity", "createView"), ArgsResolver.merge("createView", new Class[]{Context.class}, new BaseMethodHook() {
                 @Override
                 protected void afterMethod(MethodHookParam param) {
@@ -60,7 +63,7 @@ public class ChatHook {
                 }
             }));
 
-            XposedHelpers.findAndHookMethod(clazz, "onItemClick", int.class, new BaseMethodHook() {
+            XposedHelpers.findAndHookMethod(clazz, ClientManager.is(ClientManager.Client.Telegram) ? "b" : "onItemClick", int.class, new BaseMethodHook() {
                 @Override
                 protected void afterMethod(MethodHookParam param) {
                     try {
@@ -116,8 +119,10 @@ public class ChatHook {
                     }
                 }
             });
+            initialized = true;
         } catch (Throwable t){
             FeatureStateManager.reset();
+            Logger.e(t);
         }
     }
 }

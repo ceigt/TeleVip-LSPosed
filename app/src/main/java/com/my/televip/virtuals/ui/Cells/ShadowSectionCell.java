@@ -6,7 +6,7 @@ import android.view.View;
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ShadowSectionCell {
 

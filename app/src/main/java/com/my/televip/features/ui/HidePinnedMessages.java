@@ -3,6 +3,7 @@ package com.my.televip.features.ui;
 import android.view.View;
 
 import com.my.televip.Class.ClassNames;
+import com.my.televip.Clients.ClientManager;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
@@ -31,7 +32,7 @@ public class HidePinnedMessages {
                                     }
                                 }
                             });
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY), Obfuscate.getMethodName("ChatActivity", "updatePinnedMessageView"), boolean.class, int.class, new BaseMethodHook() {
+                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY), Obfuscate.getMethodName("ChatActivity", "updatePinnedMessageView"), ClientManager.is(ClientManager.Client.Telegram) ? int.class : boolean.class, ClientManager.is(ClientManager.Client.Telegram) ? boolean.class : int.class, new BaseMethodHook() {
                         @Override
                         protected void afterMethod(MethodHookParam param) {
                             if (ConfigManager.hidePinnedMessages.isEnable()) {

@@ -25,7 +25,7 @@ import com.my.televip.ui.toolBar.MainToolBar;
 import com.my.televip.virtuals.TeleVip.Bridge.Bridge;
 import com.my.televip.virtuals.ui.Components.RecyclerListView;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class SettingsActivity {
 

@@ -3,7 +3,7 @@ package com.my.televip.virtuals.ui.Cells;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.messenger.MessageObject;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ChatMessageCell {
     Object chatMessageCell;

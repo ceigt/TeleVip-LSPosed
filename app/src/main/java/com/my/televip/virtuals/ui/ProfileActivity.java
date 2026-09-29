@@ -3,7 +3,7 @@ package com.my.televip.virtuals.ui;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.ActionBar.ActionBarMenuItem;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ProfileActivity {
 

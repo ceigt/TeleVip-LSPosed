@@ -2,6 +2,7 @@ package com.my.televip.features.otherFeatures;
 
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
+import android.content.Context;
 import com.my.televip.Clients.ClientManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
@@ -15,7 +16,7 @@ import com.my.televip.virtuals.ActionBar.ActionBarMenuItem;
 import com.my.televip.virtuals.ActionBar.AlertDialog;
 import com.my.televip.virtuals.ui.ProfileActivity;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ProfileHook {
 
@@ -29,7 +30,7 @@ public class ProfileHook {
 
         initialized = true;
 
-        HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY), Obfuscate.getMethodName("ProfileActivity", "createActionBarMenu"), ArgsResolver.merge("createActionBarMenu", new Class[]{boolean.class}, new BaseMethodHook() {
+        HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY), ClientManager.is(ClientManager.Client.Telegram) ? "createView" : Obfuscate.getMethodName("ProfileActivity", "createActionBarMenu"), ArgsResolver.merge("createActionBarMenu", ClientManager.is(ClientManager.Client.Telegram) ? new Class[]{Context.class} : new Class[]{boolean.class}, new BaseMethodHook() {
             @Override
             protected void afterMethod(MethodHookParam param) {
                 ProfileActivity profileActivity = new ProfileActivity(param.thisObject);
@@ -51,7 +52,7 @@ public class ProfileHook {
             }
         }));
 
-        HMethod.hookMethod(clazz, "onItemClick", int.class, new BaseMethodHook() {
+        HMethod.hookMethod(clazz, ClientManager.is(ClientManager.Client.Telegram) ? "b" : "onItemClick", int.class, new BaseMethodHook() {
             @Override
             protected void afterMethod(MethodHookParam param) {
 

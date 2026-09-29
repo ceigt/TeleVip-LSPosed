@@ -26,7 +26,7 @@ import com.my.televip.virtuals.ui.Cells.TextCheckCell;
 import com.my.televip.ui.Cells.TextInfoCell;
 import com.my.televip.virtuals.ui.Cells.TextSettingsCell;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class SettingsAdapter {
 

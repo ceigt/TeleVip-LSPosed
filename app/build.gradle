@@ -5,7 +5,7 @@ android {
     compileSdk 36
 
     defaultConfig {
-        applicationId "com.my.televip"
+        applicationId "org.televip"
         minSdk 27
         targetSdk 36
         versionCode 335
@@ -19,8 +19,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix ".test"
-            versionNameSuffix "-12.10.5-test1"
+            versionNameSuffix "-12.10.5-api102-test3"
         }
         release {
             minifyEnabled false
@@ -38,7 +37,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.code.gson:gson:2.13.2")
     implementation(libs.jcal)
-    compileOnly libs.api
+    compileOnly("io.github.libxposed:api:102.0.0")
     implementation(libs.gson)
     implementation(libs.appcompat)
     implementation(libs.material)

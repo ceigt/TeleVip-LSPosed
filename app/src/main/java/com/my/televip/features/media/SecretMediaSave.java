@@ -7,6 +7,7 @@ import android.view.View;
 
 import com.my.televip.Class.ClassNames;
 import com.my.televip.Class.ClassLoad;
+import com.my.televip.Clients.ClientManager;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
@@ -27,6 +28,7 @@ public class SecretMediaSave {
 
     public static long id;
     public static File pathImage;
+    private static final ThreadLocal<Boolean> openingInRegularViewer = new ThreadLocal<>();
 
     public static void init() {
         try {
@@ -39,6 +41,15 @@ public class SecretMediaSave {
                             if (ConfigManager.secretMediaSave.isEnable()) param.setResult(false);
                         }
                     });
+                    if (ClientManager.is(ClientManager.Client.Telegram)) {
+                        HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), "needDrawBluredPreview", new BaseMethodHook() {
+                            @Override
+                            protected void beforeMethod(MethodHookParam param) {
+                                if (ConfigManager.secretMediaSave.isEnable() && Boolean.TRUE.equals(openingInRegularViewer.get()))
+                                    param.setResult(false);
+                            }
+                        });
+                    }
                 }
                 if (ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL_DELEGATE) != null) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL_DELEGATE), Obfuscate.getMethodName("ChatActivity$ChatMessageCellDelegate", "didPressImage"), ArgsResolver.merge("didPressImage", new Class[]{ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL), float.class, float.class, boolean.class}, new BaseMethodHook() {
@@ -46,6 +57,7 @@ public class SecretMediaSave {
                         protected void beforeMethod(MethodHookParam param) {
                             try {
                                 if (ConfigManager.secretMediaSave.isEnable() && param.args[0] != null) {
+                                    if (ClientManager.is(ClientManager.Client.Telegram)) openingInRegularViewer.set(true);
                                     ChatMessageCell messageCell = new ChatMessageCell(param.args[0]);
                                     if (messageCell.getChatMessageCell() != null) {
                                         MessageObject messageObject = messageCell.getMessageObject();
@@ -53,12 +65,16 @@ public class SecretMediaSave {
                                             TLRPC.Message message = messageObject.getMessageOwner();
                                             if (message.getTtl() > 0) message.setTtl(0);
                                         }
-                                        bindPhotoViewerToActivity(messageCell);
+                                        if (!ClientManager.is(ClientManager.Client.Telegram)) bindPhotoViewerToActivity(messageCell);
                                     }
                                 }
                             } catch (Throwable e) {
                                 Logger.e(e);
                             }
+                        }
+                        @Override
+                        protected void afterMethod(MethodHookParam param) {
+                            openingInRegularViewer.remove();
                         }
                     }));
                 }
@@ -82,7 +98,8 @@ public class SecretMediaSave {
                 }
 
 
-                if (ConfigManager.secretMediaSave.isEnable()) SecretMediaViewer.openMedia();
+                if (ConfigManager.secretMediaSave.isEnable() && !ClientManager.is(ClientManager.Client.Telegram))
+                    SecretMediaViewer.openMedia();
             }
         } catch (Throwable e){
             Logger.e(e);

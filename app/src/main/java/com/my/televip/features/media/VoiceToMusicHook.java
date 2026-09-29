@@ -3,6 +3,7 @@ package com.my.televip.features.media;
 
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
+import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
 import com.my.televip.logging.Logger;
@@ -13,28 +14,16 @@ import com.my.televip.virtuals.messenger.MessageObject;
 public class VoiceToMusicHook {
 
     public static boolean isEnable = false;
-    private static boolean stop = false;
-
     public static void init() {
         try {
             if (!isEnable) {
                 isEnable = true;
 
-                HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), Obfuscate.getMethodName("MessageObject", "isVoice"), new BaseMethodHook() {
-                    @Override
-                    protected void beforeMethod(MethodHookParam param) {
-                        if (!stop) param.setResult(false);
-                    }
-                    @Override
-                    protected void afterMethod(MethodHookParam param) {
-                        stop = false;
-                    }
-                });
                 HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT),  Obfuscate.getMethodName("MessageObject", "isMusic"), new BaseMethodHook() {
                     @Override
                     protected void beforeMethod(MethodHookParam param) {
+                        if (!ConfigManager.enableVoiceMessageSaving.isEnable()) return;
                         MessageObject messageObject = new MessageObject(param.thisObject);
-                        stop = true;
                         if (messageObject.isVoice()) param.setResult(true);
                     }
                 });

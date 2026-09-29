@@ -3,7 +3,7 @@ package com.my.televip.obfuscate;
 
 import com.my.televip.obfuscate.struct.ResolverRegistry;
 
-import de.robv.android.xposed.XC_MethodHook;
+import com.my.televip.compat.XC_MethodHook;
 
 public class ArgsResolver {
 

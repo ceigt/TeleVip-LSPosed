@@ -2,7 +2,7 @@ package com.my.televip.virtuals.messenger;
 
 import com.my.televip.obfuscate.Obfuscate;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class BaseController {
 

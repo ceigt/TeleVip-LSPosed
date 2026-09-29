@@ -9,7 +9,7 @@ import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.androidx.LongSparseArray;
 import com.my.televip.virtuals.tgnet.TLRPC;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class MessagesController {
     final Object messagesController;

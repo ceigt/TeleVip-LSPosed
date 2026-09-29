@@ -6,18 +6,19 @@ import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.tgnet.TLRPC;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class MessageObject {
 
-    static Object messageObject;
+    private final Object messageObject;
 
     public MessageObject(Object obj){
         messageObject = obj;
     }
 
     public TLRPC.Message getMessageOwner(){
-        return new TLRPC.Message(XposedHelpers.getObjectField(messageObject, Obfuscate.getFieldName("MessageObject","messageOwner")));
+        Object owner = XposedHelpers.getObjectField(messageObject, Obfuscate.getFieldName("MessageObject","messageOwner"));
+        return owner == null ? null : new TLRPC.Message(owner);
     }
 
     public long getDialogId() {

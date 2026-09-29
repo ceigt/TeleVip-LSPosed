@@ -8,7 +8,7 @@ import com.my.televip.settings.hook.SettingsHook;
 import com.my.televip.settings.ui.SettingsActivity;
 import com.my.televip.utils.Utils;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class SettingsManager {
 

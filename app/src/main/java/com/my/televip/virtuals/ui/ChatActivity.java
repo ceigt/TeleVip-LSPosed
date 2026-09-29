@@ -3,10 +3,11 @@ package com.my.televip.virtuals.ui;
 import android.view.View;
 
 import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.Clients.ClientManager;
 import com.my.televip.virtuals.ActionBar.ActionBarMenuItem;
 import com.my.televip.virtuals.messenger.MessageObject;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class ChatActivity {
 
@@ -17,7 +18,8 @@ public class ChatActivity {
     }
 
     public MessageObject getSelectedObject(){
-        return new MessageObject(XposedHelpers.getObjectField(chatActivity, Obfuscate.getFieldName("ChatActivity","selectedObject")));
+        Object selected = XposedHelpers.getObjectField(chatActivity, Obfuscate.getFieldName("ChatActivity","selectedObject"));
+        return selected == null ? null : new MessageObject(selected);
     }
 
     public ActionBarMenuItem getHeaderItem(){
@@ -28,6 +30,10 @@ public class ChatActivity {
     }
 
     public void scrollToMessageId(int id, int fromMessageId, boolean select, int loadIndex, boolean forceScroll, int forcePinnedMessageId){
+        if (ClientManager.is(ClientManager.Client.Telegram)) {
+            XposedHelpers.callMethod(chatActivity, "E", id, fromMessageId, loadIndex, forcePinnedMessageId, select, forceScroll);
+            return;
+        }
         XposedHelpers.callMethod(chatActivity, Obfuscate.getMethodName("ChatActivity", "scrollToMessageId"), id, fromMessageId, select, loadIndex, forceScroll, forcePinnedMessageId);
     }
 

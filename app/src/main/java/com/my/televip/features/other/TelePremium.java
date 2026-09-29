@@ -11,8 +11,8 @@ import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.logging.Logger;
 
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XC_MethodHook;
+import com.my.televip.compat.XposedHelpers;
 
 public class TelePremium {
 

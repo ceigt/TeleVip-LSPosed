@@ -4,7 +4,7 @@ package com.my.televip.virtuals;
 import com.my.televip.Class.ClassNames;
 import com.my.televip.Class.ClassLoad;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class SettingsIconResolver {
 

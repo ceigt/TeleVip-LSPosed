@@ -6,7 +6,7 @@ import com.my.televip.obfuscate.Obfuscate;
 
 import java.util.ArrayList;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class TLRPC {
     public static class Peer {
@@ -72,7 +72,8 @@ public class TLRPC {
         }
 
         public Peer getFrom_id(){
-            return new TLRPC.Peer(XposedHelpers.getObjectField(message, Obfuscate.getFieldName("TLRPC$Message", "from_id")));
+            Object from = XposedHelpers.getObjectField(message, Obfuscate.getFieldName("TLRPC$Message", "from_id"));
+            return from == null ? null : new TLRPC.Peer(from);
         }
 
         public int getFlags(){

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import de.robv.android.xposed.XC_MethodReplacement;
+import com.my.televip.compat.XC_MethodReplacement;
 
 public class Telegraph {
 

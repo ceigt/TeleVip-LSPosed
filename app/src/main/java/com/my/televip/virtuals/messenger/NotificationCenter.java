@@ -5,7 +5,7 @@ import com.my.televip.Class.ClassLoad;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class NotificationCenter {
 

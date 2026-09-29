@@ -16,7 +16,7 @@ import com.my.televip.virtuals.tgnet.ConnectionsManager;
 import com.my.televip.virtuals.tgnet.RequestDelegate;
 import com.my.televip.virtuals.tgnet.TLRPC;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class HideSeen {
 

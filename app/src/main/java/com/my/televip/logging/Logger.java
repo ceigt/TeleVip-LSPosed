@@ -9,7 +9,7 @@ import android.os.Build;
 import com.my.televip.application.ApplicationLoaderHook;
 import com.my.televip.obfuscate.struct.ResolverRegistry;
 
-import de.robv.android.xposed.XposedBridge;
+import com.my.televip.compat.XposedBridge;
 
 public class Logger {
 
@@ -33,7 +33,8 @@ public class Logger {
             StringBuilder log = new StringBuilder();
 
             log.append("[TeleVip] [Error] pkgName: ").append(pkgName).append(" ").append(throwable).append("\n");
-            log.append("appName = ").append(ResolverRegistry.getResolverClass().getSimpleName()).append("\n");
+            Class<?> resolver = ResolverRegistry.getResolverClass();
+            log.append("appName = ").append(resolver == null ? pkgName : resolver.getSimpleName()).append("\n");
 
             try {
                 PackageManager pm = ApplicationLoaderHook.getApplicationContext().getPackageManager();

@@ -1,0 +1,144 @@
+{
+  "classes": [
+    {
+      "o": "org.telegram.ui.ActionBar.ActionBar",
+      "r": "org.telegram.ui.ActionBar.l"
+    },
+    {
+      "o": "org.telegram.ui.ActionBar.ActionBar$ActionBarMenuOnItemClick",
+      "r": "org.telegram.ui.ActionBar.k"
+    },
+    {
+      "o": "org.telegram.ui.SettingsActivity",
+      "r": "org.telegram.ui.p91"
+    },
+    {
+      "o": "org.telegram.ui.ChatActivity",
+      "r": "org.telegram.ui.ko"
+    },
+    {
+      "o": "org.telegram.ui.Cells.ChatMessageCell",
+      "r": "org.telegram.ui.Cells.w1"
+    },
+    {
+      "o": "org.telegram.ui.Stories.StoriesController",
+      "r": "rg.r5"
+    },
+    {
+      "o": "androidx.collection.LongSparseArray",
+      "r": "z.f"
+    },
+    {
+      "o": "org.telegram.ui.PhotoViewer$PhotoViewerProvider",
+      "r": "org.telegram.ui.ev0"
+    },
+    {
+      "o": "org.telegram.ui.PhotoViewer$PlaceProviderObject",
+      "r": "org.telegram.ui.gv0"
+    },
+    {
+      "o": "org.telegram.ui.Stories.PeerStoriesView$StoryItemHolder",
+      "r": "rg.l3"
+    },
+    {
+      "o": "org.telegram.ui.ChatActivity$ChatMessageCellDelegate",
+      "r": "org.telegram.ui.vn"
+    },
+    {
+      "o": "org.telegram.ui.ActionBar.Theme",
+      "r": "org.telegram.ui.ActionBar.n6"
+    }
+  ],
+  "fields": [
+    {"c": "ChatMessageCell", "o": "currentTimeString", "r": "sb"},
+    {"c": "ChatMessageCell", "o": "timeTextWidth", "r": "pb"},
+    {"c": "ChatMessageCell", "o": "timeWidth", "r": "ob"},
+    {"c": "ChatActivity", "o": "pinnedMessageView", "r": "w2"},
+    {"c": "Theme", "o": "chat_timePaint", "r": "T2"},
+    {"c": "SecretMediaViewer", "o": "onClose", "r": "n0"},
+    {"c": "ProfileActivity", "o": "userId", "r": "d1"},
+    {"c": "ProfileActivity", "o": "chatId", "r": "e1"},
+    {"c": "ProfileActivity", "o": "onlineTextView", "r": "r"},
+    {"c": "ProfileActivity", "o": "nameTextView", "r": "f"},
+    {"c": "ProfileActivity", "o": "otherItem", "r": "S0"},
+    {"c": "ProfileActivity", "o": "this$0", "r": "b"},
+    {"c": "ChatActivity", "o": "headerItem", "r": "g0"},
+    {"c": "ChatActivity", "o": "selectedObject", "r": "c5"},
+    {"c": "PhotoViewer", "o": "galleryButton", "r": "s0"},
+    {"c": "ChatActivity", "o": "this$0", "r": "b"}
+  ],
+  "methods": [
+    {
+      "c": "MessagesController",
+      "o": "storyEntitiesAllowed2",
+      "r": "storyEntitiesAllowed"
+    },
+    {
+      "c": "LongSparseArray",
+      "o": "get",
+      "r": "f"
+    },
+    {
+      "c": "PhotoViewer$PhotoViewerProvider",
+      "o": "getPlaceForPhoto",
+      "r": "E"
+    },
+    {
+      "c": "PeerStoriesView$StoryItemHolder",
+      "o": "allowScreenshots",
+      "r": "d"
+    },
+    {
+      "c": "ChatActivity$ChatMessageCellDelegate",
+      "o": "didPressImage",
+      "r": "t0"
+    },
+    {
+      "c": "ChatMessageCell",
+      "o": "measureTime",
+      "r": "x3"
+    },
+    {
+      "c": "ChatActivity",
+      "o": "hasSelectedNoforwardsMessage",
+      "r": "Z8"
+    },
+    {
+      "c": "ChatActivity",
+      "o": "createPinnedMessageView",
+      "r": "J7"
+    },
+    {
+      "c": "ChatActivity",
+      "o": "fillMessageMenu",
+      "r": "m8"
+    },
+    {
+      "c": "ChatActivity",
+      "o": "processSelectedOption",
+      "r": "za"
+    },
+    {
+      "c": "SecretMediaViewer",
+      "o": "closePhoto",
+      "r": "e"
+    },
+    {
+      "c": "PhotoViewer",
+      "o": "setIsAboutToSwitchToIndex",
+      "r": "F2"
+    },
+    {
+      "c": "ChatActivity",
+      "o": "updatePinnedMessageView",
+      "r": "wc"
+    },
+    {
+      "c": "ProfileActivity",
+      "o": "updateProfileData",
+      "r": "i5"
+    },
+    {"c": "ActionBarMenuItem", "o": "addSubItem", "r": "e"},
+    {"c": "ActionBarMenuItem", "o": "lazilyAddSubItem", "r": "u"}
+  ]
+}

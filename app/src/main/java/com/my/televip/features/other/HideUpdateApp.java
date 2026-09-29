@@ -11,7 +11,7 @@ import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 
-import de.robv.android.xposed.XC_MethodReplacement;
+import com.my.televip.compat.XC_MethodReplacement;
 
 public class HideUpdateApp {
 

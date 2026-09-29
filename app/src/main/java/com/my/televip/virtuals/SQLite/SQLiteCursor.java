@@ -4,7 +4,7 @@ import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.tgnet.NativeByteBuffer;
 
-import de.robv.android.xposed.XposedHelpers;
+import com.my.televip.compat.XposedHelpers;
 
 public class SQLiteCursor {
 
