@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.Clients.ClientManager;
 
 import com.my.televip.compat.XposedHelpers;
 
@@ -25,7 +26,9 @@ public class SimpleTextView {
     }
 
     public void setText(CharSequence text, boolean force){
-        XposedHelpers.callMethod(simpleTextView, Obfuscate.getMethodName("SimpleTextView", "setText"), text, force);
+        XposedHelpers.callMethod(simpleTextView,
+                ClientManager.is(ClientManager.Client.Telegram) ? "l" : Obfuscate.getMethodName("SimpleTextView", "setText"),
+                text, force);
     }
 
     public void setAlignment(Layout.Alignment alignment){

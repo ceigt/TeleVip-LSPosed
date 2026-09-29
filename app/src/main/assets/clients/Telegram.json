@@ -138,6 +138,8 @@
       "o": "updateProfileData",
       "r": "i5"
     },
+    {"c": "Theme", "o": "isCurrentThemeDark", "r": "e1"},
+    {"c": "SimpleTextView", "o": "setText", "r": "k"},
     {"c": "ActionBarMenuItem", "o": "addSubItem", "r": "e"},
     {"c": "ActionBarMenuItem", "o": "lazilyAddSubItem", "r": "u"}
   ]
