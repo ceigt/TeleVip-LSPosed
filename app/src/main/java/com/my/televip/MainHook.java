@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public class MainHook {
 
     private boolean isStart;
+    private int startAttempts;
 
     public void handleLoadPackage(final String packageName, final ClassLoader classLoader) {
         if (!ClientManager.containsPackage(packageName, classLoader)) return;
@@ -29,9 +30,9 @@ public class MainHook {
             @Override
             protected void beforeMethod(MethodHookParam param) {
                 Utils.setCurrentActivity((Activity) param.thisObject);
-                if (!isStart) {
-                    TeleVip.startHook();
-                    isStart = true;
+                if (!isStart && startAttempts < 3) {
+                    startAttempts++;
+                    isStart = TeleVip.startHook();
                 }
             }
         });

@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.televip.regression">
+    <uses-sdk android:minSdkVersion="27" android:targetSdkVersion="36"/>
+    <application android:label="TeleVip regression" android:allowBackup="false"/>
+    <instrumentation android:name="org.televip.regression.RegressionInstrumentation" android:targetPackage="org.televip.regression"/>
+</manifest>

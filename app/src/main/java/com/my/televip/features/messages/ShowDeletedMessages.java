@@ -16,7 +16,6 @@ import com.my.televip.virtuals.androidx.LongSparseArray;
 import com.my.televip.virtuals.messenger.MessageObject;
 import com.my.televip.virtuals.messenger.MessagesController;
 import com.my.televip.virtuals.messenger.MessagesStorage;
-import com.my.televip.virtuals.messenger.NotificationCenter;
 import com.my.televip.virtuals.tgnet.TLRPC;
 
 import java.util.ArrayList;
@@ -25,9 +24,7 @@ public class ShowDeletedMessages {
 
     public static final int FLAG_DELETED = 1 << 31;
 
-    private static boolean isDeleteMessage = false;
-
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
     public static void markMessagesDeletedForController(MessagesStorage messagesStorage, long dialogId, ArrayList<Integer> delMsg) {
         MessageStorage.markMessagesDeleted(messagesStorage, dialogId, delMsg);
@@ -59,7 +56,7 @@ public class ShowDeletedMessages {
             for (int id : messages) {
                 Object msgObj = dialogMessages.get(id);
                 if (msgObj == null) {
-                    break;
+                    continue;
                 } else {
                     TLRPC.Message owner = new MessageObject(msgObj).getMessageOwner();
                     owner.setFlags(owner.getFlags() | FLAG_DELETED);
@@ -69,9 +66,9 @@ public class ShowDeletedMessages {
         }
     }
 
-    public static void initProcessUpdateArray() {
+    private static boolean initProcessUpdateArray() {
         try {
-            HMethod.hookMethod(
+            return HMethod.hookMethod(
                     ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),
                     Obfuscate.getMethodName("MessagesController", "processUpdateArray"),
                     ArgsResolver.merge("processUpdateArray", new Class[]{ArrayList.class, ArrayList.class, ArrayList.class, boolean.class, int.class},
@@ -80,9 +77,10 @@ public class ShowDeletedMessages {
                                 protected void beforeMethod(MethodHookParam param) {
 
                                     try {
+                                        if (!ConfigManager.showDeletedMessages.isEnable()) return;
                                         ArrayList<Object> updates = (ArrayList<Object>) param.args[0];
                                         MessagesController messagesController = new MessagesController(param.thisObject);
-                                        if (updates.isEmpty()) {
+                                        if (updates == null || updates.isEmpty()) {
                                             return;
                                         }
 
@@ -121,85 +119,18 @@ public class ShowDeletedMessages {
                             }));
         } catch (Throwable e) {
             Logger.e(e);
+            return false;
         }
     }
 
-    public static void init() {
-        try {
-            if (!isEnable) {
-                isEnable = true;
-
-                HMethod.hookMethod(
-                        ClassLoad.getClass(ClassNames.MESSAGES_STORAGE),
-                        Obfuscate.getMethodName("MessagesStorage", "markMessagesAsDeleted"),
-                        ArgsResolver.merge("markMessagesAsDeleted", new Class[]{long.class, java.util.ArrayList.class, boolean.class, boolean.class, int.class, int.class},
-                                new BaseMethodHook() {
-                                    @Override
-                                    protected void beforeMethod(MethodHookParam param) {
-                                        if (!isDeleteMessage) {
-                                            param.setResult(null);
-                                        }
-                                    }
-                                }
-                        ));
-            }
-            HMethod.hookMethod(ClassLoad.getClass(ClassNames.NOTIFICATIONS_CONTROLLER),Obfuscate.getMethodName("NotificationsController", "removeDeletedMessagesFromNotifications"), ArgsResolver.merge("removeDeletedMessagesFromNotifications", new Class[]{ClassLoad.getClass(ClassNames.LONG_SPARES_ARRAY), boolean.class}, new BaseMethodHook() {
-                    @Override
-                    protected void beforeMethod(MethodHookParam param) {
-                        if (ConfigManager.showDeletedMessages.isEnable()) {
-                            param.setResult(null);
-                        }
-                    }
-                }));
-
-            HMethod.hookMethod(
-                    ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),
-                    Obfuscate.getMethodName("MessagesController", "deleteMessages"),
-                    ArgsResolver.merge("deleteMessages", new Class[]{java.util.ArrayList.class,
-                                    java.util.ArrayList.class,
-                                    ClassLoad.getClass(ClassNames.TLRPC_ENCRYPTED_CHAT),
-                                    long.class,
-                                    boolean.class,
-                                    int.class,
-                                    boolean.class,
-                                    long.class,
-                                    ClassLoad.getClass(ClassNames.TL_OBJECT),
-                                    int.class,
-                                    boolean.class,
-                                    int.class},
-                            new BaseMethodHook() {
-                                @Override
-                                protected void beforeMethod(MethodHookParam param) {
-                                    isDeleteMessage = true;
-                                }
-                            }
-                    ));
-
-            HMethod.hookMethod(ClassLoad.getClass(ClassNames.NOTIFICATION_CENTER), Obfuscate.getMethodName("NotificationCenter", "postNotificationName"), ArgsResolver.merge("postNotificationName", new Class[]{int.class, Object[].class}, new BaseMethodHook() {
-                @Override
-                protected void beforeMethod(MethodHookParam param) {
-                    if (!isDeleteMessage) {
-                        int id = (int) param.args[0];
-                        if (id == NotificationCenter.getMessagesDeleted()) {
-                            param.setResult(null);
-                        }
-                    }
-                }
-
-                @Override
-                protected void afterMethod(MethodHookParam param) {
-                    isDeleteMessage = false;
-                }
-            }));
-
-            ShowDeletedMessages.initProcessUpdateArray();
-        } catch (Throwable e) {
-            Logger.e(e);
+    public static synchronized void init() {
+        if (!isEnable) {
+            // Only server update objects are intercepted. User-initiated deletion,
+            // logout and cache cleanup continue through Telegram's native flow.
+            isEnable = initProcessUpdateArray();
+            if (isEnable) Logger.l("Server deletion hook installed");
         }
-
         if (ConfigManager.showDeletedMessages.isEnable() && !MessageTimeModifier.loaded)
             MessageTimeModifier.init();
-
     }
-
 }

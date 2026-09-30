@@ -5,20 +5,20 @@ import com.my.televip.Class.ClassLoad;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 
 public class EnableSavingStories {
 
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
-    public static void init() {
-        try {
+    public static synchronized void init() {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
-                isEnable = true;
 
-                if (ClassLoad.getClass(ClassNames.STORY_ITEM_HOLDER) != null) {
+                if (attempt.require(ClassLoad.getClass(ClassNames.STORY_ITEM_HOLDER))) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.STORY_ITEM_HOLDER), Obfuscate.getMethodName("PeerStoriesView$StoryItemHolder", "allowScreenshots"),
                             new BaseMethodHook() {
                                 @Override
@@ -28,6 +28,7 @@ public class EnableSavingStories {
                                 }
                             });
                 }
+                isEnable = attempt.isComplete();
             }
         } catch (Throwable t){
             Logger.e(t);

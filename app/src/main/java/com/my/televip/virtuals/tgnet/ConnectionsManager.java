@@ -19,6 +19,8 @@ public class ConnectionsManager {
         XposedHelpers.callMethod(connectionsManager, Obfuscate.getMethodName("ConnectionsManager", "sendRequest"), object, completionBlock);
     }
 
+    public Object getInstanceObject() { return connectionsManager; }
+
     public int getCurrentTime(){
         return (int)XposedHelpers.callMethod(connectionsManager, Obfuscate.getMethodName("ConnectionsManager", "getCurrentTime"));
     }

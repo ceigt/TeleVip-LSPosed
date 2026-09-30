@@ -116,9 +116,13 @@ public class ConverterCalendar {
             String dateMonthName = rightNow.getMonthName();
 
 
-            if (dateDay == day && year == dateYear) {
+            Calendar yesterday = (Calendar) now.clone();
+            yesterday.add(Calendar.DAY_OF_MONTH, -1);
+            CalendarDate previousDay = ConverterCalendar.toCalendar(yesterday);
+            if (dateDay == day && year == dateYear && dateMonth == ConverterCalendar.toCalendar(now).getMonth()) {
                 return Translator.get(Keys.TodayAt) + dateHour;
-            } else if (dateDay + 1 == day && year == dateYear) {
+            } else if (dateDay == previousDay.getDay() && dateYear == previousDay.getYear()
+                    && dateMonth == previousDay.getMonth()) {
                 return Translator.get(Keys.YesterdayAt) + dateHour;
             } else if (Math.abs(System.currentTimeMillis() - date) < 31536000000L) {
                 return Translator.get(Keys.Edited) + dateDay + " " + dateMonthName + " " + dateHour;

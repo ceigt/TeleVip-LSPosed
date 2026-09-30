@@ -23,17 +23,15 @@ import com.my.televip.virtuals.ui.Cells.ChatMessageCell;
 
 public class MessageTimeModifier {
 
-    public static boolean loaded;
+    public static volatile boolean loaded;
 
-    public static void init() {
+    public static synchronized void init() {
 
         if (loaded)
             return;
 
-        loaded = true;
-
         try {
-            HMethod.hookMethod(
+            loaded = HMethod.hookMethod(
                     ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL),
                     Obfuscate.getMethodName("ChatMessageCell", "measureTime"),
                     ArgsResolver.merge("measureTime", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE_OBJECT)},

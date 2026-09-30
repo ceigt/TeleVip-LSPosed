@@ -6,6 +6,8 @@ import android.content.Context;
 import com.my.televip.Clients.ClientManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
+import com.my.televip.logging.Logger;
 import com.my.televip.language.Keys;
 import com.my.televip.language.Translator;
 import com.my.televip.obfuscate.ArgsResolver;
@@ -21,14 +23,21 @@ import com.my.televip.compat.XposedHelpers;
 public class ProfileHook {
 
     private static boolean initialized = false;
+    private static int attempts;
+    private static String lastClass;
 
-    public static void init(String className) {
+    public static synchronized boolean isInitialized() { return initialized; }
+
+    public static synchronized void init(String className) {
         if (initialized || className == null) return;
+        if (!className.equals(lastClass)) { lastClass = className; attempts = 0; }
+        if (attempts >= 3) return;
+        attempts++;
 
         Class<?> clazz = ClassLoad.getClass(className);
-        if (clazz == null) FeatureStateManager.reset();
+        if (clazz == null) { FeatureStateManager.resetProfile(); return; }
 
-        initialized = true;
+        try (HookInstallation attempt = HookInstallation.begin()) {
 
         HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY), ClientManager.is(ClientManager.Client.Telegram) ? "createView" : Obfuscate.getMethodName("ProfileActivity", "createActionBarMenu"), ArgsResolver.merge("createActionBarMenu", ClientManager.is(ClientManager.Client.Telegram) ? new Class[]{Context.class} : new Class[]{boolean.class}, new BaseMethodHook() {
             @Override
@@ -76,6 +85,13 @@ public class ProfileHook {
                 }
             }
         });
+        initialized = attempt.isComplete();
+        if (initialized) FeatureStateManager.saveProfile(className);
+        else FeatureStateManager.resetProfile();
+        } catch (Throwable error) {
+            FeatureStateManager.resetProfile();
+            Logger.e(error);
+        }
     }
 
     private static long getUserID(ProfileActivity profile) {

@@ -4,18 +4,21 @@ import android.content.Context;
 import android.text.InputType;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
 import com.my.televip.Clients.ClientManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.language.Keys;
 import com.my.televip.language.Translator;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.utils.Utils;
+import com.my.televip.utils.MessageIdParser;
 import com.my.televip.virtuals.ActionBar.ActionBarMenuItem;
 import com.my.televip.virtuals.ActionBar.AlertDialog;
 import com.my.televip.virtuals.ActionBar.Theme;
@@ -26,17 +29,25 @@ import com.my.televip.compat.XposedHelpers;
 public class ChatHook {
 
     private static boolean initialized = false;
+    private static int attempts;
+    private static String lastClass;
 
-    public static void init(String className) {
+    public static synchronized boolean isInitialized() { return initialized; }
+
+    public static synchronized void init(String className) {
         if (initialized || ClientManager.is(ClientManager.Client.Nagram) || ClientManager.is(ClientManager.Client.TelegramPlus)) return;
+        if (className == null) return;
+        if (!className.equals(lastClass)) { lastClass = className; attempts = 0; }
+        if (attempts >= 3) return;
+        attempts++;
 
         Class<?> clazz = ClassLoad.getClass(className);
         if (clazz == null) {
-            FeatureStateManager.reset();
+            FeatureStateManager.resetChat();
             Logger.e(new IllegalStateException("Chat menu listener missing: " + className));
             return;
         }
-        try {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY), Obfuscate.getMethodName("ChatActivity", "createView"), ArgsResolver.merge("createView", new Class[]{Context.class}, new BaseMethodHook() {
                 @Override
                 protected void afterMethod(MethodHookParam param) {
@@ -63,7 +74,7 @@ public class ChatHook {
                 }
             }));
 
-            XposedHelpers.findAndHookMethod(clazz, ClientManager.is(ClientManager.Client.Telegram) ? "b" : "onItemClick", int.class, new BaseMethodHook() {
+            HMethod.hookMethod(clazz, ClientManager.is(ClientManager.Client.Telegram) ? "b" : "onItemClick", int.class, new BaseMethodHook() {
                 @Override
                 protected void afterMethod(MethodHookParam param) {
                     try {
@@ -105,11 +116,13 @@ public class ChatHook {
                             dialog.setView(layout);
 
                             dialog.setPositiveButton(Translator.get(Keys.Done), AlertDialog.click(() -> {
-                                String text = input.getText().toString().trim();
-                                if (!text.isEmpty()) {
-                                    int msgId = Integer.parseInt(text);
-                                    chat.scrollToMessageId(msgId, 0, true, 0, true, 0);
+                                Integer msgId = MessageIdParser.parse(input.getText().toString());
+                                if (msgId == null) {
+                                    Toast.makeText(input.getContext(), "Message ID must be 1–2147483647", Toast.LENGTH_SHORT).show();
+                                    return;
                                 }
+                                try { chat.scrollToMessageId(msgId, 0, true, 0, true, 0); }
+                                catch (Throwable t) { Logger.e(t); }
                             }));
 
                             dialog.show();
@@ -119,9 +132,11 @@ public class ChatHook {
                     }
                 }
             });
-            initialized = true;
+            initialized = attempt.isComplete();
+            if (initialized) FeatureStateManager.saveChat(className);
+            else FeatureStateManager.resetChat();
         } catch (Throwable t){
-            FeatureStateManager.reset();
+            FeatureStateManager.resetChat();
             Logger.e(t);
         }
     }

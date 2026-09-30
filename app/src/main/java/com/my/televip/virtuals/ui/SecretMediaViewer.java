@@ -20,14 +20,15 @@ public class SecretMediaViewer {
 
     private static boolean isEnable = false;
 
-    public static void openMedia() {
+    public static synchronized void openMedia() {
         try {
             if (!isEnable) {
-                isEnable = true;
+                if (ClassLoad.getClass(ClassNames.SECRET_MEDIA_VIEWER) == null) {
+                    com.my.televip.hooks.HookInstallation.failure();
+                    return;
+                }
 
-                if (ClassLoad.getClass(ClassNames.SECRET_MEDIA_VIEWER) == null) return;
-
-                HMethod.hookMethod(ClassLoad.getClass(ClassNames.SECRET_MEDIA_VIEWER), Obfuscate.getMethodName("SecretMediaViewer", "openMedia"), ArgsResolver.merge("openMedia", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), ClassLoad.getClass(ClassNames.PHOTO_VIEWER_PROVIDER), java.lang.Runnable.class, java.lang.Runnable.class}, new BaseMethodHook() {
+                isEnable = HMethod.hookMethod(ClassLoad.getClass(ClassNames.SECRET_MEDIA_VIEWER), Obfuscate.getMethodName("SecretMediaViewer", "openMedia"), ArgsResolver.merge("openMedia", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), ClassLoad.getClass(ClassNames.PHOTO_VIEWER_PROVIDER), java.lang.Runnable.class, java.lang.Runnable.class}, new BaseMethodHook() {
                     @Override
                     protected void beforeMethod(MethodHookParam param) {
                         boolean secretMediaSave = ConfigManager.secretMediaSave != null && ConfigManager.secretMediaSave.isEnable();

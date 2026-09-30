@@ -50,6 +50,7 @@
     }
   ],
   "fields": [
+    {"c": "ChatActivity", "o": "currentChat", "r": "e"},
     {"c": "ChatMessageCell", "o": "currentTimeString", "r": "sb"},
     {"c": "ChatMessageCell", "o": "timeTextWidth", "r": "pb"},
     {"c": "ChatMessageCell", "o": "timeWidth", "r": "ob"},

@@ -7,6 +7,7 @@ import com.my.televip.base.BaseMethodHook;
 import com.my.televip.calendar.CalendarDate;
 import com.my.televip.calendar.ConverterCalendar;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
@@ -19,13 +20,12 @@ import java.util.Locale;
 
 public class HijriDate {
 
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
-    public static void init() {
+    public static synchronized void init() {
         if (ConfigManager.customCalendar.getCustomCalendar() == 0) return;
-        try {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
-                isEnable = true;
                 HMethod.hookMethod(
                         ClassLoad.getClass(ClassNames.LOCALE_CONTROLLER),
                         Obfuscate.getMethodName("LocaleController", "formatYearMont"),
@@ -105,6 +105,8 @@ public class HijriDate {
 
                             }
                         }));
+                isEnable = attempt.isComplete();
+                if (isEnable) Logger.l("Calendar hooks installed");
             }
         } catch (Throwable t) {
             Logger.e(t);
@@ -127,7 +129,7 @@ public class HijriDate {
             } else if (date instanceof Calendar) {
                 Calendar calendar = (Calendar) date;
                 dateCalendar = ConverterCalendar.toCalendar(calendar);
-                dateHour = sdfTime.format(calendar);
+                dateHour = sdfTime.format(calendar.getTime());
             } else if (date instanceof Date) {
                 Date date1 = (Date) date;
                 dateCalendar = ConverterCalendar.toCalendar(date1);

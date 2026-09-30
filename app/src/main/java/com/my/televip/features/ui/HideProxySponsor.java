@@ -6,6 +6,7 @@ import com.my.televip.Configs.ConfigManager;
 import com.my.televip.application.AndroidUtilities;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
@@ -13,13 +14,12 @@ import com.my.televip.virtuals.messenger.MessagesController;
 
 public class HideProxySponsor {
 
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
-    public static void init() {
-        try {
+    public static synchronized void init() {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
-                isEnable = true;
-                if (ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER) != null) {
+                if (attempt.require(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER))) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),
                             Obfuscate.getMethodName("MessagesController", "checkPromoInfoInternal"),ArgsResolver.merge("checkPromoInfoInternal", new Class[]{boolean.class}, new BaseMethodHook() {
                                 @Override
@@ -32,6 +32,7 @@ public class HideProxySponsor {
                                 }
                             }));
                 }
+                isEnable = attempt.isComplete();
             }
         } catch (Throwable e) {
             Logger.e(e);

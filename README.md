@@ -8,6 +8,16 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## Telegram 12.10.5 / API 102 release
+
+Version 3.6.5 uses module package `org.televip` and requires LSPosed API 102 support. Enable the module for `org.telegram.messenger`, restart Telegram, then open TeleVip from Telegram's settings page. It uses the same release signing certificate as 3.6.4 and the 3.6.5 test builds, so those versions can be upgraded in place.
+
+Edit history is isolated by account and conversation. Older records without reliable account/conversation identifiers are retained in a separate backup table and are not displayed. New attributed history is cleaned up when its account logs out.
+
+The channel swipe setting blocks Telegram's own swipe gesture only in broadcast channels; the top-left back button and Android system back gesture remain available.
+
+Eight device regression groups with 2506 assertions passed. The user verified the settings entry, hidden read receipts and mark after sending, remote/local deletion, edit history, phone masking and channel swipe behavior on Telegram 12.10.5. These checks cover selected features, not every switch. Other client versions below have not been retested for this release. See [regression coverage and device checks](tests/regression/README.md).
+
 ## ✨ Features
 
 ### Privacy
@@ -50,7 +60,7 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 | Client | Version |
 |---|---|
-| Telegram (Google Play) | 12.10.5 (71052; source checked, device test pending) |
+| Telegram (Google Play) | 12.10.5 (71052; selected features verified on device) |
 | Telegram Beta | 12.9.0 (69579) |
 | Telegram Web | 12.8.3 (69229) |
 | TG Connect | 11.13.1 (11130109) |

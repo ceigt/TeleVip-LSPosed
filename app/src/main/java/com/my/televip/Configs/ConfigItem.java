@@ -15,7 +15,7 @@ public class ConfigItem {
     private String key;
     private String value;
     private boolean restartRequired;
-    private boolean enable;
+    private volatile boolean enable;
     private Runnable runnable;
     private List<ConfigItem> children;
 
@@ -68,7 +68,13 @@ public class ConfigItem {
 
     public List<ConfigItem> getChildren() { return children; }
 
-    public boolean isEnable() { return enable; }
+    public boolean isEnable() {
+        if (type == EXPANDABLE_SWITCH && children != null) {
+            for (ConfigItem child : children) if (child.isEnable()) return true;
+            return false;
+        }
+        return enable;
+    }
 
     public boolean isRestartRequired() { return restartRequired; }
 
@@ -85,6 +91,11 @@ public class ConfigItem {
 
     public void run() {
         if (runnable != null) runnable.run();
+    }
+
+    public void runEnabledFeatures() {
+        if (children != null) for (ConfigItem child : children) child.runEnabledFeatures();
+        if ((type == SWITCH || (type == TEXT && getCustomCalendar() != 0)) && isEnable()) run();
     }
 
 }

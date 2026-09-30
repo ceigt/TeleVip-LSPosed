@@ -12,36 +12,48 @@ import com.my.televip.compat.XposedHelpers;
 
 public class HMethod {
 
-    public static void hookMethod(Class<?> cls, String name, Object... args) {
+    public static boolean hookMethod(Class<?> cls, String name, Object... args) {
         try {
             if (cls != null) {
                 XposedHelpers.findAndHookMethod(cls, name, args);
+                return true;
             }
         } catch (Throwable t) {
             Logger.e(t);
         }
+        HookInstallation.failure();
+        return false;
     }
 
-    public static void hookMethod(Class<?> cls, String className, String[] names, Object... args) {
+    public static boolean hookMethod(Class<?> cls, String className, String[] names, Object... args) {
+        boolean complete = cls != null;
+        boolean attempted = false;
         try {
             if (cls != null) {
                 for (String name : names) {
                     if (ClientManager.is(ClientManager.Client.Nagram) && name.equals("formatPmEditedDate")) continue;
-                    XposedHelpers.findAndHookMethod(cls, Obfuscate.getMethodName(className, name), args);
+                    attempted = true;
+                    complete &= hookMethod(cls, Obfuscate.getMethodName(className, name), args);
                 }
             }
         } catch (Throwable t) {
             Logger.e(t);
+            complete = false;
         }
+        if (!complete || !attempted) HookInstallation.failure();
+        return complete && attempted;
     }
-    public static void hookMethod(Method method, BaseMethodHook callback) {
+    public static boolean hookMethod(Method method, BaseMethodHook callback) {
         try {
             if (method != null) {
                 XposedBridge.hookMethod(method, callback);
+                return true;
             }
         } catch (Throwable t) {
             Logger.e(t);
         }
+        HookInstallation.failure();
+        return false;
     }
 
 }

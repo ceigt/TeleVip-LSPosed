@@ -29,6 +29,12 @@ public class ChatActivity {
         return (View) XposedHelpers.getObjectField(chatActivity, Obfuscate.getFieldName("ChatActivity", "pinnedMessageView"));
     }
 
+    public boolean isBroadcastChannel() {
+        Object chat = XposedHelpers.getObjectField(chatActivity, Obfuscate.getFieldName("ChatActivity", "currentChat"));
+        return chat != null && (boolean) XposedHelpers.getObjectField(chat, "broadcast")
+                && !(boolean) XposedHelpers.getObjectField(chat, "megagroup");
+    }
+
     public void scrollToMessageId(int id, int fromMessageId, boolean select, int loadIndex, boolean forceScroll, int forcePinnedMessageId){
         if (ClientManager.is(ClientManager.Client.Telegram)) {
             XposedHelpers.callMethod(chatActivity, "E", id, fromMessageId, loadIndex, forcePinnedMessageId, select, forceScroll);

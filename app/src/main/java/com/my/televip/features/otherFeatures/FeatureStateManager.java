@@ -38,11 +38,18 @@ public class FeatureStateManager {
         ConfigPreferences.putString(KEY_PROFILE, className);
     }
 
-    public static void reset() {
+    public static void resetChat() {
         ConfigPreferences.remove(KEY_CHAT);
         ConfigPreferences.remove(KEY_CHAT_BOOL);
+    }
+
+    public static void resetProfile() {
         ConfigPreferences.remove(KEY_PROFILE);
         ConfigPreferences.remove(KEY_PROFILE_BOOL);
-        FeatureInitializer.init();
+    }
+
+    public static void reset() {
+        resetChat();
+        resetProfile();
     }
 }

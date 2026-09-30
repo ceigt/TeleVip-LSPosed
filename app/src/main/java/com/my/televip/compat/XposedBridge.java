@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
+import com.my.televip.hooks.HookInstallation;
 
 /** Adapts existing feature callbacks to the API 102 interceptor chain. */
 public final class XposedBridge {
@@ -23,7 +24,7 @@ public final class XposedBridge {
 
     public static void hookMethod(Executable executable, XC_MethodHook callback) {
         if (module == null) throw new IllegalStateException("API 102 module not ready");
-        module.hook(executable).intercept(chain -> {
+        HookInstallation.install(executable, callback.getClass(), () -> module.hook(executable).intercept(chain -> {
             XC_MethodHook.MethodHookParam param = new XC_MethodHook.MethodHookParam();
             param.method = chain.getExecutable();
             param.thisObject = chain.getThisObject();
@@ -36,7 +37,7 @@ public final class XposedBridge {
             callback.afterHookedMethod(param);
             if (param.hasThrowable()) throw param.getThrowable();
             return param.getResult();
-        });
+        }));
     }
 
     public static Set<Executable> hookAllMethods(Class<?> type, String name, XC_MethodHook callback) {
@@ -47,6 +48,7 @@ public final class XposedBridge {
                 hooked.add(method);
             }
         }
+        if (hooked.isEmpty()) HookInstallation.failure();
         return hooked;
     }
 }

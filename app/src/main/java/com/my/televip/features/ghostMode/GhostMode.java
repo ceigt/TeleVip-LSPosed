@@ -14,20 +14,19 @@ import com.my.televip.compat.XposedHelpers;
 
 public class GhostMode {
 
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
-    public static void init() {
+    public static synchronized void init() {
         try {
             if (!isEnable) {
-                isEnable = true;
                 if (ClassLoad.getClass(ClassNames.CONNECTIONS_MANAGER) != null && ConfigManager.isGhostMode()) {
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.CONNECTIONS_MANAGER), Obfuscate.getMethodName("ConnectionsManager", "sendRequestInternal"), ArgsResolver.merge("sendRequestInternal", new Class[]{ClassLoad.getClass(ClassNames.TL_OBJECT), ClassLoad.getClass(ClassNames.REQUEST_DELEGATE), ClassLoad.getClass(ClassNames.REQUEST_DELEGATE_TIMESTAMP), ClassLoad.getClass(ClassNames.QUICK_ACK_DELEGATE), ClassLoad.getClass(ClassNames.WRITE_TO_SOCKET_DELEGATE), int.class, int.class, int.class, boolean.class, int.class}, new BaseMethodHook() {
+                    isEnable = HMethod.hookMethod(ClassLoad.getClass(ClassNames.CONNECTIONS_MANAGER), Obfuscate.getMethodName("ConnectionsManager", "sendRequestInternal"), ArgsResolver.merge("sendRequestInternal", new Class[]{ClassLoad.getClass(ClassNames.TL_OBJECT), ClassLoad.getClass(ClassNames.REQUEST_DELEGATE), ClassLoad.getClass(ClassNames.REQUEST_DELEGATE_TIMESTAMP), ClassLoad.getClass(ClassNames.QUICK_ACK_DELEGATE), ClassLoad.getClass(ClassNames.WRITE_TO_SOCKET_DELEGATE), int.class, int.class, int.class, boolean.class, int.class}, new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
                             try {
-                                if (HideSeen.isReadMessages) {
-                                    HideSeen.isReadMessages = false;
-                                } else if (ConfigManager.isGhostMode()) {
+                                Object request = param.args[0];
+                                if (HideSeen.consumeReadPermit(request, param.thisObject)) return;
+                                if (request != null && ConfigManager.isGhostMode()) {
                                     Object object = param.args[0];
 
                                     if (ClientManager.is(ClientManager.Client.Nagram)) {
@@ -39,7 +38,7 @@ public class GhostMode {
                                     }
 
                                     if (ConfigManager.hideSeen.isEnable() && HideSeen.isReadMessageRequest(object)) {
-                                        HideSeen.sendFakeReadResponse(param.args[1]);
+                                        HideSeen.sendFakeReadResponse(object, param.args[1], param.args[2]);
                                         param.setResult(null);
                                         return;
                                     }
@@ -54,13 +53,14 @@ public class GhostMode {
                                         return;
                                     }
 
-                                    HideSeen.handleReadAfterSend(object);
+                                    HideSeen.attachReadAfterSend(param);
                                 }
                             } catch (Throwable e) {
                                 Logger.e(e);
                             }
                         }
                     }));
+                    if (isEnable) Logger.l("Ghost mode request hook installed");
                 }
             }
         } catch (Throwable t) {

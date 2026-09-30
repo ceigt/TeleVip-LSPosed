@@ -2,43 +2,72 @@ package com.my.televip.features.ghostMode;
 
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
+import com.my.televip.Clients.ClientManager;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.Obfuscate;
-import com.my.televip.virtuals.messenger.UserConfig;
 import com.my.televip.virtuals.tgnet.TLRPC;
+import com.my.televip.virtuals.ui.BaseFragment;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
-public class HidePhone {
+public final class HidePhone {
+    public static volatile boolean isEnable;
+    private static final PhoneDisplayMask displayMask = new PhoneDisplayMask();
 
-    public static boolean isEnable = false;
-
-    public static void init() {
-        try {
-            if (!isEnable) {
-                isEnable = true;
-
-                if (ClassLoad.getClass(ClassNames.USER_CONFIG) != null) {
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.USER_CONFIG), Obfuscate.getMethodName("UserConfig", "getClientUserId"), new BaseMethodHook() {
-                        @Override
-                        protected void beforeMethod(MethodHookParam param) {
-                            if (ConfigManager.hidePhone.isEnable()) {
-                                UserConfig userConfig = new UserConfig(param.thisObject);
-                                if (userConfig.getCurrentUser().getUser() != null) {
-                                    TLRPC.User user = userConfig.getCurrentUser();
-                                    if (user.getPhone() != null) {
-                                        user.setPhone(null);
-                                    }
-                                }
-                            }
-                        }
-                    });
+    public static synchronized void init() {
+        if (isEnable) return;
+        try (HookInstallation attempt = HookInstallation.begin()) {
+            boolean telegram = ClientManager.is(ClientManager.Client.Telegram);
+            Class<?> formatter = ClassLoad.getClass(telegram ? "yd.b" : "org.telegram.PhoneFormat.PhoneFormat");
+            HMethod.hookMethod(formatter, telegram ? "b" : "format", String.class, new BaseMethodHook() {
+                @Override protected void beforeMethod(MethodHookParam param) {
+                    if (!ConfigManager.hidePhone.isEnable()) return;
+                    String replacement = displayMask.replacement((String) param.args[0]);
+                    if (replacement != null) param.setResult(replacement);
                 }
+            });
+            Class<?> settings = ClassLoad.getClass("org.telegram.ui.SettingsActivity");
+            if (telegram) {
+                HMethod.hookMethod(settings, "m0", ClassLoad.getClass(ClassNames.TLRPC_USER), displayScope());
+                HMethod.hookMethod(settings, "b0", settings, ArrayList.class, displayScope());
+                HMethod.hookMethod(ClassLoad.getClass("org.telegram.ui.UserInfoActivity"), "U", ArrayList.class,
+                        ClassLoad.getClass("org.telegram.ui.Components.y61"), displayScope());
+            } else if (attempt.require(settings)) {
+                // Keep old clients' scopes on UI rendering methods only.
+                boolean found = false;
+                for (Method method : settings.getDeclaredMethods()) {
+                    if (method.getName().equals("createView") || method.getName().equals("updateUserData")) {
+                        HMethod.hookMethod(method, displayScope());
+                        found = true;
+                    }
+                }
+                if (!found) HookInstallation.failure();
             }
-        } catch (Throwable t){
-            Logger.e(t);
-        }
+            HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY),
+                    Obfuscate.getMethodName("ProfileActivity", "updateProfileData"), boolean.class, displayScope());
+            isEnable = attempt.isComplete();
+            if (isEnable) Logger.l("Display-only phone hooks installed");
+        } catch (Throwable error) { Logger.e(error); }
     }
 
+    private static BaseMethodHook displayScope() {
+        return new BaseMethodHook() {
+            @Override protected void beforeMethod(MethodHookParam param) {
+                String phone = null;
+                try {
+                    if (ConfigManager.hidePhone.isEnable()) {
+                        Object fragment = Modifier.isStatic(param.method.getModifiers()) ? param.args[0] : param.thisObject;
+                        TLRPC.User user = new BaseFragment(fragment).getUserConfig().getCurrentUser();
+                        if (user.getUser() != null) phone = user.getPhone();
+                    }
+                } finally { displayMask.enter(param, phone); }
+            }
+            @Override protected void afterMethod(MethodHookParam param) { displayMask.exit(param); }
+        };
+    }
 }

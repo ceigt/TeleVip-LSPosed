@@ -52,6 +52,10 @@ public class MessagesController {
         return XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER), Obfuscate.getMethodName("MessagesController", "getInputChannel"), id);
     }
 
+    public Object getInputChannelForAccount(long id) {
+        return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getInputChannel"), id);
+    }
+
     public MessagesStorage getMessagesStorage() {
         return new MessagesStorage(XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getMessagesStorage")));
     }

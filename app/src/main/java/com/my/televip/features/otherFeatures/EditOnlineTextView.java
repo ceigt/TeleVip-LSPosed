@@ -15,6 +15,7 @@ import com.my.televip.Class.ClassNames;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.language.Keys;
 import com.my.televip.language.Translator;
 import com.my.televip.logging.Logger;
@@ -26,12 +27,11 @@ import com.my.televip.virtuals.ActionBar.SimpleTextView;
 import com.my.televip.virtuals.ui.ProfileActivity;
 
 public class EditOnlineTextView {
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
-    public static void init() {
-        try {
+    public static synchronized void init() {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
-                isEnable = true;
                 HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY),
                         Obfuscate.getMethodName("ProfileActivity", "updateProfileData"),
                         ArgsResolver.merge("updateProfileData", new Class[]{boolean.class},
@@ -88,6 +88,7 @@ public class EditOnlineTextView {
                                     }
                                 })
                 );
+                isEnable = attempt.isComplete();
             }
         } catch (Throwable t) {
             Logger.e(t);

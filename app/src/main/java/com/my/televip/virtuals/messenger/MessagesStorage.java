@@ -15,6 +15,10 @@ public class MessagesStorage {
         messagesStorage = obj;
     }
 
+    public long getAccountUserId() {
+        return new BaseController(messagesStorage).getUserConfig().getClientUserId();
+    }
+
     public SQLiteDatabase getDatabase() {
 
         return new SQLiteDatabase(XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "getDatabase")));

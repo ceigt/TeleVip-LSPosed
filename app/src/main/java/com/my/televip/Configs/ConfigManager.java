@@ -261,10 +261,10 @@ public class ConfigManager {
 
     public static void readFeature() {
         try {
+            SaveEditsHistory.initAccountCleanup();
             for (ConfigItem item : items) {
                 if (item == null) continue;
-                if (item.getType() != ConfigItem.SWITCH && item.getCustomCalendar() == 0) continue;
-                if (item.isEnable()) item.run();
+                item.runEnabledFeatures();
             }
 
             if (!ClientManager.is(ClientManager.Client.Telegraph) && !ClientManager.is(ClientManager.Client.Nekogram) && !ClientManager.is(ClientManager.Client.Cherrygram)) {
@@ -282,7 +282,7 @@ public class ConfigManager {
     }
 
     public static boolean isGhostMode(){
-        return hideSeen.isEnable() ||
+        return hideSeenPrivateChat.isEnable() || hideSeenChannel.isEnable() ||
                 hideStoryView.isEnable() ||
                 hideTyping.isEnable() ||
                 hideOnline.isEnable() ||

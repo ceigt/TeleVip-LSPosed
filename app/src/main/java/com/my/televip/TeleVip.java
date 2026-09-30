@@ -15,14 +15,14 @@ import com.my.televip.virtuals.TeleVip.Bridge.Bridge;
 
 public class TeleVip {
     
-    public static void startHook() {
+    public static boolean startHook() {
         try {
             resolverRegistry.loadParameter();
             Translator.init();
             AndroidUtilities.init();
             if (ClientManager.is(ClientManager.Client.Telegram)) {
                 ConfigManager.loadAndRead();
-                return;
+                return true;
             }
             DexInjector.injectDex(Utils.classLoader);
 
@@ -31,9 +31,11 @@ public class TeleVip {
             Bridge.init(settingsController);
             ConfigManager.loadAndRead();
             SettingsManager.init(settingsController);
+            return true;
 
         } catch (Throwable e){
             Logger.e(e);
+            return false;
         }
 
     }

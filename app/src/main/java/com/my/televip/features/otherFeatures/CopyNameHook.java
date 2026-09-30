@@ -9,6 +9,7 @@ import com.my.televip.Class.ClassNames;
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.language.Keys;
 import com.my.televip.language.Translator;
 import com.my.televip.logging.Logger;
@@ -19,10 +20,12 @@ import com.my.televip.virtuals.ActionBar.SimpleTextView;
 import com.my.televip.virtuals.ui.ProfileActivity;
 
 public class CopyNameHook {
+    private static boolean initialized;
 
-    public static void init() {
-        try {
-            if (ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY) != null) {
+    public static synchronized void init() {
+        if (initialized) return;
+        try (HookInstallation attempt = HookInstallation.begin()) {
+            if (attempt.require(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY))) {
 
                 HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY), Obfuscate.getMethodName("ProfileActivity", "createView"), ArgsResolver.merge("createView", new Class[]{Context.class}, new BaseMethodHook() {
                     @Override
@@ -48,6 +51,7 @@ public class CopyNameHook {
                     }
                 }));
             }
+            initialized = attempt.isComplete();
         } catch (Throwable t) {
             Logger.e(t);
         }

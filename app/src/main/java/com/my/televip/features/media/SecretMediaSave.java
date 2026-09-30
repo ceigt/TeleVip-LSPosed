@@ -11,6 +11,7 @@ import com.my.televip.Clients.ClientManager;
 import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.HMethod;
+import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
@@ -24,17 +25,16 @@ import java.io.File;
 
 public class SecretMediaSave {
 
-    public static boolean isEnable = false;
+    public static volatile boolean isEnable = false;
 
     public static long id;
     public static File pathImage;
     private static final ThreadLocal<Boolean> openingInRegularViewer = new ThreadLocal<>();
 
-    public static void init() {
-        try {
+    public static synchronized void init() {
+        try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
-                isEnable = true;
-                if (ClassLoad.getClass(ClassNames.MESSAGE_OBJECT) != null) {
+                if (attempt.require(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT))) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), Obfuscate.getMethodName("MessageObject", "isSecret"), new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
@@ -51,7 +51,7 @@ public class SecretMediaSave {
                         });
                     }
                 }
-                if (ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL_DELEGATE) != null) {
+                if (attempt.require(ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL_DELEGATE))) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL_DELEGATE), Obfuscate.getMethodName("ChatActivity$ChatMessageCellDelegate", "didPressImage"), ArgsResolver.merge("didPressImage", new Class[]{ClassLoad.getClass(ClassNames.CHAT_MESSAGE_CELL), float.class, float.class, boolean.class}, new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
@@ -79,7 +79,7 @@ public class SecretMediaSave {
                     }));
                 }
 
-                if (ClassLoad.getClass(ClassNames.FILE_LOADER) != null) {
+                if (attempt.require(ClassLoad.getClass(ClassNames.FILE_LOADER))) {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessage"), ArgsResolver.merge("getPathToMessage", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE)}, new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
@@ -100,6 +100,7 @@ public class SecretMediaSave {
 
                 if (ConfigManager.secretMediaSave.isEnable() && !ClientManager.is(ClientManager.Client.Telegram))
                     SecretMediaViewer.openMedia();
+                isEnable = attempt.isComplete();
             }
         } catch (Throwable e){
             Logger.e(e);

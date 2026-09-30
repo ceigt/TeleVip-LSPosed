@@ -33,8 +33,8 @@ public class CalendarDate {
     }
     public CalendarDate(Calendar calendar) {
         year = calendar.get(Calendar.YEAR);
-        month = calendar.get(Calendar.MONTH);
-        day = calendar.get(Calendar.DAY_OF_WEEK);
+        month = calendar.get(Calendar.MONTH) + 1;
+        day = calendar.get(Calendar.DAY_OF_MONTH);
         String[] gregorianMonths = {
                 Translator.get(Keys.GregorianMonthJanuary),
                 Translator.get(Keys.GregorianMonthFebruary),

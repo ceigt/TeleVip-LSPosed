@@ -13,23 +13,27 @@ import com.my.televip.utils.Utils;
 import com.my.televip.compat.XposedHelpers;
 
 public class FeatureInitializer {
+    private static boolean discoveryInstalled;
 
-    public static void init() {
+    public static synchronized void init() {
 
         try {
             if (ClientManager.is(ClientManager.Client.Telegram)) {
                 ChatHook.init("org.telegram.ui.vj");
                 ProfileHook.init("org.telegram.ui.o01");
+                Logger.l("Menu hooks: chat=" + ChatHook.isInitialized() + ", profile=" + ProfileHook.isInitialized());
                 return;
             }
-            if (!FeatureStateManager.isChatEnabled() || !FeatureStateManager.isProfileEnabled()) {
+            if (FeatureStateManager.isChatEnabled()) ChatHook.init(FeatureStateManager.getChatClass());
+            if (FeatureStateManager.isProfileEnabled()) ProfileHook.init(FeatureStateManager.getProfileClass());
+            if ((!ChatHook.isInitialized() || !ProfileHook.isInitialized()) && !discoveryInstalled) {
 
                 Class<?> actionBarClass = XposedHelpers.findClassIfExists(
                         Obfuscate.getClassName("org.telegram.ui.ActionBar.ActionBar"),
                         Utils.classLoader
                 );
 
-                HMethod.hookMethod(
+                discoveryInstalled = HMethod.hookMethod(
                         actionBarClass,
                         Obfuscate.getMethodName("ActionBar", "setActionBarMenuOnItemClick"), ClassLoad.getClass(ClassNames.ACTION_BAR_MENU_ON_ITEM_CLICK),
                         new BaseMethodHook() {
@@ -42,21 +46,16 @@ public class FeatureInitializer {
 
                                 String name = clazz.getClass().getName();
 
-                                if (name.contains("ChatActivity") && !FeatureStateManager.isChatEnabled()) {
-                                    FeatureStateManager.saveChat(name);
+                                if (name.contains("ChatActivity") && !ChatHook.isInitialized()) {
                                     ChatHook.init(name);
                                 }
 
-                                if (name.contains("ProfileActivity") && !FeatureStateManager.isProfileEnabled()) {
-                                    FeatureStateManager.saveProfile(name);
+                                if (name.contains("ProfileActivity") && !ProfileHook.isInitialized()) {
                                     ProfileHook.init(name);
                                 }
                             }
                         });
 
-            } else {
-                ChatHook.init(FeatureStateManager.getChatClass());
-                ProfileHook.init(FeatureStateManager.getProfileClass());
             }
 
         } catch (Throwable t) {
