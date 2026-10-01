@@ -12,7 +12,7 @@ Omit `-Serial` to build only. `-Adb` defaults to `adb` on PATH. Each run creates
 
 ## Coverage
 
-Eight groups cover:
+Nine groups cover:
 
 1. Message ID parsing, including empty input, signs and overflow.
 2. One-shot read permits: request identity, connection identity, expiration, concurrency and bounded capacity.
@@ -22,6 +22,7 @@ Eight groups cover:
 6. Real Android SQLite: version 1 migration into an isolated legacy table, account and dialog separation, repeated edit versions, logout revocation, late writes, persisted cleanup after reopening and contained SQL failure.
 7. Telegram storage boundary resource disposal on success, empty results and injected failure; disabled-switch behavior.
 8. Hook initialization with missing targets, partial failure and retry, concurrent duplicate prevention, independent menu state reset, phone masking limited to the owning display scope, private/group/channel swipe behavior and Calendar time formatting.
+9. Telegram settings row and personal info adapter renaming, rejection of ambiguous or incompatible signatures; Android 16 style switch click callbacks, accessibility state, touch targets and light/dark LTR/RTL drawing.
 
 Database tests use real Android SQLite. Telegram storage wrappers are controlled fakes for error injection and resource checks. Hook installation, real network callbacks and Telegram UI interactions require separate device verification.
 

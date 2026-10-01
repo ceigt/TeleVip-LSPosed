@@ -23,7 +23,8 @@ $production = @(
     'hooks/HookInstallation.java', 'hooks/HMethod.java', 'compat/XposedHelpers.java',
     'compat/XC_MethodHook.java', 'base/BaseMethodHook.java', 'Class/ClassNames.java',
     'features/ghostMode/PhoneDisplayMask.java', 'features/otherFeatures/FeatureStateManager.java',
-    'features/ui/HijriDate.java', 'features/ui/DisableChannelSwipeBack.java', 'virtuals/ui/ChatActivity.java'
+    'features/ui/HijriDate.java', 'features/ui/DisableChannelSwipeBack.java', 'virtuals/ui/ChatActivity.java',
+    'settings/TelegramSettingsCompat.java', 'settings/Android16Switch.java'
 )
 foreach ($source in $production) { $javaSources += Join-Path $repo ('app/src/main/java/com/my/televip/' + $source) }
 $sourceList = Join-Path $runDir 'sources.txt'
@@ -57,6 +58,6 @@ if ($Serial) {
         $result = & $Adb -s $Serial shell am instrument -w org.televip.regression/.RegressionInstrumentation
         $result | Set-Content (Join-Path $runDir 'result.txt')
         $result | Write-Output
-        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 8 regression groups passed;')) { throw 'Device regressions failed' }
+        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 9 regression groups passed;')) { throw 'Device regressions failed' }
     } finally { & $Adb -s $Serial uninstall org.televip.regression }
 }

@@ -9,6 +9,7 @@ import com.my.televip.hooks.HMethod;
 import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.settings.TelegramSettingsCompat;
 import com.my.televip.virtuals.tgnet.TLRPC;
 import com.my.televip.virtuals.ui.BaseFragment;
 import java.lang.reflect.Method;
@@ -35,8 +36,8 @@ public final class HidePhone {
             if (telegram) {
                 HMethod.hookMethod(settings, "m0", ClassLoad.getClass(ClassNames.TLRPC_USER), displayScope());
                 HMethod.hookMethod(settings, "b0", settings, ArrayList.class, displayScope());
-                HMethod.hookMethod(ClassLoad.getClass("org.telegram.ui.UserInfoActivity"), "U", ArrayList.class,
-                        ClassLoad.getClass("org.telegram.ui.Components.y61"), displayScope());
+                HMethod.hookMethod(TelegramSettingsCompat.userInfoRows(
+                        ClassLoad.getClass("org.telegram.ui.UserInfoActivity")), displayScope());
             } else if (attempt.require(settings)) {
                 // Keep old clients' scopes on UI rendering methods only.
                 boolean found = false;

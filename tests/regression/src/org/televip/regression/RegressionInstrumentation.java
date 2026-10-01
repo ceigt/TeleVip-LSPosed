@@ -27,6 +27,9 @@ import com.my.televip.logging.Logger;
 import com.my.televip.messages.MessageStorage;
 import com.my.televip.utils.MessageIdParser;
 import com.my.televip.virtuals.messenger.MessagesStorage;
+import com.my.televip.settings.Android16Switch;
+import com.my.televip.settings.TelegramSettingsCompat;
+import org.telegram.ui.Components.SyntheticSettingsTypes.*;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -52,8 +55,9 @@ public final class RegressionInstrumentation extends Instrumentation {
             database();
             nativeResources();
             initializationAndDisplay();
+            settingsCompatibility();
             result.putString("regression", "PASS");
-            result.putString("stream", "TELEVIP_REGRESSION_PASS: 8 regression groups passed; " + checks.get() + " assertions\n");
+            result.putString("stream", "TELEVIP_REGRESSION_PASS: 9 regression groups passed; " + checks.get() + " assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("regression", "FAIL");
@@ -65,6 +69,86 @@ public final class RegressionInstrumentation extends Instrumentation {
     private void check(boolean condition, String message) {
         checks.incrementAndGet();
         if (!condition) throw new AssertionError(message);
+    }
+
+    public static final class OldSettings { public static void f0(OldSettings owner, OldRow row) {} }
+    public static final class NewSettings { public static void f0(NewSettings owner, NewRow row) {} }
+    public static final class OldFactory {
+        public static OldRow a(int id, int c1, int c2, int icon, CharSequence t, CharSequence v, CharSequence sub) { return new OldRow(); }
+    }
+    public static final class NewFactory {
+        public static NewRow a(int id, int c1, int c2, int icon, CharSequence t, CharSequence v, CharSequence sub) { return new NewRow(); }
+    }
+    public static final class OldUserInfo { public void U(java.util.ArrayList<?> rows, OldAdapter adapter) {} }
+    public static final class NewUserInfo { public void U(java.util.ArrayList<?> rows, NewAdapter adapter) {} }
+    public static final class AmbiguousUserInfo {
+        public void U(java.util.ArrayList<?> rows, OldAdapter adapter) {}
+        public void U(java.util.ArrayList<?> rows, NewAdapter adapter) {}
+    }
+    public static final class WrongUserInfo { public static void U(java.util.ArrayList<?> rows, NewAdapter adapter) {} }
+
+    private void settingsCompatibility() throws Throwable {
+        check(TelegramSettingsCompat.settingsClick(OldSettings.class, OldFactory.class).getParameterTypes()[1] == OldRow.class,
+                "old Telegram row was not resolved from its factory");
+        check(TelegramSettingsCompat.settingsClick(NewSettings.class, NewFactory.class).getParameterTypes()[1] == NewRow.class,
+                "renamed Telegram row was not resolved from its factory");
+        check(TelegramSettingsCompat.userInfoRows(OldUserInfo.class).getParameterTypes()[1] == OldAdapter.class,
+                "old user info adapter not resolved");
+        check(TelegramSettingsCompat.userInfoRows(NewUserInfo.class).getParameterTypes()[1] == NewAdapter.class,
+                "renamed user info adapter not resolved");
+        for (Class<?> invalid : new Class<?>[]{AmbiguousUserInfo.class, WrongUserInfo.class, HookTargets.class}) {
+            boolean rejected = false;
+            try { TelegramSettingsCompat.userInfoRows(invalid); }
+            catch (NoSuchMethodException expected) { rejected = true; }
+            check(rejected, "unsafe user info signature accepted: " + invalid.getName());
+        }
+        boolean rejected = false;
+        try { TelegramSettingsCompat.settingsClick(NewSettings.class, OldFactory.class); }
+        catch (NoSuchMethodException expected) { rejected = true; }
+        check(rejected, "mismatched settings and row factory accepted");
+
+        Throwable[] failure = new Throwable[1];
+        runOnMainSync(() -> {
+            try {
+                for (boolean dark : new boolean[]{false, true}) {
+                    Android16Switch toggle = new Android16Switch(getTargetContext(), dark);
+                    toggle.setLayoutParams(new android.widget.LinearLayout.LayoutParams(-1, -2));
+                    check(toggle.isClickable() && toggle.isFocusable(), "switch cannot receive touch or keyboard input");
+                    toggle.setText("A long settings label for layout and accessibility checks");
+                    toggle.setChecked(true);
+                    AtomicInteger changes = new AtomicInteger();
+                    toggle.setOnCheckedChangeListener((button, enabled) -> changes.incrementAndGet());
+                    toggle.performClick();
+                    check(!toggle.isChecked() && changes.get() == 1, "switch click did not toggle once");
+                    toggle.performClick();
+                    check(toggle.isChecked() && changes.get() == 2, "switch could not toggle back");
+                    toggle.setChecked(true);
+                    check(changes.get() == 2, "unchanged switch triggered persistence callback");
+                    android.view.accessibility.AccessibilityNodeInfo node = android.view.accessibility.AccessibilityNodeInfo.obtain();
+                    toggle.onInitializeAccessibilityNodeInfo(node);
+                    check(node.isCheckable() && node.isChecked(), "switch accessibility lost checked state");
+                    check("android.widget.Switch".contentEquals(toggle.getAccessibilityClassName()), "switch accessibility role incorrect");
+                    node.recycle();
+                    int width = Math.round(getTargetContext().getResources().getDisplayMetrics().density * 320);
+                    for (int direction : new int[]{android.view.View.LAYOUT_DIRECTION_LTR, android.view.View.LAYOUT_DIRECTION_RTL}) {
+                        toggle.setLayoutDirection(direction);
+                        toggle.measure(android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
+                                android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED));
+                        toggle.layout(0, 0, width, toggle.getMeasuredHeight());
+                        toggle.jumpDrawablesToCurrentState();
+                        check(toggle.getHeight() >= getTargetContext().getResources().getDisplayMetrics().density * 48,
+                                "switch touch target too small");
+                        check(direction == android.view.View.LAYOUT_DIRECTION_RTL
+                                ? toggle.getCompoundPaddingLeft() > toggle.getCompoundPaddingRight()
+                                : toggle.getCompoundPaddingRight() > toggle.getCompoundPaddingLeft(), "switch overlaps label in text direction");
+                        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(width, toggle.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+                        toggle.draw(new android.graphics.Canvas(bitmap));
+                        bitmap.recycle();
+                    }
+                }
+            } catch (Throwable error) { failure[0] = error; }
+        });
+        if (failure[0] != null) throw failure[0];
     }
 
     private void parser() {
