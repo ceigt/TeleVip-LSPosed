@@ -8,6 +8,7 @@ import com.my.televip.utils.Utils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import com.my.televip.diagnostics.HookHealth;
 
 import com.my.televip.compat.XposedHelpers;
 
@@ -23,7 +24,7 @@ public class ClassLoad {
         return getClass(name, classLoader, true);
     }
 
-    public static Class<?> getClass(String name, ClassLoader classLoader, boolean log) {
+    public static synchronized Class<?> getClass(String name, ClassLoader classLoader, boolean log) {
 
         String resolved = Obfuscate.getClassName(name);
 
@@ -44,6 +45,7 @@ public class ClassLoad {
                 loaderCache.put(resolved, cls);
             } else {
                 if (log) {
+                    HookHealth.missingClass(name);
                     if ((ClientManager.is(ClientManager.Client.Nagram) || ClientManager.is(ClientManager.Client.Momogram) || ClientManager.is(ClientManager.Client.Nekogram)) && name.equals(ClassNames.DRAWABLE))
                         return null;
 

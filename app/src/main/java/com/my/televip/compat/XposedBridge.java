@@ -8,6 +8,7 @@ import java.util.Set;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
 import com.my.televip.hooks.HookInstallation;
+import com.my.televip.diagnostics.HookHealth;
 
 /** Adapts existing feature callbacks to the API 102 interceptor chain. */
 public final class XposedBridge {
@@ -46,9 +47,10 @@ public final class XposedBridge {
             if (method.getName().equals(name)) {
                 hookMethod(method, callback);
                 hooked.add(method);
+                HookHealth.resolved();
             }
         }
-        if (hooked.isEmpty()) HookInstallation.failure();
+        if (hooked.isEmpty()) {HookInstallation.failure();HookHealth.missingMember(type.getName()+"#"+name); }
         return hooked;
     }
 }

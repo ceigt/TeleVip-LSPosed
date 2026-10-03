@@ -24,8 +24,8 @@ public final class HidePhone {
         if (isEnable) return;
         try (HookInstallation attempt = HookInstallation.begin()) {
             boolean telegram = ClientManager.is(ClientManager.Client.Telegram);
-            Class<?> formatter = ClassLoad.getClass(telegram ? "yd.b" : "org.telegram.PhoneFormat.PhoneFormat");
-            HMethod.hookMethod(formatter, telegram ? "b" : "format", String.class, new BaseMethodHook() {
+            Class<?> formatter = ClassLoad.getClass("org.telegram.PhoneFormat.PhoneFormat");
+            HMethod.hookMethod(formatter, Obfuscate.getMethodName("PhoneFormat", "format"), String.class, new BaseMethodHook() {
                 @Override protected void beforeMethod(MethodHookParam param) {
                     if (!ConfigManager.hidePhone.isEnable()) return;
                     String replacement = displayMask.replacement((String) param.args[0]);
@@ -34,10 +34,10 @@ public final class HidePhone {
             });
             Class<?> settings = ClassLoad.getClass("org.telegram.ui.SettingsActivity");
             if (telegram) {
-                HMethod.hookMethod(settings, "m0", ClassLoad.getClass(ClassNames.TLRPC_USER), displayScope());
-                HMethod.hookMethod(settings, "b0", settings, ArrayList.class, displayScope());
-                HMethod.hookMethod(TelegramSettingsCompat.userInfoRows(
-                        ClassLoad.getClass("org.telegram.ui.UserInfoActivity")), displayScope());
+                HMethod.hookMethod(settings, Obfuscate.getMethodName("SettingsActivity", "updateUserData"), ClassLoad.getClass(ClassNames.TLRPC_USER), displayScope());
+                HMethod.hookMethod(com.my.televip.settings.NativeSettingsEntry.uniqueMethod(settings, Obfuscate.getMethodName("SettingsActivity", "fillItems"), ArrayList.class), displayScope());
+                HMethod.hookMethod(com.my.televip.settings.NativeSettingsEntry.uniqueMethod(
+                        ClassLoad.getClass("org.telegram.ui.UserInfoActivity"), Obfuscate.getMethodName("UserInfoActivity", "fillItems"), ArrayList.class), displayScope());
             } else if (attempt.require(settings)) {
                 // Keep old clients' scopes on UI rendering methods only.
                 boolean found = false;

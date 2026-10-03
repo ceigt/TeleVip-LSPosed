@@ -1,6 +1,7 @@
 package com.my.televip.language;
 
 public class Keys {
+    public static final String BlockAds = "BlockAds";
 
     public static final String ToTheBeginning = "ToTheBeginning";
     public static final String ToTheMessage = "ToTheMessage";

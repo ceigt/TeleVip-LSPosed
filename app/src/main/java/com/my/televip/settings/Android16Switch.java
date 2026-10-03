@@ -13,6 +13,10 @@ import android.widget.CompoundButton;
 
 /** Resource-independent switch for a settings row injected into another application. */
 public final class Android16Switch extends CompoundButton {
+    // Keep the Android 16 proportions at a size close to Telegram's native switch.
+    private static final float CONTROL_SCALE = 0.55f;
+    private static final float CONTROL_WIDTH_DP = 64f * CONTROL_SCALE;
+    private static final float LABEL_GAP_DP = 12f;
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF track = new RectF();
     private final Path check = new Path();
@@ -37,11 +41,11 @@ public final class Android16Switch extends CompoundButton {
     }
 
     @Override public int getCompoundPaddingRight() {
-        return super.getCompoundPaddingRight() + (getLayoutDirection() == LAYOUT_DIRECTION_RTL ? 0 : dp(76));
+        return super.getCompoundPaddingRight() + (getLayoutDirection() == LAYOUT_DIRECTION_RTL ? 0 : dp(CONTROL_WIDTH_DP + LABEL_GAP_DP));
     }
 
     @Override public int getCompoundPaddingLeft() {
-        return super.getCompoundPaddingLeft() + (getLayoutDirection() == LAYOUT_DIRECTION_RTL ? dp(76) : 0);
+        return super.getCompoundPaddingLeft() + (getLayoutDirection() == LAYOUT_DIRECTION_RTL ? dp(CONTROL_WIDTH_DP + LABEL_GAP_DP) : 0);
     }
 
     @Override public CharSequence getAccessibilityClassName() { return "android.widget.Switch"; }
@@ -81,8 +85,10 @@ public final class Android16Switch extends CompoundButton {
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         boolean rtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
-        float left = rtl ? getPaddingLeft() : getWidth() - getPaddingRight() - dp(64);
+        float left = rtl ? getPaddingLeft() : getWidth() - getPaddingRight() - dp(CONTROL_WIDTH_DP);
         float cy = getHeight() / 2f;
+        int saved = canvas.save();
+        canvas.scale(CONTROL_SCALE, CONTROL_SCALE, left, cy);
         track.set(left, cy - dp(20), left + dp(64), cy + dp(20));
         int active = dark ? 0xffaccaf0 : 0xff204f75;
         int inactive = dark ? 0xff363941 : 0xffe3e3eb;
@@ -117,6 +123,7 @@ public final class Android16Switch extends CompoundButton {
         canvas.drawPath(check, paint);
         paint.setStyle(Paint.Style.FILL);
         paint.setAlpha(255);
+        canvas.restoreToCount(saved);
     }
 
     private int dp(float value) { return Math.round(value * getResources().getDisplayMetrics().density); }

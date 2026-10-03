@@ -1,51 +1,26 @@
-<<<<<<< HEAD
+# Build outputs and IDE state
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-=======
-# Gradle files
 .gradle/
 build/
-
-# Local configuration file (sdk path, etc)
+.idea/
+/local.properties
 local.properties
-
-# Log/OS Files
-*.log
-
-# Android Studio generated files and folders
+.DS_Store
 captures/
 .externalNativeBuild/
 .cxx/
+*.log
 *.apk
+*.idsig
+*.hprof
 output.json
-
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore files
+# Local signing material
 *.jks
 *.keystore
-
-# Google Services (e.g. APIs or Firebase)
+*.p12
+keystore.properties
 google-services.json
 
-# Android Profiling
-*.hprof
->>>>>>> e9865a95eb7ed2d3a6e3c0283d94db23f9eefe06
+# Python compatibility tooling
+__pycache__/
+*.pyc

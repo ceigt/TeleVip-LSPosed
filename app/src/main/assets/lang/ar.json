@@ -105,5 +105,6 @@
   "ApproximateCreationDate": "تاريخ الإنشاء التقريبي",
   "Age": "العمر",
   "ApproximateCreationDateNotice": "يعتمد هذا التاريخ على تقدير مستند إلى معرف تيليجرام، وقد لا يكون مطابقًا لتاريخ الإنشاء الفعلي.",
-  "EnableVoiceMessageSaving": "السماح بحفظ الرسائل الصوتية"
+  "EnableVoiceMessageSaving": "السماح بحفظ الرسائل الصوتية",
+    "BlockAds": "حظر الإعلانات"
 }

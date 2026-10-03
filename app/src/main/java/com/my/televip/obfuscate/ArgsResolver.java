@@ -10,7 +10,7 @@ public class ArgsResolver {
     public static ResolverRegistry resolverRegistry = new ResolverRegistry(ResolverRegistry.getResolverClass());
 
     public static Class<?>[] resolveObject(String name, Class<?>[] classes) {
-        if (resolverRegistry != null) {
+        if (RuntimeMappings.mayUseLegacyTable() && resolverRegistry != null) {
             if (resolverRegistry.hasParameter(name)) {
                 return resolverRegistry.resolveParameter(name);
             }

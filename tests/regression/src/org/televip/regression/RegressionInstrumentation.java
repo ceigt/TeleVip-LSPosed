@@ -56,14 +56,47 @@ public final class RegressionInstrumentation extends Instrumentation {
             nativeResources();
             initializationAndDisplay();
             settingsCompatibility();
+            dialogProtection();
             result.putString("regression", "PASS");
-            result.putString("stream", "TELEVIP_REGRESSION_PASS: 9 regression groups passed; " + checks.get() + " assertions\n");
+            result.putString("stream", "TELEVIP_REGRESSION_PASS: 10 regression groups passed; " + checks.get() + " assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("regression", "FAIL");
             result.putString("stream", android.util.Log.getStackTraceString(error));
             finish(Activity.RESULT_CANCELED, result);
         }
+    }
+
+    private void dialogProtection() {
+        int before = Logger.errors.get();
+        android.content.DialogInterface.OnClickListener broken =
+                (android.content.DialogInterface.OnClickListener) com.my.televip.virtuals.ActionBar.AlertDialog.click(
+                        () -> { throw new IllegalStateException("Expected dialog callback failure"); });
+        broken.onClick(null, -1);
+        check(Logger.errors.get() == before + 1, "dialog callback failure was not logged");
+        AtomicInteger clicks = new AtomicInteger();
+        ((android.content.DialogInterface.OnClickListener) com.my.televip.virtuals.ActionBar.AlertDialog.click(
+                () -> clicks.incrementAndGet())).onClick(null, -1);
+        check(clicks.get() == 1, "successful dialog callback lost");
+        check(com.my.televip.virtuals.ActionBar.AlertDialog.click(null) == null, "null action changed");
+        android.content.Intent intent = new android.content.Intent(getTargetContext(), DialogTestActivity.class);
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+        Activity activity = startActivitySync(intent);
+        try {
+            for (int button : new int[]{-1, -2, -3}) {
+                runOnMainSync(() -> {
+                    com.my.televip.virtuals.ActionBar.AlertDialog wrapper = new com.my.televip.virtuals.ActionBar.AlertDialog(activity);
+                    android.content.DialogInterface.OnClickListener action = (dialog, which) -> { throw new IllegalArgumentException("Expected raw listener failure"); };
+                    if (button == -1) wrapper.setPositiveButton("Test", action);
+                    if (button == -2) wrapper.setNegativeButton("Test", action);
+                    if (button == -3) wrapper.setNeutralButton("Test", action);
+                    wrapper.show();
+                    ((android.app.AlertDialog) wrapper.getAlertDialog()).getButton(button).performClick();
+                });
+                waitForIdleSync();
+            }
+        } finally { runOnMainSync(activity::finish); }
+        check(Logger.errors.get() == before + 4, "raw dialog listeners were not protected");
     }
 
     private void check(boolean condition, String message) {
@@ -151,7 +184,37 @@ public final class RegressionInstrumentation extends Instrumentation {
         if (failure[0] != null) throw failure[0];
     }
 
+    public static final class StandardNavigation {
+        Object[] received;
+        public void scrollToMessageId(int id, int from, boolean select, int load, boolean force, int pinned) {
+            received = new Object[]{id, from, select, load, force, pinned};
+        }
+    }
+    public static final class ReorderedNavigation {
+        Object[] received;
+        public void scrollToMessageId(int id, int from, int load, int pinned, boolean select, boolean force) {
+            received = new Object[]{id, from, select, load, force, pinned};
+        }
+    }
+    public static final class AmbiguousNavigation {
+        public void scrollToMessageId(int a, int b, int c, int d, boolean e, boolean f) {}
+        public void scrollToMessageId(int a, int b, boolean c, int d, boolean e, int f) {}
+    }
+
     private void parser() {
+        StandardNavigation standard = new StandardNavigation();
+        ReorderedNavigation reordered = new ReorderedNavigation();
+        new com.my.televip.virtuals.ui.ChatActivity(standard).scrollToMessageId(12, 34, true, 56, false, 78);
+        new com.my.televip.virtuals.ui.ChatActivity(reordered).scrollToMessageId(12, 34, true, 56, false, 78);
+        Object[] expected = {12, 34, true, 56, false, 78};
+        check(Arrays.equals(expected, standard.received), "standard navigation arguments changed");
+        check(Arrays.equals(expected, reordered.received), "R8 reordered navigation arguments changed");
+        for (Object invalid : new Object[]{new AmbiguousNavigation(), new Object()}) {
+            boolean rejected = false;
+            try {new com.my.televip.virtuals.ui.ChatActivity(invalid).scrollToMessageId(1, 0, true, 0, true, 0);}
+            catch (IllegalStateException safeFailure) {rejected = true;}
+            check(rejected, "unsafe navigation signature accepted");
+        }
         check(MessageIdParser.parse("1") == 1, "minimum ID");
         check(MessageIdParser.parse("2147483647") == Integer.MAX_VALUE, "maximum ID");
         check(MessageIdParser.parse(" 42 ") == 42, "trimmed ID");

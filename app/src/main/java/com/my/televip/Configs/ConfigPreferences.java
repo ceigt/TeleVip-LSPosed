@@ -15,6 +15,8 @@ public class ConfigPreferences {
         sharedPreferences = ApplicationLoaderHook.getApplicationContext().getSharedPreferences("TeleVip", Activity.MODE_PRIVATE);
     }
 
+    public static boolean contains(String key) { return sharedPreferences.contains(key); }
+
     public static boolean getBoolean(String key) {
         try {
             return sharedPreferences.getBoolean(key, false);

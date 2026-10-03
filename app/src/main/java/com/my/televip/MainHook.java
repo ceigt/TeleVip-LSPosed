@@ -1,84 +1,78 @@
 package com.my.televip;
 
-
 import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import com.my.televip.application.ApplicationLoaderHook;
 import android.os.Bundle;
-
-import com.my.televip.Class.ClassLoad;
-import com.my.televip.Class.ClassNames;
 import com.my.televip.Clients.ClientManager;
 import com.my.televip.base.BaseMethodHook;
+import com.my.televip.diagnostics.HookHealth;
 import com.my.televip.hooks.HMethod;
-import com.my.televip.settings.SettingsFallback;
-import com.my.televip.settings.TelegramSettingsCompat;
 import com.my.televip.logging.Logger;
+import com.my.televip.obfuscate.RuntimeMappings;
+import com.my.televip.obfuscate.BootstrapRequests;
+import com.my.televip.Configs.ConfigManager;
+import com.my.televip.features.ghostMode.GhostMode;
 import com.my.televip.utils.Utils;
-import com.my.televip.compat.XposedHelpers;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import java.util.ArrayList;
-
-public class MainHook {
-
-    private boolean isStart;
-    private int startAttempts;
-
-    public void handleLoadPackage(final String packageName, final ClassLoader classLoader) {
-        if (!ClientManager.containsPackage(packageName, classLoader)) return;
-
-        Utils.classLoader = classLoader;
-        Utils.pkgName = packageName;
-
-        HMethod.hookMethod(ClassLoad.getClass(ClassNames.LAUNCH_ACTIVITY), "onCreate", Bundle.class, new BaseMethodHook() {
-            @Override
-            protected void beforeMethod(MethodHookParam param) {
-                Utils.setCurrentActivity((Activity) param.thisObject);
-                if (!isStart && startAttempts < 3) {
-                    startAttempts++;
-                    isStart = TeleVip.startHook();
-                }
+public final class MainHook {
+    private static final AtomicBoolean attached = new AtomicBoolean();
+    private boolean started, queued, backgroundStarted;
+    private int backgroundAttempts;
+    private int attempts;
+    public void handleLoadPackage(String packageName,ClassLoader loader) {
+        if (!ClientManager.containsPackage(packageName,loader) || !attached.compareAndSet(false,true)) return;
+        Utils.classLoader=loader;Utils.pkgName=packageName;
+        BootstrapRequests.install(loader);
+        RuntimeMappings.prefetch(packageName,loader);
+        HMethod.hookMethod(Application.class,"attach",Context.class,new BaseMethodHook() {
+            @Override protected void afterMethod(MethodHookParam param) {
+                Context context = (Context)param.args[0];
+                if (!packageName.equals(context.getPackageName())) return;
+                ApplicationLoaderHook.setApplicationContext((Application)param.thisObject);
+                // Run after the host Application.onCreate has finished, even without an Activity.
+                new Handler(Looper.getMainLooper()).post(() -> queue(context));
             }
         });
-
-        if (ClientManager.is(ClientManager.Client.Telegram)) {
-            Class<?> settings = ClassLoad.getClass("org.telegram.ui.SettingsActivity", classLoader, false);
-            if (settings != null) {
-                Class<?> nativeRow = ClassLoad.getClass("org.telegram.ui.l91", classLoader, false);
-                HMethod.hookMethod(settings, "b0", settings, ArrayList.class, new BaseMethodHook() {
-                    @Override
-                    protected void afterMethod(MethodHookParam param) {
-                        ArrayList<Object> items = (ArrayList<Object>) param.args[1];
-                        for (Object item : items)
-                            if (XposedHelpers.getIntField(item, "d") == SettingsFallback.ROW_ID) return;
-                        int icon = ((Activity) Utils.getCurrentActivity()).getResources()
-                                .getIdentifier("settings_features", "drawable", packageName);
-                        Object entry = XposedHelpers.callStaticMethod(nativeRow, "a",
-                                SettingsFallback.ROW_ID, -1007845, -1996271, icon,
-                                "TeleVip", "TeleVip settings", null);
-                        int index = -1;
-                        for (int i = 0; i < items.size(); i++) {
-                            if (XposedHelpers.getIntField(items.get(i), "d") == 10) {
-                                index = i + 1;
-                                break;
-                            }
-                        }
-                        if (index >= 0) items.add(index, entry);
-                    }
-                });
-                try {
-                    HMethod.hookMethod(TelegramSettingsCompat.settingsClick(settings, nativeRow), new BaseMethodHook() {
-                        @Override
-                        protected void beforeMethod(MethodHookParam param) {
-                            if (XposedHelpers.getIntField(param.args[1], "d") != SettingsFallback.ROW_ID) return;
-                            Activity activity = Utils.getCurrentActivity();
-                            if (activity != null) SettingsFallback.showSettings(activity);
-                            param.setResult(null);
-                        }
-                    });
-                } catch (ReflectiveOperationException | NullPointerException error) { Logger.e(error); }
+        HMethod.hookMethod(Activity.class,"onCreate",Bundle.class,new BaseMethodHook() {
+            @Override protected void beforeMethod(MethodHookParam param) {
+                Activity activity=(Activity)param.thisObject;
+                if(!packageName.equals(activity.getPackageName())) return;
+                Utils.setCurrentActivity(activity);queue(activity);
             }
-        }
+        });
+        HMethod.hookMethod(Activity.class,"onResume",new BaseMethodHook() {
+            @Override protected void afterMethod(MethodHookParam param) {
+                Activity activity=(Activity)param.thisObject;
+                if(packageName.equals(activity.getPackageName())) {Utils.setCurrentActivity(activity);queue(activity);}
+            }
+        });
     }
-
-
+    private void queue(Context activity) {
+        if(started || queued || attempts>=3) return;
+        if(RuntimeMappings.isReady()) {start();return;}
+        queued=true;
+        RuntimeMappings.whenReady(activity.getApplicationContext(),()->{queued=false;start();});
+    }
+    private void start() {
+        if (started || attempts >= 3) return;
+        if (Utils.getCurrentActivity() == null) {
+            if (backgroundStarted || backgroundAttempts >= 3) return;
+            backgroundAttempts++;
+            backgroundStarted = TeleVip.startBackgroundHooks();
+            if (backgroundStarted && (!ConfigManager.isGhostMode() || GhostMode.isEnable)) BootstrapRequests.release();
+            else Logger.w("Background request gate retained: privacy hooks incomplete");
+            Logger.l("Background hooks ready=" + backgroundStarted + "; " + RuntimeMappings.summary());
+            HookHealth.logReport();
+            return;
+        }
+        attempts++;started=TeleVip.startHook();
+        if(started && (!ConfigManager.isGhostMode() || GhostMode.isEnable)) BootstrapRequests.release();
+        else Logger.w("Startup request gate retained: privacy hooks incomplete");
+        Logger.l("Startup ready="+started+"; "+RuntimeMappings.summary());HookHealth.logReport();
+    }
 }
-

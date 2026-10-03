@@ -3,7 +3,6 @@ package com.my.televip.application;
 import android.os.Handler;
 
 import com.my.televip.logging.Logger;
-import com.my.televip.utils.Utils;
 
 public class AndroidUtilities {
 
@@ -22,7 +21,7 @@ public class AndroidUtilities {
     public static void init() {
         try {
             applicationHandler = new Handler(ApplicationLoaderHook.getApplicationContext().getMainLooper());
-            density = Utils.getCurrentActivity().getResources().getDisplayMetrics().density;
+            density = ApplicationLoaderHook.getApplicationContext().getResources().getDisplayMetrics().density;
         } catch (Throwable e) {
             Logger.e(e);
         }

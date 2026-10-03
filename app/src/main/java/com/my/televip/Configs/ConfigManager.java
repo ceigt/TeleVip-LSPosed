@@ -12,7 +12,7 @@ import com.my.televip.features.other.FixTLError;
 import com.my.televip.features.ghostMode.GhostMode;
 import com.my.televip.features.ghostMode.HidePhone;
 import com.my.televip.features.ui.HidePinnedMessages;
-import com.my.televip.features.ui.HideProxySponsor;
+import com.my.televip.features.ui.AdBlock;
 import com.my.televip.features.other.HideUpdateApp;
 import com.my.televip.features.ui.HijriDate;
 import com.my.televip.features.media.PreventMedia;
@@ -81,6 +81,7 @@ public class ConfigManager {
     public static ConfigItem disableChannelSwipeBack;
     public static ConfigItem disableProfileSwipeBack;
     public static ConfigItem hideProxySponsor;
+    public static ConfigItem blockAds;
     public static ConfigItem showUserID;
     public static ConfigItem customCalendar;
 
@@ -208,8 +209,11 @@ public class ConfigManager {
         disableProfileSwipeBack = new ConfigItem(ConfigItem.SWITCH, Keys.DisableProfileSwipeBack, ConfigPreferences.getBoolean(Keys.DisableProfileSwipeBack), DisableProfileSwipeBack::init);
         items.add(disableProfileSwipeBack);
 
-        hideProxySponsor = new ConfigItem(ConfigItem.SWITCH, Keys.HideProxySponsor, true, ConfigPreferences.getBoolean(Keys.HideProxySponsor), HideProxySponsor::init);
-        items.add(hideProxySponsor);
+        if (!ConfigPreferences.contains(Keys.BlockAds))
+            ConfigPreferences.putBoolean(Keys.BlockAds, ConfigPreferences.getBoolean(Keys.HideProxySponsor));
+        blockAds = new ConfigItem(ConfigItem.SWITCH, Keys.BlockAds, true, ConfigPreferences.getBoolean(Keys.BlockAds), AdBlock::init);
+        hideProxySponsor = blockAds; // compatibility for existing integrations
+        items.add(blockAds);
 
         if (!ClientManager.is(ClientManager.Client.Telegraph) && !ClientManager.is(ClientManager.Client.Nekogram) && !ClientManager.is(ClientManager.Client.Cherrygram)) {
             showUserID = new ConfigItem(ConfigItem.SWITCH, Keys.ShowUserID, ConfigPreferences.getBoolean(Keys.ShowUserID), EditOnlineTextView::init);

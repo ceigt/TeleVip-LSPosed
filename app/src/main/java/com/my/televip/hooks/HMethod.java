@@ -6,6 +6,7 @@ import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.Obfuscate;
 
 import java.lang.reflect.Method;
+import com.my.televip.diagnostics.HookHealth;
 
 import com.my.televip.compat.XposedBridge;
 import com.my.televip.compat.XposedHelpers;
@@ -47,6 +48,7 @@ public class HMethod {
         try {
             if (method != null) {
                 XposedBridge.hookMethod(method, callback);
+                HookHealth.resolved();
                 return true;
             }
         } catch (Throwable t) {

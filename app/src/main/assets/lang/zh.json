@@ -105,5 +105,6 @@
   "ApproximateCreationDate": "估计创建日期",
   "Age": "账号年龄",
   "ApproximateCreationDateNotice": "此日期是根据 Telegram ID 推算得出的估计值，可能与实际创建日期不一致。",
-  "EnableVoiceMessageSaving": "开启语音消息保存"
+  "EnableVoiceMessageSaving": "开启语音消息保存",
+    "BlockAds": "屏蔽广告（频道、搜索、视频和代理推广）"
 }

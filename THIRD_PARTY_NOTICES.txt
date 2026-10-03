@@ -1,0 +1,9 @@
+Re: TeleVIP
+Source: https://github.com/2B-4G10/Re-TeleVIP
+Commit: 54c86a03de6936d6f86495c004624a1e5ef76fa0
+License: GNU GPL version 3 (see LICENSE)
+Borrowed and adapted: obfuscate/dex, obfuscate/resolve, diagnostics/HookHealth, GenerateDexHolder build task.
+Original project authors and contributors retain their copyrights.
+Local adaptations retain org.televip identity, API 102 backend and existing privacy/data isolation.
+MenuClicks adapted for merged listener classes and successful-install bookkeeping. AdBlock request types and promo handling adapted with empty responses and account-specific preferences.
+Compatibility inventory, per-client route verdicts and ApkPackage test parser adapted from CallSites/ClientApkTest. Reflection lookup and dialog exception protection follow Sig/XReflect and AlertDialog design ideas with local implementation and tests.

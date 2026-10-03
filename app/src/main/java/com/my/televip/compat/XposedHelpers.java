@@ -4,8 +4,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import com.my.televip.diagnostics.HookHealth;
 
 /** Reflection helpers without any legacy Xposed framework dependency. */
 public final class XposedHelpers {
@@ -17,14 +17,7 @@ public final class XposedHelpers {
     }
 
     private static Field field(Class<?> type, String name) {
-        for (Class<?> current = type; current != null; current = current.getSuperclass()) {
-            try {
-                Field result = current.getDeclaredField(name);
-                result.setAccessible(true);
-                return result;
-            } catch (NoSuchFieldException ignored) {}
-        }
-        throw new IllegalArgumentException("Field not found: " + type.getName() + "#" + name);
+        return ReflectionLookup.field(type, name);
     }
 
     private static Object get(Object target, Class<?> type, String name) {
@@ -47,39 +40,8 @@ public final class XposedHelpers {
     public static void setIntField(Object object, String name, int value) { setObjectField(object, name, value); }
     public static void setBooleanField(Object object, String name, boolean value) { setObjectField(object, name, value); }
 
-    private static Class<?> boxed(Class<?> type) {
-        if (type == boolean.class) return Boolean.class;
-        if (type == byte.class) return Byte.class;
-        if (type == short.class) return Short.class;
-        if (type == char.class) return Character.class;
-        if (type == int.class) return Integer.class;
-        if (type == long.class) return Long.class;
-        if (type == float.class) return Float.class;
-        if (type == double.class) return Double.class;
-        return type;
-    }
-
-    private static boolean matches(Class<?>[] parameterTypes, Object[] args) {
-        if (parameterTypes.length != args.length) return false;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i] == null) {
-                if (parameterTypes[i].isPrimitive()) return false;
-            } else if (!boxed(parameterTypes[i]).isInstance(args[i])) return false;
-        }
-        return true;
-    }
-
     private static Method method(Class<?> type, String name, Object[] args, boolean staticOnly) {
-        for (Class<?> current = type; current != null; current = current.getSuperclass()) {
-            for (Method candidate : current.getDeclaredMethods()) {
-                if (!candidate.getName().equals(name) || (staticOnly && !Modifier.isStatic(candidate.getModifiers()))) continue;
-                if (matches(candidate.getParameterTypes(), args)) {
-                    candidate.setAccessible(true);
-                    return candidate;
-                }
-            }
-        }
-        throw new IllegalArgumentException("Method not found: " + type.getName() + "#" + name + "/" + args.length);
+        return ReflectionLookup.method(type, name, args, staticOnly);
     }
 
     private static Object invoke(Method method, Object target, Object[] args) {
@@ -95,13 +57,9 @@ public final class XposedHelpers {
         return invoke(method(type, name, args, true), null, args);
     }
     public static Object newInstance(Class<?> type, Object... args) {
-        for (Constructor<?> candidate : type.getDeclaredConstructors()) {
-            if (!matches(candidate.getParameterTypes(), args)) continue;
-            try { candidate.setAccessible(true); return candidate.newInstance(args); }
-            catch (InvocationTargetException error) { throw new IllegalStateException(error.getCause()); }
-            catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
-        }
-        throw new IllegalArgumentException("Constructor not found: " + type.getName() + "/" + args.length);
+        try { return ReflectionLookup.constructor(type, args).newInstance(args); }
+        catch (InvocationTargetException error) { throw new IllegalStateException(error.getCause()); }
+        catch (ReflectiveOperationException error) { throw new IllegalStateException(error); }
     }
 
     private static Class<?>[] signature(Object[] args) {
@@ -114,10 +72,12 @@ public final class XposedHelpers {
         XC_MethodHook hook = (XC_MethodHook) args[args.length - 1];
         Class<?>[] signature = signature(args);
         try {
-            Method method = type.getDeclaredMethod(name, signature);
+            Method method = ReflectionLookup.exactMethod(type, name, signature);
             method.setAccessible(true);
             XposedBridge.hookMethod(method, hook);
+            HookHealth.resolved();
         } catch (NoSuchMethodException error) {
+            HookHealth.missingMember(type.getName() + "#" + name + Arrays.toString(signature));
             throw new IllegalArgumentException(type.getName() + "#" + name + Arrays.toString(signature), error);
         }
     }

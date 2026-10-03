@@ -106,5 +106,6 @@
   "Age": "Age",
   "ApproximateCreationDateNotice": "This date is based on an estimate derived from the Telegram ID and may not match the actual creation date.",
   "TeleVip": "TeleVip",
-  "EnableVoiceMessageSaving": "Enable Saving Voice Messages"
+  "EnableVoiceMessageSaving": "Enable Saving Voice Messages",
+    "BlockAds": "Block ads (channels, search, video and proxy promo)"
 }

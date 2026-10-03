@@ -10,7 +10,11 @@ import com.my.televip.compat.XposedHelpers;
 
 public class ApplicationLoaderHook {
 
-    private static Context applicationContext;
+    private static volatile Context applicationContext;
+
+    public static void setApplicationContext(Context context) {
+        applicationContext = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+    }
 
     public static Context getApplicationContext() {
         if (applicationContext == null) {
