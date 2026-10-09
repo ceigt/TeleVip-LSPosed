@@ -7,3 +7,10 @@ Original project authors and contributors retain their copyrights.
 Local adaptations retain org.televip identity, API 102 backend and existing privacy/data isolation.
 MenuClicks adapted for merged listener classes and successful-install bookkeeping. AdBlock request types and promo handling adapted with empty responses and account-specific preferences.
 Compatibility inventory, per-client route verdicts and ApkPackage test parser adapted from CallSites/ClientApkTest. Reflection lookup and dialog exception protection follow Sig/XReflect and AlertDialog design ideas with local implementation and tests.
+
+TeleVIP update reviewed: https://github.com/2B-4G10/TeleVIP
+Commit: 27ab7951db56f3be11566e973934e06ca265f4eb
+GPL-3.0 adaptations: Classes.anyOf, wildcard return and pending alternative field types,
+additional MessageObject/NotificationCenter/deletion-callback/TextCheckCell fingerprints,
+sponsored response and cache filtering design, three FileLoader path overload coverage.
+Local implementation uses strict protocol types, scheduler shape validation and regression gates.

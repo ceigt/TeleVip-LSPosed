@@ -45,16 +45,16 @@ public class SecretMediaViewer {
                             }
                         }
 
-                        if (secretMediaSave && (param.args.length >= 2 || param.args[0] != null)) {
+                        if (secretMediaSave && param.args.length >= 2 && param.args[0] != null && param.args[1] != null) {
                             MessageObject messageObject = new MessageObject(param.args[0]);
                             PhotoViewer.PhotoViewerProvider provider = new PhotoViewer.PhotoViewerProvider(param.args[1]);
                             final PhotoViewer.PlaceProviderObject object = provider.getPlaceForPhoto(messageObject, null, 0, true, false);
-                            if (object.getImageReceiver().imageReceiver != null) {
+                            SecretMediaSave.rememberPath(null, null);
+                            if (object != null && object.getImageReceiver().imageReceiver != null) {
                                 FileLoader fileLoader = FileLoader.getInstance(UserConfig.getSelectedAccount());
                                 File image = fileLoader.getLocalFile(object.getImageReceiver().getImageLocation());
                                 if (image != null) {
-                                    SecretMediaSave.pathImage = image;
-                                    SecretMediaSave.id = messageObject.getMessageOwner().getId();
+                                    SecretMediaSave.rememberPath(messageObject.getMessageOwner().get_Message(), image);
                                 }
                                 PhotoViewer.getInstance().openPhoto(messageObject, messageObject.getDialogId(), 0L, 0L, provider, false);
                                 param.setResult(null);

@@ -25,8 +25,8 @@ class AuditTests(unittest.TestCase):
         with self.assertRaises(ValueError): verdict([['RESOLVED']], 'org.telegram.messenger')
     def test_privacy_hooks_and_arrays_collected(self):
         sites, gaps = collect()
-        self.assertIn(('H','org.telegram.ui.ChatActivity','db','features/media/PreventMedia.java','org.telegram.messenger.MessageObject,boolean'), sites)
-        self.assertIn(('H','org.telegram.ui.ChatActivity','N4','features/media/PreventMedia.java','org.telegram.ui.ChatActivity,org.telegram.messenger.MessageObject'), sites)
+        self.assertIn(('M','ChatActivity','sendSecretMessageRead','features/media/PreventMedia.java',''), sites)
+        self.assertIn(('M','ChatActivity','sendSecretMediaDelete','features/media/PreventMedia.java',''), sites)
         self.assertIn(('H','MessagesController','storiesEnabled','features/stories/DisableStories.java','-'), sites)
         self.assertIn(('C','org.telegram.tgnet.TLRPC$TL_contacts_getSponsoredPeers','','features/ui/AdBlock.java',''), sites)
         self.assertIn(('F','TLRPC$TL_messages_sendMessage','peer','features/ghostMode/HideSeen.java',''), sites)

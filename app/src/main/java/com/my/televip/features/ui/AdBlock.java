@@ -17,7 +17,7 @@ import java.util.*;
 /** Complete ad requests with empty protocol responses instead of leaving callers pending. */
 public final class AdBlock {
     private static volatile boolean installed;
-    private static final Map<Class<?>,Class<?>> responses=new HashMap<>();
+    private static final Map<Class<?>,Class<?>> responses=new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<Class<?>> reported=Collections.synchronizedSet(new HashSet<>());
     private static final Map<Integer,SharedPreferences> settings=new HashMap<>();
     private static final Set<Object> queued=Collections.newSetFromMap(new IdentityHashMap<>());
@@ -72,8 +72,32 @@ public final class AdBlock {
                     } catch(Throwable error) {Logger.e(error);}
                 }
             });
+            // Responses to requests already in flight, plus the five-minute host cache.
+            for(int i=0;i<2;i++) {
+                Class<?> req=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+requests[i]);
+                Class<?> res=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+empty[i]);
+                try {
+                    final java.lang.reflect.Constructor<?> constructor=res.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+                    HMethod.hookMethod(AdResponseFilter.reader(req,
+                            ClassLoad.getClass("org.telegram.tgnet.InputSerializedData"),
+                            ClassLoad.getClass(ClassNames.TL_OBJECT), res), new BaseMethodHook() {
+                        @Override protected void afterMethod(MethodHookParam param) {
+                            if(param.hasThrowable()) return;
+                            try {param.setResult(AdResponseFilter.answer(param.getResult(),constructor,enabled()));}
+                            catch(Throwable error) {Logger.e(error);}
+                        }
+                    });
+                } catch(Throwable error) {HookInstallation.failure();Logger.e(error);}
+            }
+            HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),
+                    Obfuscate.getMethodName("MessagesController","getSponsoredMessages"), long.class, new BaseMethodHook() {
+                @Override protected void beforeMethod(MethodHookParam param) {
+                    if(enabled()) param.setResult(null);
+                }
+            });
             installed=attempt.isComplete();
-            if(installed) Logger.l("Ad blocking installed: sponsored messages, search ads and proxy promo; callbacks completed");
+            if(installed) Logger.l("Ad blocking installed: sponsored messages, search ads and proxy promo; callbacks completed; response and cache filters active");
         } catch(Throwable error) {Logger.e(error);}
     }
     private static boolean enabled() {return ConfigManager.blockAds!=null && ConfigManager.blockAds.isEnable();}

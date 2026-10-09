@@ -12,7 +12,7 @@ Omit `-Serial` to build only. `-Adb` defaults to `adb` on PATH. Each run creates
 
 ## Coverage
 
-Ten groups cover:
+Eleven groups cover:
 
 1. Message ID parsing, including empty input, signs and overflow.
 2. One-shot read permits: request identity, connection identity, expiration, concurrency and bounded capacity.
@@ -25,6 +25,8 @@ Ten groups cover:
 9. Telegram settings row and personal info adapter renaming, rejection of ambiguous or incompatible signatures; Android 16 style switch click callbacks, accessibility state, touch targets and light/dark LTR/RTL drawing.
 
 10. Platform dialog callback protection: successful callbacks run once, failures are logged, and positive/negative/neutral button dispatch does not crash the UI.
+
+11. Media scheduler selection across instance/staticized layouts, rejection of wrong returns/argument order/ambiguous targets, strict ad-response reader types, disabled/null/already-empty response behavior, and media path identity isolation. These selectors also run on the JVM.
 
 Database tests use real Android SQLite. Telegram storage wrappers are controlled fakes for error injection and resource checks. Hook installation, real network callbacks and Telegram UI interactions require separate device verification.
 

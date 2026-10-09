@@ -11,3 +11,5 @@ Limitations: source extraction is conservative and is not a Java compiler or a f
 Reports: `call-sites.tsv`, `feature-verdict.tsv`, `features.md`, `dynamic-sites.txt`, `package.txt`, `mapping.txt`, `symbols.tsv`.
 
 The separate Android instrumentation suite exercises the production reflection helpers and actual platform dialog button dispatch, including failed callback logging without crashing the UI.
+
+Telegram 13 adaptation also validates Runnable-returning secret schedulers, the typed close callback, sponsored deserializer/empty constructors and the object-returning cached-ad getter against the real DEX. Negative controls replace required media/ad mappings and must fail. This supplements the call-site inventory for the reflective selector paths.

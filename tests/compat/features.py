@@ -18,8 +18,6 @@ PLAY_OTHER_BRANCHES = {
     ('PhotoViewer', 'openPhoto', 'virtuals/ui/PhotoViewer.java'),
     ('PhotoViewer', 'setParentActivity', 'virtuals/ui/PhotoViewer.java'),
     ('SecretMediaViewer', 'openMedia', 'virtuals/ui/SecretMediaViewer.java'),
-    ('ChatActivity', 'sendSecretMediaDelete', 'features/media/PreventMedia.java'),
-    ('ChatActivity', 'sendSecretMessageRead', 'features/media/PreventMedia.java'),
 }
 DYNAMIC = {
     'Clients/Telegraph.java: dynamic hook owner/signature': 'Telegraph-only feature; Play never runs it',
@@ -33,7 +31,7 @@ def classify(row, package):
     status, kind, owner, member, source, *_ = row
     if package == PLAY:
         if source in LEGACY_SOURCES: return 'INACTIVE', 'Play uses NativeSettingsEntry and SettingsFallback, bypassing the legacy adapter/drawer'
-        if (owner, member, source) in PLAY_OTHER_BRANCHES: return 'INACTIVE', 'non-Play branch; Play uses the db/N4 hooks and regular photo viewer'
+        if (owner, member, source) in PLAY_OTHER_BRANCHES: return 'INACTIVE', 'non-Play viewer branch; Play uses the regular photo viewer'
         if source in {'Clients/Telegraph.java', 'features/ui/HideProxySponsor.java'}: return 'INACTIVE', 'not started by the Play configuration; AdBlock replaces HideProxySponsor'
     if source == 'settings/NativeSettingsEntry.java' and kind == 'M' and (owner, member) in {('SettingsActivity', 'fillItems'), ('SettingsActivity', 'onClick'), ('SettingsActivity$SettingCell$Factory', 'of'), ('SettingsActivity$SettingCell$Factory', 'ofIIIICCC')}:
         return 'ROUTE', 'factory and direct/callback alternatives validated by SettingsRouteAudit'

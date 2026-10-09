@@ -27,8 +27,9 @@ public class SecretMediaSave {
 
     public static volatile boolean isEnable = false;
 
-    public static long id;
-    public static File pathImage;
+    private static final MediaPathOverride paths = new MediaPathOverride();
+
+    public static void rememberPath(Object message, File path) {paths.remember(message, path);}
     private static final ThreadLocal<Boolean> openingInRegularViewer = new ThreadLocal<>();
 
     public static synchronized void init() {
@@ -80,21 +81,19 @@ public class SecretMediaSave {
                 }
 
                 if (attempt.require(ClassLoad.getClass(ClassNames.FILE_LOADER))) {
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessage"), ArgsResolver.merge("getPathToMessage", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE)}, new BaseMethodHook() {
-                        @Override
-                        protected void beforeMethod(MethodHookParam param) {
-                            try {
-                                if (ConfigManager.secretMediaSave.isEnable() && param.args[0] != null && pathImage != null) {
-                                    TLRPC.Message message = new TLRPC.Message(param.args[0]);
-                                    if (message.getId() == id) {
-                                        param.setResult(pathImage);
-                                    }
-                                }
-                            } catch (Throwable e) {
-                                Logger.e(e);
-                            }
+                    BaseMethodHook pathHook = new BaseMethodHook() {
+                        @Override protected void beforeMethod(MethodHookParam param) {
+                            if (!ConfigManager.secretMediaSave.isEnable()) return;
+                            File path = paths.find(param.args[0]);
+                            if (path != null && path.isFile()) param.setResult(path);
                         }
-                    }));
+                    };
+                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessage"),
+                            ClassLoad.getClass(ClassNames.MESSAGE), pathHook);
+                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessageOZ"),
+                            ClassLoad.getClass(ClassNames.MESSAGE), boolean.class, pathHook);
+                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessageOZZ"),
+                            ClassLoad.getClass(ClassNames.MESSAGE), boolean.class, boolean.class, pathHook);
                 }
 
 

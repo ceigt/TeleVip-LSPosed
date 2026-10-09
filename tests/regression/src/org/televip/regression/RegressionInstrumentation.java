@@ -57,8 +57,9 @@ public final class RegressionInstrumentation extends Instrumentation {
             initializationAndDisplay();
             settingsCompatibility();
             dialogProtection();
+            checks.addAndGet(com.my.televip.compat.FeatureSelectorsTest.run());
             result.putString("regression", "PASS");
-            result.putString("stream", "TELEVIP_REGRESSION_PASS: 10 regression groups passed; " + checks.get() + " assertions\n");
+            result.putString("stream", "TELEVIP_REGRESSION_PASS: 11 regression groups passed; " + checks.get() + " assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("regression", "FAIL");

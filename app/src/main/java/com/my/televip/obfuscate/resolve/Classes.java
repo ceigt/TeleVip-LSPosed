@@ -327,6 +327,19 @@ public final class Classes {
         };
     }
 
+    /** Three-valued disjunction: a pending dependency does not hide a matching alternative. */
+    public static Symbol.ClassFact anyOf(final Symbol.ClassFact... facts) {
+        return (r, c) -> {
+            boolean pending = false;
+            for (Symbol.ClassFact fact : facts) {
+                Boolean result = fact.test(r, c);
+                if (Boolean.TRUE.equals(result)) return true;
+                if (result == null) pending = true;
+            }
+            return pending ? null : false;
+        };
+    }
+
     /** The negation of a class fact. */
     public static Symbol.ClassFact isNot(final Symbol.ClassFact fact) {
         return (r, c) -> {

@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 15;
+    public static final int VERSION = 16;
 
     private TelegramFingerprints() {
     }
@@ -227,7 +227,8 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.messenger.LocaleController")
                 .from(declaringStrings("LOC_ERR: formatDateChat", "formatterBannedUntil24H")));
         s.add(cls("org.telegram.messenger.MessageObject")
-                .from(declaringStrings("EventLogEditedGroupTitle", "ActionUserScoredInGame")));
+                .from(declaringStrings("EventLogEditedGroupTitle", "ActionUserScoredInGame"),
+                        declaringStrings("&entity=song&limit=4", " featuring ")));
         s.add(cls("org.telegram.messenger.MessagesController")
                 .from(declaringStrings("inapp_update_check_delay", "saved_gifs_limit_default")));
         s.add(cls("org.telegram.messenger.MessagesStorage")
@@ -236,7 +237,8 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.messenger.NotificationCenter")
                 .from(declaringStrings("addObserver allowed only from MAIN thread", "postNotificationName allowed only from MAIN thread"),
                         withStaticFields("int", 300))
-                .where(hasMethod(false, "void", "int", "boolean", "java.lang.Object[]")));
+                .where(anyOf(hasMethod(false, "void", "int", "boolean", "java.lang.Object[]"),
+                        hasMethod(false, "void", "boolean", "int", "java.lang.Object[]"))));
         s.add(cls("org.telegram.messenger.NotificationsController")
                 .from(declaringStrings("showExtraNotifications: [", "resetNotificationSound")));
         s.add(cls("org.telegram.messenger.SharedConfig")
@@ -379,7 +381,8 @@ public final class TelegramFingerprints {
         // id itself differs between builds - 7 in Telegram 12.10, 8 in Nekogram (it declares an
         // event of its own first), 5 in Telegram 10.x - so it is never assumed.
         s.add(field("NotificationCenter", "messagesDeleted").isStatic(true).type("int")
-                .lastReadBy("MessagesController#deleteMessagesAAOJZIZJOIZI", "MessagesController#deleteMessagesAAOJZIZJOI")
+                .lastReadBy("MessagesController#deleteMessagesAAOJZIZJOIZI",
+                        "MessagesController#deleteMessagesAAOJZIZJOIZIB", "MessagesController#deleteMessagesAAOJZIZJOI")
                 .postedThrough("NotificationCenter#postNotificationName"));
         s.add(field("UserConfig", "clientUserId").type("long").writtenBy("UserConfig#setCurrentUser", 0));
         s.add(field("UserConfig", "selectedAccount").keyedBy("UserConfig#loadConfig", "selectedAccount"));
@@ -528,6 +531,8 @@ public final class TelegramFingerprints {
                 .sig("void", "java.util.ArrayList", "java.util.ArrayList", "org.telegram.tgnet.TLRPC$EncryptedChat", "long", "boolean", "int", "boolean", "long", "org.telegram.tgnet.TLObject", "int"));
         s.add(method("MessagesController", "deleteMessagesAAOJZIZJOIZI").named("deleteMessages")
                 .sig("void", "java.util.ArrayList", "java.util.ArrayList", "org.telegram.tgnet.TLRPC$EncryptedChat", "long", "boolean", "int", "boolean", "long", "org.telegram.tgnet.TLObject", "int", "boolean", "int"));
+        s.add(method("MessagesController", "deleteMessagesAAOJZIZJOIZIB").named("deleteMessages")
+                .sig("void", "java.util.ArrayList", "java.util.ArrayList", "org.telegram.tgnet.TLRPC$EncryptedChat", "long", "boolean", "int", "boolean", "long", "org.telegram.tgnet.TLObject", "int", "boolean", "int", "java.util.function.BiConsumer"));
         // The constructor opens the Notifications, mainconfig and emoji preferences, in that order.
         s.add(method("MessagesController", "<init>").sig("void", "int"));
         s.add(field("MessagesController", "notificationsPreferences").type("android.content.SharedPreferences")
@@ -551,6 +556,8 @@ public final class TelegramFingerprints {
         s.add(method("MessagesController", "getInputChannelO2").named("getInputChannel")
                 .sig("org.telegram.tgnet.TLRPC$InputChannel", "org.telegram.tgnet.TLRPC$InputPeer"));
         s.add(method("MessagesController", "getInstance").sig("org.telegram.messenger.MessagesController", "int"));
+        s.add(method("MessagesController", "getSponsoredMessages").sig(Symbol.ANY, "long")
+                .where(refersTo("org.telegram.tgnet.TLRPC$TL_messages_getSponsoredMessages")));
         s.add(method("MessagesController", "isChatNoForwardsJ").named("isChatNoForwards").sig("boolean", "long")
                 .where(callsSymbol("MessagesController#isChatNoForwardsO")));
         s.add(method("MessagesController", "isChatNoForwardsO").named("isChatNoForwards")
@@ -596,7 +603,8 @@ public final class TelegramFingerprints {
                 .anyOrder()     // grouped by type in Nagram and Nekogram 12.10.5+
                 .where(touchesFieldSymbol("MessagesStorage.storageQueue")));   // not its body's lambda
         s.add(method("NotificationCenter", "postNotificationName").sig("void", "int", "java.lang.Object[]")
-                .where(callsSibling("void", "int", "boolean", "java.lang.Object[]")));
+                .where(Body.any(callsSibling("void", "int", "boolean", "java.lang.Object[]"),
+                        callsSibling("void", "boolean", "int", "java.lang.Object[]"))));
         s.add(method("NotificationsController", "removeDeletedMessagesFromNotifications")
                 .sig("void", "androidx.collection.LongSparseArray", "boolean"));
         s.add(method("SharedConfig", "isAppUpdateAvailable").sig("boolean")
@@ -840,7 +848,8 @@ public final class TelegramFingerprints {
                 .where(calls("org.telegram.ui.Components.Switch", "void", "boolean", "boolean")));
         s.add(method("TextCheckCell", "setTextAndCheck").sig("void", "java.lang.CharSequence", "boolean", "boolean"));
         // The setters start with textView.setText(...), so the first TextView they read is it.
-        s.add(field("TextCheckCell", "textView").type("android.widget.TextView").readBy("TextCheckCell#setTextAndCheck", 0));
+        s.add(field("TextCheckCell", "textView").type("android.widget.TextView")
+                .orType("org.telegram.ui.ActionBar.SimpleTextView").readBy("TextCheckCell#setTextAndCheck", 0));
         s.add(method("TextCheckCell", "setTextAndValueAndCheck").narrowedStrings()
                 .sig("void", "java.lang.CharSequence", "java.lang.CharSequence", "boolean", "boolean", "boolean"));
 
@@ -1051,6 +1060,10 @@ public final class TelegramFingerprints {
                 .handedTo("onCreate", "setContentView"));
 
         s.add(method("SecretMediaViewer", "closePhoto").sig("boolean", "boolean", "boolean"));
+        // The last Runnable read by closePhoto is the deletion callback; the earlier one
+        // completes the animation. Preserve animation cleanup when preventing expiration.
+        s.add(field("SecretMediaViewer", "onClose").type("java.lang.Runnable")
+                .lastReadBy("SecretMediaViewer#closePhoto"));
         s.add(method("SecretMediaViewer", "openMedia")
                 .sig("void", mo, provider, "java.lang.Runnable", "java.lang.Runnable"));
     }
