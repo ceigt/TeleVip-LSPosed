@@ -47,6 +47,7 @@ public final class RegressionInstrumentation extends Instrumentation {
         try {
             ApplicationLoaderHook.context = getTargetContext();
             ConfigPreferences.init();
+            priorityFixes();
             parser();
             permits();
             switches();
@@ -59,7 +60,7 @@ public final class RegressionInstrumentation extends Instrumentation {
             dialogProtection();
             checks.addAndGet(com.my.televip.compat.FeatureSelectorsTest.run());
             result.putString("regression", "PASS");
-            result.putString("stream", "TELEVIP_REGRESSION_PASS: 11 regression groups passed; " + checks.get() + " assertions\n");
+            result.putString("stream", "TELEVIP_REGRESSION_PASS: 12 regression groups passed; " + checks.get() + " assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("regression", "FAIL");
@@ -67,6 +68,8 @@ public final class RegressionInstrumentation extends Instrumentation {
             finish(Activity.RESULT_CANCELED, result);
         }
     }
+
+    private void priorityFixes() throws Throwable { checks.addAndGet(PriorityFixTests.run(this)); }
 
     private void dialogProtection() {
         int before = Logger.errors.get();

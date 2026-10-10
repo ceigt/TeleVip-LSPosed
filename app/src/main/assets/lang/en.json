@@ -107,5 +107,7 @@
   "ApproximateCreationDateNotice": "This date is based on an estimate derived from the Telegram ID and may not match the actual creation date.",
   "TeleVip": "TeleVip",
   "EnableVoiceMessageSaving": "Enable Saving Voice Messages",
-    "BlockAds": "Block ads (channels, search, video and proxy promo)"
+    "BlockAds": "Block ads (channels, search, video and proxy promo)",
+  "ProtectionWarning": "Some TeleVip protection could not be initialized or completed. Normal networking is available. Recognized privacy requests are still blocked, but full protection is not confirmed. Restart Telegram; if this continues, update TeleVip before relying on privacy switches.",
+  "NoEditHistory": "No recorded edit history for this message."
 }

@@ -37,8 +37,7 @@ public class TeleVip {
             AndroidUtilities.init();
             if (ClientManager.is(ClientManager.Client.Telegram)) {
                 ConfigManager.loadAndRead();
-                NativeSettingsEntry.init();
-                return true;
+                return NativeSettingsEntry.init();
             }
             DexInjector.injectDex(Utils.classLoader);
 

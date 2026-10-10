@@ -30,7 +30,7 @@ public class SecretMediaSave {
     private static final MediaPathOverride paths = new MediaPathOverride();
 
     public static void rememberPath(Object message, File path) {paths.remember(message, path);}
-    private static final ThreadLocal<Boolean> openingInRegularViewer = new ThreadLocal<>();
+    private static final MediaOpenScope openingInRegularViewer = new MediaOpenScope();
 
     public static synchronized void init() {
         try (HookInstallation attempt = HookInstallation.begin()) {
@@ -39,14 +39,14 @@ public class SecretMediaSave {
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), Obfuscate.getMethodName("MessageObject", "isSecret"), new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
-                            if (ConfigManager.secretMediaSave.isEnable()) param.setResult(false);
+                            if (ConfigManager.secretMediaSave.isEnable() && openingInRegularViewer.contains(param.thisObject)) param.setResult(false);
                         }
                     });
                     if (ClientManager.is(ClientManager.Client.Telegram)) {
                         HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), "needDrawBluredPreview", new BaseMethodHook() {
                             @Override
                             protected void beforeMethod(MethodHookParam param) {
-                                if (ConfigManager.secretMediaSave.isEnable() && Boolean.TRUE.equals(openingInRegularViewer.get()))
+                                if (ConfigManager.secretMediaSave.isEnable() && openingInRegularViewer.contains(param.thisObject))
                                     param.setResult(false);
                             }
                         });
@@ -58,13 +58,12 @@ public class SecretMediaSave {
                         protected void beforeMethod(MethodHookParam param) {
                             try {
                                 if (ConfigManager.secretMediaSave.isEnable() && param.args[0] != null) {
-                                    if (ClientManager.is(ClientManager.Client.Telegram)) openingInRegularViewer.set(true);
                                     ChatMessageCell messageCell = new ChatMessageCell(param.args[0]);
                                     if (messageCell.getChatMessageCell() != null) {
                                         MessageObject messageObject = messageCell.getMessageObject();
                                         if (messageObject.getMessageObject() != null) {
                                             TLRPC.Message message = messageObject.getMessageOwner();
-                                            if (message.getTtl() > 0) message.setTtl(0);
+                                            if (message != null) openingInRegularViewer.enter(param, messageObject.getMessageObject(), message::getTtl, message::setTtl);
                                         }
                                         if (!ClientManager.is(ClientManager.Client.Telegram)) bindPhotoViewerToActivity(messageCell);
                                     }
@@ -75,7 +74,7 @@ public class SecretMediaSave {
                         }
                         @Override
                         protected void afterMethod(MethodHookParam param) {
-                            openingInRegularViewer.remove();
+                            openingInRegularViewer.exit(param);
                         }
                     }));
                 }

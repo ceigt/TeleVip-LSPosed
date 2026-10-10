@@ -74,9 +74,8 @@ public final class SaveEditsHistory {
                         if (selected == null || selected.getMessageOwner() == null) return;
                         long dialogId = selected.getDialogId();
                         int messageId = selected.getMessageOwner().getId();
-                        AccountSession session = database.session(
-                                new BaseFragment(param.thisObject).getUserConfig().getClientUserId());
-                        if (!database.hasHistory(session, dialogId, messageId)) return;
+                        // Offer the action without touching SQLite on the UI thread.
+                        if (dialogId == 0 || messageId <= 0) return;
                         int offset = ClientManager.is(ClientManager.Client.Telegraph) ? 1 : 0;
                         ArrayList<Integer> icons = (ArrayList<Integer>) param.args[1 + offset];
                         ArrayList<CharSequence> labels = (ArrayList<CharSequence>) param.args[2 + offset];
@@ -115,9 +114,9 @@ public final class SaveEditsHistory {
                                 try {
                                     if (activity.isFinishing() || activity.isDestroyed() || !database.isCurrent(session)
                                             || !ConfigManager.saveEditsHistory.isEnable()
-                                            || new BaseFragment(param.thisObject).getUserConfig().getClientUserId() != session.accountId
-                                            || edits.isEmpty()) return;
-                                    showHistory(activity, text.toString());
+                                            || new BaseFragment(param.thisObject).getUserConfig().getClientUserId() != session.accountId) return;
+                                    if (edits.isEmpty()) android.widget.Toast.makeText(activity, Translator.get("NoEditHistory"), android.widget.Toast.LENGTH_SHORT).show();
+                                    else showHistory(activity, text.toString());
                                 } catch (Throwable error) { Logger.e(error); }
                             });
                         });

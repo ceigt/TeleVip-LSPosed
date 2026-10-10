@@ -1,6 +1,7 @@
 package com.my.televip.features.otherFeatures;
 
 import android.view.View;
+import com.my.televip.Configs.ConfigManager;
 
 import com.my.televip.Class.ClassLoad;
 import com.my.televip.Class.ClassNames;
@@ -14,6 +15,10 @@ import com.my.televip.virtuals.ui.PhotoViewer;
 
 public class AlwaysSaveMedia {
     private static boolean initialized;
+    public static boolean savingEnabled() {
+        return ConfigManager.secretMediaSave != null && ConfigManager.secretMediaSave.isEnable()
+                || ConfigManager.removesContentSaving != null && ConfigManager.removesContentSaving.isEnable();
+    }
     public static synchronized void init() {
         if (initialized) return;
         try (HookInstallation attempt = HookInstallation.begin()) {
@@ -22,6 +27,7 @@ public class AlwaysSaveMedia {
                 HMethod.hookMethod(ClassLoad.getClass(ClassNames.PHOTO_VIEWER), Obfuscate.getMethodName("PhotoViewer", "setIsAboutToSwitchToIndex"), ArgsResolver.merge("setIsAboutToSwitchToIndex", new Class[]{int.class, boolean.class, boolean.class, boolean.class}, new BaseMethodHook() {
                     @Override
                     protected void afterMethod(MethodHookParam param) {
+                        if (!savingEnabled()) return;
                         final PhotoViewer photoViewer = new PhotoViewer(param.thisObject);
                         if (photoViewer.getGalleryButton()!= null) photoViewer.getGalleryButton().setVisibility(View.VISIBLE);
 

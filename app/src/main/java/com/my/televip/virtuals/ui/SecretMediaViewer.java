@@ -19,6 +19,7 @@ import java.io.File;
 public class SecretMediaViewer {
 
     private static boolean isEnable = false;
+    private static final com.my.televip.features.media.MediaOpenScope scope = new com.my.televip.features.media.MediaOpenScope();
 
     public static synchronized void openMedia() {
         try {
@@ -40,7 +41,7 @@ public class SecretMediaViewer {
                             if (messageObject.getMessageObject() != null) {
                                 TLRPC.Message messageOwner = messageObject.getMessageOwner();
                                 if (messageOwner.get_Message() != null) {
-                                    messageOwner.setTtl(0);
+                                    scope.enter(param, messageObject.getMessageObject(), messageOwner::getTtl, messageOwner::setTtl);
                                 }
                             }
                         }
@@ -61,6 +62,7 @@ public class SecretMediaViewer {
                             }
                         }
                     }
+                    @Override protected void afterMethod(MethodHookParam param) { scope.exit(param); }
                 }));
             }
         } catch (Throwable e) {

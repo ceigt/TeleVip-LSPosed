@@ -12,7 +12,7 @@ Omit `-Serial` to build only. `-Adb` defaults to `adb` on PATH. Each run creates
 
 ## Coverage
 
-Eleven groups cover:
+Twelve groups cover:
 
 1. Message ID parsing, including empty input, signs and overflow.
 2. One-shot read permits: request identity, connection identity, expiration, concurrency and bounded capacity.
@@ -31,6 +31,10 @@ Eleven groups cover:
 Database tests use real Android SQLite. Telegram storage wrappers are controlled fakes for error injection and resource checks. Hook installation, real network callbacks and Telegram UI interactions require separate device verification.
 
 The initialization and swipe tests use the production reflection helpers and feature callback with a fake interceptor installer and synthetic chat objects. They verify callback behavior and installation bookkeeping; the actual API 102 interceptor and Telegram field mappings are checked on the installed module separately.
+
+12. Startup failure recovery using production MainHook/BootstrapRequests against a controlled host: three bounded retries, ordinary request release and selective fallback; known read/typing/story/status classification, normal/timestamp response completion, peer/field/response faults, visible degradation, one-shot permits, switch off/on behavior, nested/exceptional TTL restoration, save-button gating and account checks that do not wait for a held database write lock.
+
+The new failure tests deliberately leave the main privacy feature hook unavailable to exercise the permanent bootstrap fallback. Protocol classes, native dispatcher and feature initialization are controlled fakes; tests do not send network traffic from Telegram or alter its messages. Temporary media restoration tests exercise the production scope helper; real one-time media remains a separate end-to-end check.
 
 ## Device verification
 

@@ -41,6 +41,13 @@ public final class SettingsFallback {
             int pad = dp(activity, 16);
             list.setPadding(pad, pad / 2, pad, pad / 2);
             scroll.addView(list);
+            if (com.my.televip.diagnostics.PrivacyStatus.hasIssues()) {
+                TextView warning = new TextView(ui);
+                warning.setText(com.my.televip.diagnostics.PrivacyStatus.warning());
+                warning.setTextColor(dark ? 0xffffb4ab : 0xffba1a1a);
+                warning.setPadding(0, pad, 0, pad);
+                list.addView(warning);
+            }
             for (ConfigItem item : ConfigManager.getItems()) addItem(activity, list, item, 0, dark);
             new AlertDialog.Builder(ui)
                     .setTitle("TeleVip")

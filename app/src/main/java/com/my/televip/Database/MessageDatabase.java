@@ -10,16 +10,14 @@ import com.my.televip.logging.Logger;
 import com.my.televip.messages.MessageStorage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.Set;
 
 public class MessageDatabase extends SQLiteOpenHelper {
     private final Object sessionLock = new Object();
-    private final Map<Long, Long> generations = new HashMap<>();
-    private final Set<Long> pendingCleanup = new HashSet<>();
+    private final Map<Long, Long> generations = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Set<Long> pendingCleanup = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private final SharedPreferences cleanupPreferences;
 
     public static final class AccountSession {
@@ -99,13 +97,11 @@ public class MessageDatabase extends SQLiteOpenHelper {
     }
 
     public AccountSession session(long accountId) {
-        synchronized (sessionLock) {
-            return new AccountSession(accountId, generations.getOrDefault(accountId, 0L));
-        }
+        return new AccountSession(accountId, generations.getOrDefault(accountId, 0L));
     }
 
     public boolean isCurrent(AccountSession session) {
-        synchronized (sessionLock) { return currentLocked(session); }
+        return currentLocked(session);
     }
 
     private boolean currentLocked(AccountSession session) {
