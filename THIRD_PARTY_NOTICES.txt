@@ -14,3 +14,10 @@ GPL-3.0 adaptations: Classes.anyOf, wildcard return and pending alternative fiel
 additional MessageObject/NotificationCenter/deletion-callback/TextCheckCell fingerprints,
 sponsored response and cache filtering design, three FileLoader path overload coverage.
 Local implementation uses strict protocol types, scheduler shape validation and regression gates.
+
+2026-10-10 upstream review (Telegram 13.0.1):
+Original upstream: https://github.com/mustafa1dev/TeleVip-LSPosed
+Head a879b70288794f09ebdf24c200e3c0ca8c3974a1 (already an ancestor of this fork).
+TeleVIP: https://github.com/2B-4G10/TeleVIP
+Head 27ab7951db56f3be11566e973934e06ca265f4eb (unchanged since 3.6.8 review).
+No additional upstream source changes were imported in 3.6.9.

@@ -68,6 +68,9 @@ def collect(java=JAVA):
         for cls in re.findall(r'ClassLoad\.getClass\(\s*"([^"]+)"\s*[,)]', source): add('C', cls)
         for kind, owner, member in re.findall(r'Obfuscate\.get(Method|Field)Name\(\s*"([^"]+)"\s*,\s*"([^"]+)"', source): add(kind[0], owner, member)
         for args in calls(source, 'HMethod.hookMethod'):
+            if len(args) == 2:
+                gaps.append(name + ': reflected Method hook')
+                continue
             if len(args) < 3: continue
             mapped = re.fullmatch(r'Obfuscate\.getMethodName\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\)', args[1])
             owner = mapped[1] if mapped else class_type(args[0], imports)

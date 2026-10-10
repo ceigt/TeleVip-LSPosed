@@ -5,7 +5,7 @@ import java.util.*;
 
 /** Mirrors the feature selectors against actual DEX signatures; unknown shapes fail publication. */
 final class FeatureShapeAudit {
-    static List<String> check(DexIndex index, Mapping mapping) {
+    static List<String> check(DexIndex index, Mapping mapping, String packageName) {
         List<String> errors=new ArrayList<>();
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
@@ -36,6 +36,15 @@ final class FeatureShapeAudit {
         if(controller!=null) for(DexClass.Method m:controller.methods) if(m.name().equals(cache) && !m.isStatic()
                 && Arrays.equals(m.parameterTypes(),new String[]{"J"}) && m.returnType().startsWith("L")) count++;
         if(count!=1) errors.add("Invalid sponsored cache getter");
+        // HidePhone needs these concrete display scopes even if a settings callback alternative exists.
+        if("org.telegram.messenger".equals(packageName)) for(String owner:new String[]{"SettingsActivity","UserInfoActivity"}) {
+            DexClass scope=cls(index,mapping,"org.telegram.ui."+owner);
+            String fill=mapping.resolveMethod(owner,"fillItems");int fills=0;
+            if(scope!=null && fill!=null) for(DexClass.Method m:scope.methods) if(m.name().equals(fill)
+                    && m.returnType().equals("V") && Arrays.asList(m.parameterTypes()).contains("Ljava/util/ArrayList;")
+                    && (!m.isStatic() || m.parameterTypes().length>0 && m.parameterTypes()[0].equals(scope.descriptor))) fills++;
+            if(fills!=1) errors.add("Invalid phone display scope: "+owner);
+        }
         return errors;
     }
     private static void scheduler(DexIndex index,DexClass owner,String name,boolean staticized,String[] parameters,List<String> errors) {

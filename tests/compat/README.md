@@ -13,3 +13,5 @@ Reports: `call-sites.tsv`, `feature-verdict.tsv`, `features.md`, `dynamic-sites.
 The separate Android instrumentation suite exercises the production reflection helpers and actual platform dialog button dispatch, including failed callback logging without crashing the UI.
 
 Telegram 13 adaptation also validates Runnable-returning secret schedulers, the typed close callback, sponsored deserializer/empty constructors and the object-returning cached-ad getter against the real DEX. Negative controls replace required media/ad mappings and must fail. This supplements the call-site inventory for the reflective selector paths.
+
+The inventory also records two-argument HMethod registrations with reflected Method objects. Their media/ad shapes and settings routes are checked by the existing DEX audits, while live menu listener routing needs device interaction. An unreviewed new selector or a removed reviewed selector fails the gate; parser/gate regressions cover both cases.

@@ -20,6 +20,11 @@ PLAY_OTHER_BRANCHES = {
     ('SecretMediaViewer', 'openMedia', 'virtuals/ui/SecretMediaViewer.java'),
 }
 DYNAMIC = {
+    'features/ghostMode/HidePhone.java: reflected Method hook': 'Play UI scopes require typed SettingsActivity/UserInfoActivity fillItems; PhoneDisplayMask regressions and real settings/profile tests',
+    'features/media/PreventMedia.java: reflected Method hook': 'typed scheduler selectors checked against actual DEX by FeatureShapeAudit',
+    'features/ui/AdBlock.java: reflected Method hook': 'typed response readers and empty constructors checked by FeatureShapeAudit',
+    'settings/NativeSettingsEntry.java: reflected Method hook': 'settings factories and direct/callback routes checked by SettingsRouteAudit',
+    'features/otherFeatures/MenuClicks.java: reflected Method hook': 'live action-bar listener/fragment selection; requires real chat/profile menu tests',
     'Clients/Telegraph.java: dynamic hook owner/signature': 'Telegraph-only feature; Play never runs it',
     'features/other/TelePremium.java: dynamic hook owner/signature': 'ForkPremiumPreferenc fallback; primary UserConfig.isPremium is audited',
     'settings/hook/SettingsHook.java: onClick dynamic parameters': 'legacy settings entry; Play uses NativeSettingsEntry',
@@ -48,14 +53,17 @@ def verdict(rows, package):
         result.append((label, reason, row))
     return result
 
+def review_dynamic(gaps):
+    unknown = [gap for gap in gaps if gap not in DYNAMIC]
+    stale = [gap for gap in DYNAMIC if gap not in gaps]
+    if unknown or stale: raise ValueError(f'Dynamic-selector review required: new={unknown}, stale={stale}')
+
 def main(report):
     package = (report / 'package.txt').read_text(encoding='utf-8').strip()
     rows = [line.split('\t') for line in (report / 'call-sites.tsv').read_text(encoding='utf-8').splitlines()]
     result = verdict(rows, package)
     gaps = (report / 'dynamic-sites.txt').read_text(encoding='utf-8').splitlines()
-    unknown = [gap for gap in gaps if gap not in DYNAMIC]
-    stale = [gap for gap in DYNAMIC if gap not in gaps]
-    if unknown or stale: raise ValueError(f'Dynamic-selector review required: new={unknown}, stale={stale}')
+    review_dynamic(gaps)
     # Source changes must not silently invalidate the branch exemptions.
     for file, marker in [('TeleVip.java', 'NativeSettingsEntry.init();'), ('features/media/PreventMedia.java', 'ClientManager.Client.Telegram'), ('features/media/SecretMediaSave.java', '!ClientManager.is(ClientManager.Client.Telegram)')]:
         if marker not in (JAVA / file).read_text(encoding='utf-8'): raise ValueError('Review client branches after source change: ' + file)

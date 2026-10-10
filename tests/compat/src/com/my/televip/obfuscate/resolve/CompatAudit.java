@@ -42,13 +42,16 @@ public final class CompatAudit {
                 "org.telegram.tgnet.TLRPC$TL_contacts_sponsoredPeersEmpty", "org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty"};
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
-        errors.addAll(FeatureShapeAudit.check(index,mapping));
+        errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
         Mapping brokenMedia=Mapping.deserialize(mapping.serialize());
         brokenMedia.methods.put("ChatActivity#sendSecretMediaDelete","__missing__");
-        if(FeatureShapeAudit.check(index,brokenMedia).isEmpty()) errors.add("Broken media scheduler passed audit");
+        if(FeatureShapeAudit.check(index,brokenMedia,pkg).isEmpty()) errors.add("Broken media scheduler passed audit");
         Mapping brokenAds=Mapping.deserialize(mapping.serialize());
         brokenAds.methods.put("MessagesController#getSponsoredMessages","__missing__");
-        if(FeatureShapeAudit.check(index,brokenAds).isEmpty()) errors.add("Broken ad cache getter passed audit");
+        if(FeatureShapeAudit.check(index,brokenAds,pkg).isEmpty()) errors.add("Broken ad cache getter passed audit");
+        Mapping brokenPhone=Mapping.deserialize(mapping.serialize());
+        brokenPhone.methods.put("UserInfoActivity#fillItems","__missing__");
+        if(pkg.equals("org.telegram.messenger") && FeatureShapeAudit.check(index,brokenPhone,pkg).isEmpty()) errors.add("Broken phone display scope passed audit");
         // Negative controls: a broken factory, or both entry routes missing, must fail the gate.
         Mapping brokenFactory=Mapping.deserialize(mapping.serialize());
         brokenFactory.methods.put("SettingsActivity$SettingCell$Factory#ofIIIICCC","__missing__");

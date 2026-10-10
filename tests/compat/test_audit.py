@@ -1,6 +1,8 @@
 import unittest
 from inventory import collect, split_args, calls, class_type
-from features import verdict
+from features import verdict, review_dynamic, DYNAMIC
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 def site(status='RESOLVED', kind='M', owner='MessagesController', member='isChatNoForwards', source='features/other/RemovesContentSaving.java', signature=''):
     return [status,kind,owner,member,source,'',signature,'resolved']
@@ -31,4 +33,24 @@ class AuditTests(unittest.TestCase):
         self.assertIn(('C','org.telegram.tgnet.TLRPC$TL_contacts_getSponsoredPeers','','features/ui/AdBlock.java',''), sites)
         self.assertIn(('F','TLRPC$TL_messages_sendMessage','peer','features/ghostMode/HideSeen.java',''), sites)
         self.assertGreater(len(sites), 300)
+    def test_reflected_hooks_not_silently_skipped(self):
+        _, gaps = collect()
+        for source in ['features/media/PreventMedia.java', 'features/ui/AdBlock.java',
+                       'settings/NativeSettingsEntry.java', 'features/otherFeatures/MenuClicks.java',
+                       'features/ghostMode/HidePhone.java']:
+            self.assertIn(source + ': reflected Method hook', gaps)
+        review_dynamic(gaps)
+    def test_unknown_reflected_hook_fails_review(self):
+        with TemporaryDirectory() as folder:
+            target = Path(folder) / 'features/new/Future.java'
+            target.parent.mkdir(parents=True)
+            target.write_text('HMethod.hookMethod(selectedMethod, new BaseMethodHook() {});', encoding='utf-8')
+            _, gaps = collect(Path(folder))
+        self.assertEqual(gaps, ['features/new/Future.java: reflected Method hook'])
+        with self.assertRaisesRegex(ValueError, 'new='):
+            review_dynamic(list(DYNAMIC) + gaps)
+    def test_removed_selector_requires_review(self):
+        with self.assertRaisesRegex(ValueError, 'stale='):
+            review_dynamic(list(DYNAMIC)[1:])
+
 if __name__ == '__main__': unittest.main()
