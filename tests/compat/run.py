@@ -21,6 +21,7 @@ base = root / 'app/src/main/java/com/my/televip'
 sources = list((base / 'obfuscate/dex').glob('*.java')) + list((base / 'obfuscate/resolve').glob('*.java'))
 sources += [base / 'obfuscate/StartupRequestQueue.java', base / 'obfuscate/StartupDispatchSelector.java', base / 'features/ui/AdResponseCallbacks.java']
 sources += [base / 'compat/ReflectionLookup.java', base / 'features/media/MediaHookSelector.java', base / 'features/media/MediaPathOverride.java', base / 'features/ui/AdResponseFilter.java']
+sources += [base / 'features/ghostMode/PrivacyRequestKind.java']
 sources += list((root / 'tests/compat/src').rglob('*.java'))
 source_list = output / 'sources.txt'
 source_list.write_text('\n'.join('"' + str(p).replace('\\', '/') + '"' for p in sources), encoding='utf-8')
