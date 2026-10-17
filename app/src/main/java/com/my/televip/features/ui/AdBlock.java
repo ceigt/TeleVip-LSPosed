@@ -17,7 +17,7 @@ import java.util.*;
 /** Complete ad requests with empty protocol responses instead of leaving callers pending. */
 public final class AdBlock {
     private static volatile boolean installed;
-    private static final Map<Class<?>,Class<?>> responses=new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<Class<?>,AdResponseFilter.EmptyResponse> responses=new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<Class<?>> reported=Collections.synchronizedSet(new HashSet<>());
     private static final Map<Integer,SharedPreferences> settings=new HashMap<>();
     private static final Set<Object> queued=Collections.newSetFromMap(new IdentityHashMap<>());
@@ -32,17 +32,20 @@ public final class AdBlock {
             for(int i=0;i<requests.length;i++) {
                 Class<?> req=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+requests[i]);
                 Class<?> res=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+empty[i]);
-                if(attempt.require(req) && attempt.require(res)) responses.put(req,res);
+                if(attempt.require(req) && attempt.require(res)) {
+                    try { responses.put(req,AdResponseFilter.emptyResponse(res)); }
+                    catch(Throwable error) {HookInstallation.failure();Logger.e(error);}
+                }
             }
             HMethod.hookMethod(manager,Obfuscate.getMethodName("ConnectionsManager","sendRequestInternal"),
                 ArgsResolver.merge("sendRequestInternal",new Class[]{ClassLoad.getClass(ClassNames.TL_OBJECT),ClassLoad.getClass(ClassNames.REQUEST_DELEGATE),ClassLoad.getClass(ClassNames.REQUEST_DELEGATE_TIMESTAMP),ClassLoad.getClass(ClassNames.QUICK_ACK_DELEGATE),ClassLoad.getClass(ClassNames.WRITE_TO_SOCKET_DELEGATE),int.class,int.class,int.class,boolean.class,int.class},new BaseMethodHook() {
                     @Override protected void beforeMethod(MethodHookParam param) {
                         if(!enabled() || param.args[0]==null) return;
-                        Class<?> response=responses.get(param.args[0].getClass());
+                        AdResponseFilter.EmptyResponse response=responses.get(param.args[0].getClass());
                         if(response==null) return;
                         try {
-                            Object result=XposedHelpers.newInstance(response);
-                            if(response.getName().equals(Obfuscate.getClassName("org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty")))
+                            Object result=response.create();
+                            if(result.getClass().getName().equals(Obfuscate.getClassName("org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty")))
                                 XposedHelpers.setIntField(result,Obfuscate.getFieldName("TLRPC$TL_help_promoDataEmpty","expires"),new ConnectionsManager(param.thisObject).getCurrentTime()+3600);
                             Object callback=param.args[1]!=null ? param.args[1] : param.args[2];
                             if(callback!=null) {
@@ -77,14 +80,13 @@ public final class AdBlock {
                 Class<?> req=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+requests[i]);
                 Class<?> res=ClassLoad.getClass("org.telegram.tgnet.TLRPC$"+empty[i]);
                 try {
-                    final java.lang.reflect.Constructor<?> constructor=res.getDeclaredConstructor();
-                    constructor.setAccessible(true);
+                    final AdResponseFilter.EmptyResponse emptyFactory=AdResponseFilter.emptyResponse(res);
                     HMethod.hookMethod(AdResponseFilter.reader(req,
                             ClassLoad.getClass("org.telegram.tgnet.InputSerializedData"),
                             ClassLoad.getClass(ClassNames.TL_OBJECT), res), new BaseMethodHook() {
                         @Override protected void afterMethod(MethodHookParam param) {
                             if(param.hasThrowable()) return;
-                            try {param.setResult(AdResponseFilter.answer(param.getResult(),constructor,enabled()));}
+                            try {param.setResult(AdResponseFilter.answer(param.getResult(),emptyFactory,enabled()));}
                             catch(Throwable error) {Logger.e(error);}
                         }
                     });

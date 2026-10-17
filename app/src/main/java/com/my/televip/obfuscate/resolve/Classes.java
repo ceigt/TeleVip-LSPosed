@@ -266,7 +266,8 @@ public final class Classes {
     /**
      * The TL class with this constructor id: the owner of the instance {@code void(x)} method
      * that writes it, which is serializeToStream. The abstract parent only compares against the
-     * id in its static TLdeserialize, so this needs nothing else resolved first.
+     * id in its static TLdeserialize, so this needs nothing else resolved first. Telegram 13's
+     * registry constructor lists every id too; it is not a protocol serializer.
      */
     public static Symbol.ClassSource serializingConstant(final long value) {
         return new ConstantAnchored(value);
@@ -283,7 +284,8 @@ public final class Classes {
         public Collection<DexClass> candidates(Resolver r) {
             java.util.Set<DexClass> owners = new java.util.LinkedHashSet<>();
             for (DexClass.Method m : r.anchors().constant(value)) {
-                if (!m.isStatic() && m.returnType().equals("V") && m.parameterTypes().length == 1) owners.add(m.owner);
+                if (!m.isStatic() && m.returnType().equals("V") && m.parameterTypes().length == 1
+                        && m.parameterTypes()[0].startsWith("L") && !m.isConstructor()) owners.add(m.owner);
             }
             return owners;
         }

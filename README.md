@@ -8,9 +8,9 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
-## Telegram 13.0.1 / API 102 release
+## Telegram 13.0.3 / API 102 release
 
-Version 3.6.11 uses module package `org.televip` and requires LSPosed API 102 support. Enable the module for `org.telegram.messenger`, restart Telegram, then open TeleVip from Telegram's settings page. The original release certificate is retained for in-place upgrades and existing settings are preserved.
+Version 3.6.12 uses module package `org.televip` and requires LSPosed API 102 support. Enable the module for `org.telegram.messenger`, restart Telegram, then open TeleVip from Telegram's settings page. The original release certificate is retained for in-place upgrades and existing settings are preserved.
 
 This release adds runtime APK fingerprints and validated mapping caches, settings entry fallback routes, chat/profile menu handling for merged listener classes, and sponsored-message/search/proxy advertisement filtering with completed callbacks. A startup request gate holds requests until privacy hooks are ready, including service-only startup. Android 16 style switches now have compact tracks while keeping the full row touch target.
 
@@ -26,7 +26,9 @@ Version 3.6.10 fixes startup recovery and privacy degradation reporting. Startup
 
 Version 3.6.11 verifies the installed Telegram Play 13.0.2 (71751). Only the ActionBar and its click-listener class mappings changed from 13.0.1; the existing runtime resolver handles both. No new failing active hook was found. The original upstream remains at `a879b702`; Re:TeleVIP updated to 1.1.7 (`2ec19bf`) with build-wrapper/version changes only, so no new feature code is imported. Runtime feature code remains the verified 3.6.10 implementation.
 
-Verification: twelve Android regression groups with 2633 assertions, 131 JVM reflection assertions, 25 feature-selector assertions and eight compatibility-tool tests passed. The actual Telegram 13.0.2 audit covers 438 source sites, 58 exact hook signatures and nine reviewed dynamic selector groups. A new protocol audit checks eleven privacy request decoders, four response constructors, eight read/status/error fields and both delegate interfaces; four deliberately broken mappings must fail. Device checks cover the installed version, startup, settings entry, switches and public-channel/chat/profile menus. Two-account receipts, freshly received one-time media and remote deletion were not retested end to end. See [device test coverage](tests/regression/README.md), [compatibility audit limits](tests/compat/README.md) and [3.6.11 verification](docs/releases/3.6.11.md).
+Version 3.6.12 verifies Telegram Play 13.0.3 (71831). The existing resolver handles its changed class/method names and message-jump arguments. Adaptations from Re:TeleVIP 1.1.8/1.1.9 exclude protocol-registry constructors from TL fingerprints and disambiguate Theme using its static TextPaint. Empty advertisement responses now share a prepared factory for request completion and in-flight response replacement; when R8 removes a no-argument constructor, it validates constructor-free allocation and initializes inherited compatible collections. Existing constructors remain preferred and their failures are never bypassed. Fingerprint cache version 17 forces a fresh scan.
+
+Verification: twelve Android regression groups with 2647 assertions, 131 JVM reflection assertions, 39 feature-selector assertions and eight compatibility-tool tests passed. Telegram 13.0.3 and a 13.0.2 control APK pass checks for 438 source sites, 58 exact hook signatures and nine reviewed dynamic selector groups. Protocol checks cover eleven privacy request decoders, four response constructors, eight fields and both callback interfaces, with negative controls. Real-device checks cover startup, settings entry, three switches, public-channel message jump, edit-history menu and channel swipe. Original preferences and temporary screen settings are restored. Two-account receipts, newly received one-time media and remote deletion were not retested end to end. See [device test coverage](tests/regression/README.md), [compatibility audit limits](tests/compat/README.md) and [3.6.12 verification](docs/releases/3.6.12.md).
 
 Adaptations from [TeleVIP](https://github.com/2B-4G10/TeleVIP) are documented in [third-party notices](THIRD_PARTY_NOTICES.txt).
 
@@ -70,11 +72,11 @@ Adaptations from [TeleVIP](https://github.com/2B-4G10/TeleVIP) are documented in
 
 # 📱 Supported Clients
 
-Other client versions below are historical targets; they were not revalidated in the Telegram 13.0.1 release.
+Other client versions below are historical targets; they were not revalidated in the Telegram 13.0.3 release.
 
 | Client | Version |
 |---|---|
-| Telegram (Google Play) | 13.0.1 (71671; selected UI flows verified on device); 13.0.0 / 12.10.6 (compatibility audits passed) |
+| Telegram (Google Play) | 13.0.3 (71831; selected UI flows verified on device); 13.0.2 (compatibility control passed) |
 | Telegram Beta | 12.9.0 (69579) |
 | Telegram Web | 12.8.3 (69229) |
 | TG Connect | 11.13.1 (11130109) |

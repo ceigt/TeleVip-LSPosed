@@ -26,7 +26,7 @@ Twelve groups cover:
 
 10. Platform dialog callback protection: successful callbacks run once, failures are logged, and positive/negative/neutral button dispatch does not crash the UI.
 
-11. Media scheduler selection across instance/staticized layouts, rejection of wrong returns/argument order/ambiguous targets, strict ad-response reader types, disabled/null/already-empty response behavior, and media path identity isolation. These selectors also run on the JVM.
+11. Media scheduler selection across instance/staticized layouts, rejection of wrong returns/argument order/ambiguous targets, strict ad-response reader types, disabled/null/already-empty response behavior, and media path identity isolation. Empty ad responses are also tested without a usable no-argument constructor: inherited lists are initialized, each allocation owns its lists, static/unrelated fields remain unchanged, normal constructor behavior is preserved and abstract/unsupported collection types are rejected. These selectors also run on the JVM and Android.
 
 Database tests use real Android SQLite. Telegram storage wrappers are controlled fakes for error injection and resource checks. Hook installation, real network callbacks and Telegram UI interactions require separate device verification.
 

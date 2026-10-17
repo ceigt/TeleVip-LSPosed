@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 16;
+    public static final int VERSION = 17;
 
     private TelegramFingerprints() {
     }
@@ -687,7 +687,8 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.messenger.browser.Browser")
                 .from(declaringStrings("com.duckduckgo.mobile.android", "vivaldi-browser")));
         s.add(cls("org.telegram.ui.ActionBar.Theme")
-                .from(declaringStrings("autoNightScheduleByLocation", "autoNightLastSunCheckDay")));
+                .from(declaringStrings("autoNightScheduleByLocation", "autoNightLastSunCheckDay"))
+                .where(hasField(true, "android.text.TextPaint")));
         s.add(cls("org.telegram.ui.Stories.StoriesController")
                 .from(returnTypeOf("org.telegram.messenger.MessagesController", "getStoriesController"),
                         declaringStrings("stories_stealth_mode", "last_stories_state_hidden")));

@@ -21,3 +21,14 @@ Head a879b70288794f09ebdf24c200e3c0ca8c3974a1 (already an ancestor of this fork)
 TeleVIP: https://github.com/2B-4G10/TeleVIP
 Head 27ab7951db56f3be11566e973934e06ca265f4eb (unchanged since 3.6.8 review).
 No additional upstream source changes were imported in 3.6.9.
+
+2026-10-17 upstream adaptations (Telegram 13.0.3):
+TeleVIP: https://github.com/2B-4G10/TeleVIP
+Reviewed head f48327c6a98f27b9e96d25ce7b834d62cfad85c4 (release 1.1.9).
+GPL-3.0 adaptations from c8b02a0b2af49218814add574920f6e99359c5b2:
+exclude constructor/primitive-argument protocol registry anchors; require Theme's static TextPaint.
+Adapted empty-ad-response allocation design from 32c325e9d930568b765d558dbc46812650fcc88e.
+Local factory prefers existing constructors, validates stripped-constructor allocation before hooks,
+initializes only compatible inherited collection fields and rejects unsupported collection types.
+The same factory serves request completion and in-flight response filtering, with JVM/Android tests.
+Broad optional-symbol exemptions and unrelated CI/build changes were not imported.
