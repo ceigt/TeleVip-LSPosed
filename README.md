@@ -14,7 +14,7 @@ Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It ada
 
 The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. The GitHub-built artifact has now been signed on the original signing computer with the existing release certificate and installed in place. Startup, native settings entry, typing/media/ad switches, public-channel swipe, message jump and edit-history menu checks pass; original preferences and temporary screen settings are restored. These checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
 
-GitHub Actions now builds an unsigned release APK and uploads it as a workflow artifact. Download it and sign locally with the original certificate before an in-place installation; no release key is uploaded to GitHub.
+GitHub Actions builds the APK without signing secrets, then signs it on a separate hosted runner for trusted pushes or manual runs on `telegram-12.10.5`. The original PKCS12 key and password are stored as encrypted secrets in the branch-restricted `release-signing` environment. Pull requests and forks receive unsigned build artifacts only. The signed artifact includes the APK, checksum and source/signing metadata; its certificate, package, version and API 102 declaration are verified before upload. See [cloud signing](docs/release-signing.md) for use and maintenance.
 
 ## Telegram 13.0.3 / API 102 release
 
