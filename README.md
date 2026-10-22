@@ -12,7 +12,7 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It adapts the channel protocol fingerprint to select the current concrete type instead of its old layer-232 subclass, and raises the mapping cache version to 18. Existing privacy, media, settings and advertisement protections are retained.
 
-The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. Signed module installation and updated-module UI verification are pending the existing release signing key; these checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
+The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. The GitHub-built artifact has now been signed on the original signing computer with the existing release certificate and installed in place. Startup, native settings entry, typing/media/ad switches, public-channel swipe, message jump and edit-history menu checks pass; original preferences and temporary screen settings are restored. These checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
 
 GitHub Actions now builds an unsigned release APK and uploads it as a workflow artifact. Download it and sign locally with the original certificate before an in-place installation; no release key is uploaded to GitHub.
 
@@ -80,11 +80,11 @@ Adaptations from [TeleVIP](https://github.com/2B-4G10/TeleVIP) are documented in
 
 # 📱 Supported Clients
 
-Other client versions below are historical targets; they were not revalidated in the Telegram 13.0.3 release.
+Other client versions below are historical targets; they were not revalidated in the Telegram 13.1.0 release.
 
 | Client | Version |
 |---|---|
-| Telegram (Google Play) | 13.0.3 (71831; selected UI flows verified on device); 13.0.2 (compatibility control passed) |
+| Telegram (Google Play) | 13.1.0 (72291; selected UI flows verified on device); earlier verification records are in docs/releases |
 | Telegram Beta | 12.9.0 (69579) |
 | Telegram Web | 12.8.3 (69229) |
 | TG Connect | 11.13.1 (11130109) |
