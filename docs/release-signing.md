@@ -46,4 +46,16 @@ Keep an independent encrypted backup of the existing signing material. To replac
 
 When changing the development branch, update both the workflow guard and the environment branch policy together. Keep signing restricted to reviewed, trusted code. Required-symbol compatibility checks and real-device testing still determine whether a build is ready for release.
 
+## Verified cloud run
+
+On 2026-10-22 (Asia/Taipei), [Build APK run 39807413565](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/39807413565) completed both build and signing jobs successfully for commit `9ccef28da6ca30c40ec6926f3076816e0733877b`.
+
+The signed artifact was downloaded and checked independently using SDK build tools 36.0.0. Its signature, original certificate, alignment, package `org.televip`, versionCode 355, versionName `3.6.13-telegram-13.1.0-api102` and API 102 declarations passed verification. Artifact contents were exactly the APK, SHA256SUMS.txt and SIGNING-INFO.json.
+
+- Unsigned APK SHA256: `b1f812b7664c9b6ed667aae81ca248d8caec5187b47d28d7a057fcacfff53a08`.
+- Cloud-signed APK SHA256: `9447187e8c6b713baec8f8f831f80b06b07af6a665987af86262306264c6b697`.
+- The cloud-signed APK is byte-for-byte identical to the original-computer-signed 3.6.13 already installed and verified on the phone. No app source or version changed for this signing setup.
+
+The local verifier also rejected an intentionally wrong expected version. Workflow structure checks confirmed pinned action commits, no signing secrets in the build job, and repository/event/ref guards on the signing job. PR/fork restrictions were inspected in the workflow and environment configuration; no additional test PR was created.
+
 References: [GitHub environment secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets), [environment branch restrictions](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments), [Android apksigner](https://developer.android.com/tools/apksigner).
