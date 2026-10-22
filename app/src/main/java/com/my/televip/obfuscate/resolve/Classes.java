@@ -273,11 +273,22 @@ public final class Classes {
         return new ConstantAnchored(value);
     }
 
+    /** Older TL layers extend the current concrete type when its protocol id changes. */
+    public static Symbol.ClassSource serializingConstantOrItsNewerLayer(final long value) {
+        return new ConstantAnchored(value, true);
+    }
+
     static final class ConstantAnchored implements Symbol.ClassSource {
         final long value;
+        final boolean newerLayer;
 
         ConstantAnchored(long value) {
+            this(value, false);
+        }
+
+        ConstantAnchored(long value, boolean newerLayer) {
             this.value = value;
+            this.newerLayer = newerLayer;
         }
 
         @Override
@@ -287,7 +298,13 @@ public final class Classes {
                 if (!m.isStatic() && m.returnType().equals("V") && m.parameterTypes().length == 1
                         && m.parameterTypes()[0].startsWith("L") && !m.isConstructor()) owners.add(m.owner);
             }
-            return owners;
+            if (!newerLayer) return owners;
+            java.util.Set<DexClass> current = new java.util.LinkedHashSet<>();
+            for (DexClass owner : owners) {
+                DexClass parent = r.index.byDescriptor(owner.superclass);
+                current.add(parent != null && !parent.isAbstract() && !parent.isInterface() ? parent : owner);
+            }
+            return current;
         }
     }
 

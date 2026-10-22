@@ -32,3 +32,11 @@ Local factory prefers existing constructors, validates stripped-constructor allo
 initializes only compatible inherited collection fields and rejects unsupported collection types.
 The same factory serves request completion and in-flight response filtering, with JVM/Android tests.
 Broad optional-symbol exemptions and unrelated CI/build changes were not imported.
+
+2026-10-22 upstream adaptation (Telegram 13.1.0):
+TeleVIP: https://github.com/2B-4G10/TeleVIP
+Reviewed head 646e80f (2026-10-21).
+GPL-3.0 adaptation from b132d9614c15f6fb43141f0da96f975347176e51:
+resolve the current TL_channel through the concrete parent of its older protocol layer.
+The change retains local registry-constructor rejection and invalidates caches at fingerprint version 18.
+Existing real-APK fingerprint/name agreement checks reproduce the failure before this change and pass after it.

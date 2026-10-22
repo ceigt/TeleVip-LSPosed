@@ -8,6 +8,14 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## Telegram 13.1.0 compatibility update
+
+Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It adapts the channel protocol fingerprint to select the current concrete type instead of its old layer-232 subclass, and raises the mapping cache version to 18. Existing privacy, media, settings and advertisement protections are retained.
+
+The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. Signed module installation and updated-module UI verification are pending the existing release signing key; these checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
+
+GitHub Actions now builds an unsigned release APK and uploads it as a workflow artifact. Download it and sign locally with the original certificate before an in-place installation; no release key is uploaded to GitHub.
+
 ## Telegram 13.0.3 / API 102 release
 
 Version 3.6.12 uses module package `org.televip` and requires LSPosed API 102 support. Enable the module for `org.telegram.messenger`, restart Telegram, then open TeleVip from Telegram's settings page. The original release certificate is retained for in-place upgrades and existing settings are preserved.

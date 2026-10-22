@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 17;
+    public static final int VERSION = 18;
 
     private TelegramFingerprints() {
     }
@@ -411,7 +411,8 @@ public final class TelegramFingerprints {
                 .readBy("TLRPC$TL_inputPeerChannel#serializeToStream", 0));
         // Boolean flags, by the bit their class's serializer folds them into its flags word with.
         s.add(tl("org.telegram.tgnet.TLRPC$TL_message", 0x7600b9d3));
-        s.add(tl("org.telegram.tgnet.TLRPC$TL_channel", 0xd49f34c6));
+        s.add(cls("org.telegram.tgnet.TLRPC$TL_channel")
+                .from(serializingConstantOrItsNewerLayer(0xd49f34c6)));
         for (String c : new String[]{"TLRPC$TL_message", "TLRPC$TL_channel", "TL_stories$TL_storyItem",
                 "TLRPC$TL_documentAttributeAudio"}) {
             s.add(method(c, "serializeToStream").sig("void", "org.telegram.tgnet.OutputSerializedData"));
