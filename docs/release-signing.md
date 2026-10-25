@@ -59,3 +59,9 @@ The signed artifact was downloaded and checked independently using SDK build too
 The local verifier also rejected an intentionally wrong expected version. Workflow structure checks confirmed pinned action commits, no signing secrets in the build job, and repository/event/ref guards on the signing job. PR/fork restrictions were inspected in the workflow and environment configuration; no additional test PR was created.
 
 References: [GitHub environment secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets), [environment branch restrictions](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments), [Android apksigner](https://developer.android.com/tools/apksigner).
+
+## Maintenance build 3.6.14
+
+On 2026-10-26 (Asia/Singapore), [run 40234171334](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/40234171334) completed build and sign for source `7c84654faca40f8f6136f825ccc50c7ec4ba2df0`. The signed artifact was downloaded and independently verified with the original certificate, package `org.televip`, versionCode 356, versionName `3.6.14-telegram-13.1.0-api102`, alignment and API 102 declarations. APK SHA256: `bc38eefc2faba135f419230a059a32c5d1306277269b95dbd00fb305099dad31`.
+
+Both artifact archive digests and the signing metadata agree with the same workflow run. All unsigned APK ZIP entries match the signed APK's original contents. The phone is disconnected, so this is a verified signed test artifact with installation and UI checks pending. See [3.6.14 verification](releases/3.6.14.md).
