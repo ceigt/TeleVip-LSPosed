@@ -40,3 +40,17 @@ GPL-3.0 adaptation from b132d9614c15f6fb43141f0da96f975347176e51:
 resolve the current TL_channel through the concrete parent of its older protocol layer.
 The change retains local registry-constructor rejection and invalidates caches at fingerprint version 18.
 Existing real-APK fingerprint/name agreement checks reproduce the failure before this change and pass after it.
+
+2026-10-26 upstream adaptations (TeleVIP 1.4):
+TeleVIP: https://github.com/2B-4G10/TeleVIP
+Reviewed head 0d32175c2191a2cd3760f9a7d84c668df09cd2e8.
+GPL-3.0 adaptations from a1081a3818927ba6ed59b744a439315a017d1bc0:
+keep Local Premium out of download connection selection; gate the speed boost on real Premium.
+Local adaptation reads the download operation's own account, retains API 102 hook bookkeeping,
+requires a typed and audited start scope, and disables spoofing if that scope cannot be installed.
+Fingerprint version 19 invalidates previous mappings. Scope nesting/thread isolation and DEX
+account/premium fields are checked, including negative controls.
+GPL-3.0 adaptation from 1dcc7e6 (Show user ID on Telegram 13.1):
+choose the populated legacy status overlay or primary status line, guard short arrays and avoid
+duplicate ID text. Broader privacy, media, database, UI and update-check changes are evaluated
+separately in docs/releases/3.6.14.md; they are not copied as a bulk merge.

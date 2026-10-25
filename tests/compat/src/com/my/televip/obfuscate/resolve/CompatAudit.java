@@ -43,6 +43,12 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
+        Mapping brokenDownload=Mapping.deserialize(mapping.serialize());
+        brokenDownload.methods.put("FileLoadOperation#startSJZ", "__missing__");
+        if(FeatureShapeAudit.downloads(index,brokenDownload).isEmpty()) errors.add("Broken download start scope passed audit");
+        Mapping brokenDownloadAccount=Mapping.deserialize(mapping.serialize());
+        brokenDownloadAccount.fields.put("FileLoadOperation#currentAccount", "__missing__");
+        if(FeatureShapeAudit.downloads(index,brokenDownloadAccount).isEmpty()) errors.add("Broken download account passed audit");
         List<String> privacyErrors=PrivacyProtocolAudit.check(index,mapping);
         errors.addAll(privacyErrors);
         if(privacyErrors.isEmpty()) System.out.println("PRIVACY_PROTOCOL_PASS: 11 request decoders, 4 response constructors, 8 fields and 2 delegate interfaces");

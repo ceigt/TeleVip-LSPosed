@@ -40,4 +40,10 @@ public class UserConfig {
         return userConfig;
     }
 
+    public boolean hasRealPremium() {
+        // Read the server-backed user field; isPremium() can be overridden by Local Premium.
+        Object user = XposedHelpers.getObjectField(userConfig, Obfuscate.getFieldName("UserConfig", "currentUser"));
+        return user != null && Boolean.TRUE.equals(XposedHelpers.getObjectField(user, Obfuscate.getFieldName("TLRPC$User", "premium")));
+    }
+
 }

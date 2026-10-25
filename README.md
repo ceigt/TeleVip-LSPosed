@@ -8,6 +8,12 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## 3.6.14 upstream maintenance update
+
+Version 3.6.14 adapts two fixes from TeleVIP 1.4 for the verified Play Telegram 13.1.0 APK. Download connection selection uses the account's real Premium subscription, and the speed switch changes parameters only for the account owning that download when it actually has Premium. Profile IDs use the populated status line or the current primary line and are not appended repeatedly. Existing preferences and privacy policy are retained.
+
+The actual Play 13.1.0 APK passes 443 inventoried sites, 58 exact hook signatures, ten reviewed dynamic selector groups and 387 required active sites. This update has no new device verification; Telegram 13.1.1 remains an unverified candidate until its binary is obtained and authenticated. See [3.6.14 verification and upstream review](docs/releases/3.6.14.md).
+
 ## Telegram 13.1.0 compatibility update
 
 Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It adapts the channel protocol fingerprint to select the current concrete type instead of its old layer-232 subclass, and raises the mapping cache version to 18. Existing privacy, media, settings and advertisement protections are retained.

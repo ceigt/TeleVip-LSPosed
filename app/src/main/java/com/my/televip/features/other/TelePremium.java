@@ -11,6 +11,8 @@ import com.my.televip.Class.ClassLoad;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.logging.Logger;
+import com.my.televip.features.connections.DownloadPremiumScope;
+import java.lang.reflect.Method;
 
 import com.my.televip.compat.XC_MethodHook;
 import com.my.televip.compat.XposedHelpers;
@@ -18,17 +20,31 @@ import com.my.televip.compat.XposedHelpers;
 public class TelePremium {
 
     public static volatile boolean isEnable = false;
+    private static volatile boolean downloadsProtected;
+
+    private static void protectDownloads() {
+        Method start = DownloadPremiumScope.findStart(ClassLoad.getClass(ClassNames.FILE_LOAD_OPERATION),
+                Obfuscate.getMethodName("FileLoadOperation", "startSJZ"));
+        downloadsProtected = HMethod.hookMethod(start, new BaseMethodHook() {
+            @Override protected void beforeMethod(MethodHookParam param) { DownloadPremiumScope.enter(); }
+            @Override protected void afterMethod(MethodHookParam param) { DownloadPremiumScope.exit(); }
+        });
+        if (!downloadsProtected) Logger.l("Local Premium unavailable: download account scope missing");
+    }
 
     public static synchronized void init() {
         try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
+
+                protectDownloads();
 
                 if (attempt.require(ClassLoad.getClass(ClassNames.USER_CONFIG))) {
 
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.USER_CONFIG), Obfuscate.getMethodName("UserConfig", "isPremium"), new BaseMethodHook() {
                         @Override
                         public void beforeMethod(XC_MethodHook.MethodHookParam param) {
-                            if (ConfigManager.telegramPremium.isEnable()) param.setResult(true);
+                            if (downloadsProtected && ConfigManager.telegramPremium.isEnable()
+                                    && !DownloadPremiumScope.active()) param.setResult(true);
                         }
                     });
                 }
@@ -38,7 +54,8 @@ public class TelePremium {
                         HMethod.hookMethod(ForkPremiumPreferencClass, "isPremium", new BaseMethodHook() {
                             @Override
                             protected void beforeMethod(MethodHookParam param) {
-                                if (ConfigManager.telegramPremium.isEnable())
+                                if (downloadsProtected && ConfigManager.telegramPremium.isEnable()
+                                        && !DownloadPremiumScope.active())
                                     param.setResult(true);
                             }
                         });

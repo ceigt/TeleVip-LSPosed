@@ -22,6 +22,7 @@ sources = list((base / 'obfuscate/dex').glob('*.java')) + list((base / 'obfuscat
 sources += [base / 'obfuscate/StartupRequestQueue.java', base / 'obfuscate/StartupDispatchSelector.java', base / 'features/ui/AdResponseCallbacks.java']
 sources += [base / 'compat/ReflectionLookup.java', base / 'features/media/MediaHookSelector.java', base / 'features/media/MediaPathOverride.java', base / 'features/ui/AdResponseFilter.java']
 sources += [base / 'features/ghostMode/PrivacyRequestKind.java']
+sources += [base / 'features/connections/DownloadPremiumScope.java', base / 'features/otherFeatures/ProfileStatusLine.java']
 sources += list((root / 'tests/compat/src').rglob('*.java'))
 source_list = output / 'sources.txt'
 source_list.write_text('\n'.join('"' + str(p).replace('\\', '/') + '"' for p in sources), encoding='utf-8')
@@ -29,6 +30,7 @@ subprocess.run([str(javac), '-encoding', 'UTF-8', '-source', '8', '-target', '8'
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.obfuscate.resolve.CompatSafetyTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.ReflectionLookupTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.FeatureSelectorsTest'], check=True)
+subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.MaintenancePolicyTest'], check=True)
 subprocess.run([sys.executable, str(root / 'tests/compat/test_audit.py')], check=True)
 inventory = output / 'inventory.tsv'
 subprocess.run([sys.executable, str(root / 'tests/compat/inventory.py'), str(inventory)], check=True)

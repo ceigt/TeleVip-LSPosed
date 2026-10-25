@@ -54,20 +54,25 @@ public class EditOnlineTextView {
                                             }
 
                                             if (ConfigManager.showUserID != null && ConfigManager.showUserID.isEnable()) {
-                                                SimpleTextView simpleTextView2 = new SimpleTextView(onlineTextViewArray[3]);
+                                                Object overlayView = onlineTextViewArray.length > 3 ? onlineTextViewArray[3] : null;
+                                                CharSequence overlayText = overlayView == null ? null : new SimpleTextView(overlayView).getText();
+                                                int statusIndex = ProfileStatusLine.index(onlineTextViewArray.length,
+                                                        onlineTextViewArray[1] != null, overlayText);
+                                                final SimpleTextView simpleTextView2 = new SimpleTextView(onlineTextViewArray[statusIndex]);
                                                 if (simpleTextView2.getSimpleTextView() != null) {
 
                                                     CharSequence oldText = simpleTextView2.getText();
+                                                    String id = String.valueOf(getID(profileActivity));
+                                                    if (ProfileStatusLine.hasId(oldText, id)) return;
 
                                                     SpannableStringBuilder sb = new SpannableStringBuilder();
                                                     sb.append("\u200E");
 
                                                     sb.append("\u200F");
-                                                    sb.append(oldText);
+                                                    if (oldText != null) sb.append(oldText);
                                                     sb.append("\n");
 
                                                     int start = sb.length();
-                                                    String id = String.valueOf(getID(profileActivity));
                                                     sb.append("ID: ").append(id);
 
                                                     sb.setSpan(new RelativeSizeSpan(1.0f), start, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

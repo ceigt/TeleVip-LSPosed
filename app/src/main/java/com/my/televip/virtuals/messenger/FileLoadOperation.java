@@ -11,6 +11,11 @@ public class FileLoadOperation {
 
     public FileLoadOperation(Object fileOperation){ this.fileOperation = fileOperation; }
 
+    public boolean hasRealPremium() {
+        int account = XposedHelpers.getIntField(fileOperation, Obfuscate.getFieldName("FileLoadOperation", "currentAccount"));
+        return UserConfig.getInstance(account).hasRealPremium();
+    }
+
     public void setDownloadChunkSizeBig(int v){
         XposedHelpers.setIntField(fileOperation, Obfuscate.getFieldName("FileLoadOperation", "downloadChunkSizeBig"), v);
     }

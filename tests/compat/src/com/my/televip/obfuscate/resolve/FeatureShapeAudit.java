@@ -7,6 +7,7 @@ import java.util.*;
 final class FeatureShapeAudit {
     static List<String> check(DexIndex index, Mapping mapping, String packageName) {
         List<String> errors=new ArrayList<>();
+        errors.addAll(downloads(index, mapping));
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -46,6 +47,41 @@ final class FeatureShapeAudit {
             if(fills!=1) errors.add("Invalid phone display scope: "+owner);
         }
         return errors;
+    }
+    static List<String> downloads(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        DexClass operation = cls(index, mapping, "org.telegram.messenger.FileLoadOperation");
+        DexClass config = cls(index, mapping, "org.telegram.messenger.UserConfig");
+        DexClass user = cls(index, mapping, "org.telegram.tgnet.TLRPC$User");
+        String start = mapping.resolveMethod("FileLoadOperation", "startSJZ");
+        String premium = mapping.resolveMethod("UserConfig", "isPremium");
+        int starts = 0;
+        if (operation != null && config != null && start != null && premium != null) {
+            for (DexClass.Method method : operation.methods) {
+                String[] p = method.parameterTypes();
+                if (!method.name().equals(start) || method.isStatic() || !method.returnType().equals("Z")
+                        || p.length != 3 || !p[0].startsWith("L") || !p[1].equals("J") || !p[2].equals("Z")) continue;
+                final boolean[] callsPremium = {false};
+                method.scan(new CodeScanner.Visitor() {
+                    @Override public void invoke(int opcode, int target) {
+                        DexFile dex = method.owner.dex;
+                        if (dex.methodClass(target).equals(config.descriptor) && dex.methodName(target).equals(premium)
+                                && dex.protoReturnType(dex.methodProto(target)).equals("Z")
+                                && dex.protoParameters(dex.methodProto(target)).length == 0) callsPremium[0] = true;
+                    }
+                });
+                if (callsPremium[0]) starts++;
+            }
+        }
+        if (starts != 1) errors.add("Invalid real-account download start scope");
+        downloadField(operation, mapping.resolveField("FileLoadOperation", "currentAccount"), "I", errors);
+        downloadField(config, mapping.resolveField("UserConfig", "currentUser"), descriptor(mapping, "org.telegram.tgnet.TLRPC$User"), errors);
+        downloadField(user, mapping.resolveField("TLRPC$User", "premium"), "Z", errors);
+        return errors;
+    }
+    private static void downloadField(DexClass owner, String name, String type, List<String> errors) {
+        DexClass.Field field = owner == null || name == null ? null : owner.fieldNamed(name);
+        if (field == null || field.isStatic() || !field.type().equals(type)) errors.add("Invalid download account field: " + name);
     }
     private static void scheduler(DexIndex index,DexClass owner,String name,boolean staticized,String[] parameters,List<String> errors) {
         int count=0;

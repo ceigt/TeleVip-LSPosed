@@ -24,6 +24,8 @@ public class DownloadSpeed {
                         protected void afterMethod(MethodHookParam param) {
                             if (ConfigManager.downloadSpeed.isEnable()) {
                                 FileLoadOperation fileLoadOperation = new FileLoadOperation(param.thisObject);
+                                // Extra connections can cause server waits for non-Premium accounts.
+                                if (!fileLoadOperation.hasRealPremium()) return;
 
                                 int downloadChunkSizeBig = 1024 * 512;
                                 int maxDownloadRequests = 8;
