@@ -65,3 +65,9 @@ References: [GitHub environment secrets](https://docs.github.com/en/actions/how-
 On 2026-10-26 (Asia/Singapore), [run 40234171334](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/40234171334) completed build and sign for source `7c84654faca40f8f6136f825ccc50c7ec4ba2df0`. The signed artifact was downloaded and independently verified with the original certificate, package `org.televip`, versionCode 356, versionName `3.6.14-telegram-13.1.0-api102`, alignment and API 102 declarations. APK SHA256: `bc38eefc2faba135f419230a059a32c5d1306277269b95dbd00fb305099dad31`.
 
 Both artifact archive digests and the signing metadata agree with the same workflow run. All unsigned APK ZIP entries match the signed APK's original contents. The phone is disconnected, so this is a verified signed test artifact with installation and UI checks pending. See [3.6.14 verification](releases/3.6.14.md).
+
+## Play 13.1.1 build 3.6.15
+
+On 2026-10-26 (Asia/Singapore), [run 40252159827](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/40252159827) completed both jobs for `cdf433ad6a53375df131a5c93f89ee7e95752ef6`. The downloaded signed artifact passes the original-certificate, package, versionCode 357, versionName `3.6.15-telegram-13.1.1-api102`, alignment and API 102 checks. Signed APK SHA256: `15e54ca5022a2434f016b0161e56bde012d19f150972a89e670a560e56f4f71c`.
+
+It is installed over 3.6.13 with data preserved. The pulled-back installed APK is identical to that signed artifact. Actual Play 13.1.1, the older Play control, isolated Android regressions and selected UI flows have been verified; preferences and temporary system settings are restored. See [3.6.15 verification and limits](releases/3.6.15.md).
