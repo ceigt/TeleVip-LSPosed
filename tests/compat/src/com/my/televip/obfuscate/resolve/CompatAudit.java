@@ -45,7 +45,8 @@ public final class CompatAudit {
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
         Mapping brokenDownload=Mapping.deserialize(mapping.serialize());
         brokenDownload.methods.put("FileLoadOperation#startSJZ", "__missing__");
-        if(FeatureShapeAudit.downloads(index,brokenDownload).isEmpty()) errors.add("Broken download start scope passed audit");
+        brokenDownload.methods.put("FileLoadOperation#updateDownloadByteBudget", "__missing__");
+        if(FeatureShapeAudit.downloads(index,brokenDownload).isEmpty()) errors.add("Broken download policy scope passed audit");
         Mapping brokenDownloadAccount=Mapping.deserialize(mapping.serialize());
         brokenDownloadAccount.fields.put("FileLoadOperation#currentAccount", "__missing__");
         if(FeatureShapeAudit.downloads(index,brokenDownloadAccount).isEmpty()) errors.add("Broken download account passed audit");

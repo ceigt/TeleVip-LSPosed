@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 19;
+    public static final int VERSION = 20;
 
     private TelegramFingerprints() {
     }
@@ -492,6 +492,8 @@ public final class TelegramFingerprints {
         s.add(method("FileLoadOperation", "updateParams").sig("void")
                 .where(constant(2097152000)));
         s.add(method("FileLoadOperation", "startSJZ").named("start").sig("boolean", Symbol.ANY, "long", "boolean")
+                .where(callsSymbol("FileLoadOperation#updateParams")));
+        s.add(method("FileLoadOperation", "updateDownloadByteBudget").sig("void")
                 .where(callsSymbol("UserConfig#isPremium")));
         s.add(field("FileLoadOperation", "currentAccount").type("int")
                 .handedTo("FileLoadOperation#startSJZ", "getInstance"));

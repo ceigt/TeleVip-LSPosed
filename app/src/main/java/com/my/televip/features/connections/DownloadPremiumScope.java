@@ -16,6 +16,22 @@ public final class DownloadPremiumScope {
     }
     public static boolean active() { return depth.get() != null; }
 
+    public static Method findPolicy(Class<?> owner, String helperName, String startName) {
+        if (owner == null || helperName == null) return null;
+        Method helper = null;
+        boolean named = false;
+        for (Method method : owner.getDeclaredMethods()) {
+            if (!method.getName().equals(helperName)) continue;
+            if (named) return null;
+            named = true;
+            if (Modifier.isStatic(method.getModifiers()) || method.getReturnType() != void.class
+                    || method.getParameterTypes().length != 0) return null;
+            helper = method;
+        }
+        // 13.1.1 also refreshes its budget from preload transitions outside start().
+        return named ? helper : findStart(owner, startName);
+    }
+
     public static Method findStart(Class<?> owner, String name) {
         if (owner == null || name == null) return null;
         Method found = null;

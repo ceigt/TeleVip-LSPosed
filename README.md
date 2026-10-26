@@ -8,6 +8,10 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## Telegram Play 13.1.1 adaptation
+
+Version 3.6.15 targets the installed Google Play Telegram 13.1.1 (72371). Telegram moved its real-Premium download decision into `updateDownloadByteBudget`, also called outside download startup. The module now protects that exact budget helper, with the previous typed start route retained for 13.1.0. The APK audit requires every direct download Premium query to be inside the selected scope; it does not waive the new call path. Fingerprint cache version 20 refreshes mappings. See [3.6.15 verification](docs/releases/3.6.15.md) for build and device status.
+
 ## 3.6.14 upstream maintenance update
 
 Version 3.6.14 adapts two fixes from TeleVIP 1.4 for the verified Play Telegram 13.1.0 APK. Download connection selection uses the account's real Premium subscription, and the speed switch changes parameters only for the account owning that download when it actually has Premium. Profile IDs use the populated status line or the current primary line and are not appended repeatedly. Existing preferences and privacy policy are retained.

@@ -27,7 +27,7 @@ DYNAMIC = {
     'features/otherFeatures/MenuClicks.java: reflected Method hook': 'live action-bar listener/fragment selection; requires real chat/profile menu tests',
     'Clients/Telegraph.java: dynamic hook owner/signature': 'Telegraph-only feature; Play never runs it',
     'features/other/TelePremium.java: dynamic hook owner/signature': 'ForkPremiumPreferenc fallback; primary UserConfig.isPremium is audited',
-    'features/other/TelePremium.java: reflected Method hook': 'DownloadPremiumScope start selector and nested/thread/exception scope regressions; actual start, account field and isPremium call checked by FeatureShapeAudit',
+    'features/other/TelePremium.java: reflected Method hook': 'DownloadPremiumScope policy selector and nested/thread/exception scope regressions; actual direct Premium caller, account and fallback routes checked by FeatureShapeAudit',
     'settings/hook/SettingsHook.java: onClick dynamic parameters': 'legacy settings entry; Play uses NativeSettingsEntry',
     'virtuals/TeleVip/Bridge/Bridge.java: dynamic hook owner/signature': 'injected legacy adapter; Play uses platform settings dialog',
 }
@@ -35,6 +35,8 @@ PLATFORM = {('android.app.Activity', 'onCreate'), ('android.app.Activity', 'onRe
 
 def classify(row, package):
     status, kind, owner, member, source, *_ = row
+    if source == 'features/other/TelePremium.java' and kind == 'M' and (owner, member) == ('FileLoadOperation', 'updateDownloadByteBudget'):
+        return 'ROUTE', '13.1.1 budget helper or older start policy required by FeatureShapeAudit; every direct download Premium caller must match the selected scope'
     if package == PLAY:
         if source in LEGACY_SOURCES: return 'INACTIVE', 'Play uses NativeSettingsEntry and SettingsFallback, bypassing the legacy adapter/drawer'
         if (owner, member, source) in PLAY_OTHER_BRANCHES: return 'INACTIVE', 'non-Play viewer branch; Play uses the regular photo viewer'

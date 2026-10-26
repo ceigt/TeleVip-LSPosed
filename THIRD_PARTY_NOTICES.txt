@@ -54,3 +54,9 @@ GPL-3.0 adaptation from 1dcc7e6 (Show user ID on Telegram 13.1):
 choose the populated legacy status overlay or primary status line, guard short arrays and avoid
 duplicate ID text. Broader privacy, media, database, UI and update-check changes are evaluated
 separately in docs/releases/3.6.14.md; they are not copied as a bulk merge.
+
+2026-10-26 Telegram Play 13.1.1 local adaptation:
+Refined the download-scope adaptation of TeleVIP a1081a3 using the actual installed Play APK.
+Hook the extracted download byte-budget helper, including preload transitions outside start;
+retain the old typed start fallback for 13.1.0 and require complete Premium-caller coverage.
+No additional upstream source is imported for this refinement. Fingerprint cache version is 20.

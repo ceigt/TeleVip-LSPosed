@@ -8,8 +8,8 @@ android {
         applicationId "org.televip"
         minSdk 27
         targetSdk 36
-        versionCode 356
-        versionName "3.6.14-telegram-13.1.0-api102"
+        versionCode 357
+        versionName "3.6.15-telegram-13.1.1-api102"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

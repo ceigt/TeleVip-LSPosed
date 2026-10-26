@@ -55,12 +55,18 @@ final class FeatureShapeAudit {
         DexClass user = cls(index, mapping, "org.telegram.tgnet.TLRPC$User");
         String start = mapping.resolveMethod("FileLoadOperation", "startSJZ");
         String premium = mapping.resolveMethod("UserConfig", "isPremium");
-        int starts = 0;
-        if (operation != null && config != null && start != null && premium != null) {
+        String helper = mapping.resolveMethod("FileLoadOperation", "updateDownloadByteBudget");
+        if (helper == null) helper = "updateDownloadByteBudget";
+        int helpers = 0, policies = 0, callers = 0, protectedCallers = 0;
+        if (operation != null) for (DexClass.Method method : operation.methods) if (method.name().equals(helper)) helpers++;
+        if (operation != null && config != null && premium != null) {
             for (DexClass.Method method : operation.methods) {
                 String[] p = method.parameterTypes();
-                if (!method.name().equals(start) || method.isStatic() || !method.returnType().equals("Z")
-                        || p.length != 3 || !p[0].startsWith("L") || !p[1].equals("J") || !p[2].equals("Z")) continue;
+                boolean selected = !method.isStatic() && (helpers > 0
+                        ? helpers == 1 && method.name().equals(helper) && method.returnType().equals("V") && p.length == 0
+                        : method.name().equals(start) && method.returnType().equals("Z") && p.length == 3
+                                && p[0].startsWith("L") && p[1].equals("J") && p[2].equals("Z"));
+                if (selected) policies++;
                 final boolean[] callsPremium = {false};
                 method.scan(new CodeScanner.Visitor() {
                     @Override public void invoke(int opcode, int target) {
@@ -70,10 +76,10 @@ final class FeatureShapeAudit {
                                 && dex.protoParameters(dex.methodProto(target)).length == 0) callsPremium[0] = true;
                     }
                 });
-                if (callsPremium[0]) starts++;
+                if (callsPremium[0]) { callers++; if (selected) protectedCallers++; }
             }
         }
-        if (starts != 1) errors.add("Invalid real-account download start scope");
+        if (policies != 1 || callers == 0 || protectedCallers != callers) errors.add("Invalid real-account download policy scope");
         downloadField(operation, mapping.resolveField("FileLoadOperation", "currentAccount"), "I", errors);
         downloadField(config, mapping.resolveField("UserConfig", "currentUser"), descriptor(mapping, "org.telegram.tgnet.TLRPC$User"), errors);
         downloadField(user, mapping.resolveField("TLRPC$User", "premium"), "Z", errors);

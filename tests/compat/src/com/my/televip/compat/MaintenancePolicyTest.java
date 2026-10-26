@@ -6,6 +6,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class MaintenancePolicyTest {
     public static class Operation { public boolean start(Object stream, long offset, boolean priority) { return true; } }
+    public static class NewOperation extends Operation { private void budget() {} }
+    public static class BadBudget extends Operation { public boolean budget() { return true; } }
+    public static class StaticBudget extends Operation { public static void budget() {} }
+    public static class OverloadedBudget extends Operation { public void budget() {} public void budget(int ignored) {} }
     public static class Invalid {
         public static boolean start(Object stream, long offset, boolean priority) { return true; }
         public boolean wrong(Object stream, boolean priority, long offset) { return true; }
@@ -26,6 +30,12 @@ public final class MaintenancePolicyTest {
         check(DownloadPremiumScope.findStart(Invalid.class, "primitive") == null);
         check(DownloadPremiumScope.findStart(Ambiguous.class, "start") == null);
         check(DownloadPremiumScope.findStart(null, "start") == null);
+        check(DownloadPremiumScope.findPolicy(Operation.class, "budget", "start").getName().equals("start"));
+        check(DownloadPremiumScope.findPolicy(NewOperation.class, "budget", "start").getName().equals("budget"));
+        check(DownloadPremiumScope.findPolicy(BadBudget.class, "budget", "start") == null);
+        check(DownloadPremiumScope.findPolicy(StaticBudget.class, "budget", "start") == null);
+        check(DownloadPremiumScope.findPolicy(OverloadedBudget.class, "budget", "start") == null);
+        check(DownloadPremiumScope.findPolicy(null, "budget", "start") == null);
         check(!DownloadPremiumScope.active());
         DownloadPremiumScope.enter();
         try {

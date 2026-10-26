@@ -23,7 +23,8 @@ public class TelePremium {
     private static volatile boolean downloadsProtected;
 
     private static void protectDownloads() {
-        Method start = DownloadPremiumScope.findStart(ClassLoad.getClass(ClassNames.FILE_LOAD_OPERATION),
+        Method start = DownloadPremiumScope.findPolicy(ClassLoad.getClass(ClassNames.FILE_LOAD_OPERATION),
+                Obfuscate.getMethodName("FileLoadOperation", "updateDownloadByteBudget"),
                 Obfuscate.getMethodName("FileLoadOperation", "startSJZ"));
         downloadsProtected = HMethod.hookMethod(start, new BaseMethodHook() {
             @Override protected void beforeMethod(MethodHookParam param) { DownloadPremiumScope.enter(); }
