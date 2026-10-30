@@ -71,3 +71,9 @@ Both artifact archive digests and the signing metadata agree with the same workf
 On 2026-10-26 (Asia/Singapore), [run 40252159827](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/40252159827) completed both jobs for `cdf433ad6a53375df131a5c93f89ee7e95752ef6`. The downloaded signed artifact passes the original-certificate, package, versionCode 357, versionName `3.6.15-telegram-13.1.1-api102`, alignment and API 102 checks. Signed APK SHA256: `15e54ca5022a2434f016b0161e56bde012d19f150972a89e670a560e56f4f71c`.
 
 It is installed over 3.6.13 with data preserved. The pulled-back installed APK is identical to that signed artifact. Actual Play 13.1.1, the older Play control, isolated Android regressions and selected UI flows have been verified; preferences and temporary system settings are restored. See [3.6.15 verification and limits](releases/3.6.15.md).
+
+## Upstream v1.5 adaptation build 3.6.16
+
+On 2026-10-30 (Asia/Taipei), [run 41075655669](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41075655669) completed build and original-certificate signing for source `d2a660ca321839866d053e1ac003851f83993d28`. Signed APK SHA256: `ea3e5ad3f119728a89a874c1a7382052cbd1103b1c1632d4bc5fd346815ecd51`. Independent certificate, package, versionCode 358, alignment and API 102 verification passed, and unsigned ZIP payloads are unchanged after signing.
+
+The cloud-signed APK is installed over 3.6.15 with data preserved, and the pulled-back installed APK is identical. Selected settings, story-switch/restart and public-channel menu checks are complete; preferences and temporary USB stay-awake are restored. See [3.6.16 verification and limits](releases/3.6.16.md).
