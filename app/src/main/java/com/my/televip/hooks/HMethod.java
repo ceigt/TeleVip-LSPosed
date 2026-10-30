@@ -5,7 +5,7 @@ import com.my.televip.base.BaseMethodHook;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.Obfuscate;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Executable;
 import com.my.televip.diagnostics.HookHealth;
 
 import com.my.televip.compat.XposedBridge;
@@ -44,7 +44,7 @@ public class HMethod {
         if (!complete || !attempted) HookInstallation.failure();
         return complete && attempted;
     }
-    public static boolean hookMethod(Method method, BaseMethodHook callback) {
+    public static boolean hookMethod(Executable method, BaseMethodHook callback) {
         try {
             if (method != null) {
                 XposedBridge.hookMethod(method, callback);

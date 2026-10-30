@@ -20,6 +20,7 @@ PLAY_OTHER_BRANCHES = {
     ('SecretMediaViewer', 'openMedia', 'virtuals/ui/SecretMediaViewer.java'),
 }
 DYNAMIC = {
+    'features/stories/DisableStories.java: reflected Method hook': 'Exact int-account constructor and first two ArrayList fields checked by FeatureShapeAudit; typed transient-list filter tests, actual API 102 constructor hook checked on device',
     'features/ghostMode/HidePhone.java: reflected Method hook': 'Play UI scopes require typed SettingsActivity/UserInfoActivity fillItems; PhoneDisplayMask regressions and real settings/profile tests',
     'features/media/PreventMedia.java: reflected Method hook': 'typed scheduler selectors checked against actual DEX by FeatureShapeAudit',
     'features/ui/AdBlock.java: reflected Method hook': 'typed response readers and empty constructors checked by FeatureShapeAudit',

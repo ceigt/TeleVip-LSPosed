@@ -8,6 +8,10 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## 3.6.16 upstream maintenance
+
+Version 3.6.16 adapts the TeleVIP 1.5 story-row and edit-history fixes for the unchanged Google Play Telegram 13.1.1 (72371). Edited messages received in normal history loads can preserve the previously cached text, including when the chat was closed or offline. Story hiding filters only the two mapped presentation lists, including cached entries, and retains the existing restart requirement. Other story-controller collections and stored history are preserved. See [3.6.16 verification](docs/releases/3.6.16.md) for evidence and test limits.
+
 ## Telegram Play 13.1.1 adaptation
 
 Version 3.6.15 targets the installed Google Play Telegram 13.1.1 (72371). Telegram moved its real-Premium download decision into `updateDownloadByteBudget`, also called outside download startup. The module now protects that exact budget helper, with the previous typed start route retained for 13.1.0. The APK audit requires every direct download Premium query to be inside the selected scope; it does not waive the new call path. Fingerprint cache version 20 refreshes mappings. See [3.6.15 verification](docs/releases/3.6.15.md) for build and device status.

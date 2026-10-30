@@ -43,6 +43,9 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
+        Mapping brokenStoryLists=Mapping.deserialize(mapping.serialize());
+        brokenStoryLists.fields.put("StoriesController#dialogListStories", "__missing__");
+        if(FeatureShapeAudit.stories(index,brokenStoryLists).isEmpty()) errors.add("Broken story list fields passed audit");
         Mapping brokenDownload=Mapping.deserialize(mapping.serialize());
         brokenDownload.methods.put("FileLoadOperation#startSJZ", "__missing__");
         brokenDownload.methods.put("FileLoadOperation#updateDownloadByteBudget", "__missing__");

@@ -8,6 +8,7 @@ final class FeatureShapeAudit {
     static List<String> check(DexIndex index, Mapping mapping, String packageName) {
         List<String> errors=new ArrayList<>();
         errors.addAll(downloads(index, mapping));
+        errors.addAll(stories(index, mapping));
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -83,6 +84,34 @@ final class FeatureShapeAudit {
         downloadField(operation, mapping.resolveField("FileLoadOperation", "currentAccount"), "I", errors);
         downloadField(config, mapping.resolveField("UserConfig", "currentUser"), descriptor(mapping, "org.telegram.tgnet.TLRPC$User"), errors);
         downloadField(user, mapping.resolveField("TLRPC$User", "premium"), "Z", errors);
+        return errors;
+    }
+    static List<String> stories(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        DexClass owner = cls(index,mapping,"org.telegram.ui.Stories.StoriesController");
+        String visible=mapping.resolveField("StoriesController","dialogListStories");
+        String hidden=mapping.resolveField("StoriesController","hiddenListStories");
+        List<String> writes=new ArrayList<>(); int constructors=0;
+        if(owner!=null) for(DexClass.Method method:owner.methods) if(method.name().equals("<init>")
+                && Arrays.equals(method.parameterTypes(),new String[]{"I"})) {
+            constructors++;
+            method.scan(new CodeScanner.Visitor() {
+                @Override public void field(int opcode,int target,boolean write) {
+                    DexFile dex=owner.dex;
+                    if(write && dex.fieldClass(target).equals(owner.descriptor) && dex.fieldType(target).equals("Ljava/util/ArrayList;")) {
+                        String name=dex.fieldName(target);if(!writes.contains(name))writes.add(name);
+                    }
+                }
+            });
+        }
+        if(constructors!=1 || writes.size()<2 || !writes.get(0).equals(visible) || !writes.get(1).equals(hidden))
+            errors.add("Invalid story presentation-list constructor/fields");
+        for(String name:new String[]{visible,hidden}) {
+            DexClass.Field field=owner==null || name==null ? null : owner.fieldNamed(name);
+            if(field==null || field.isStatic() || !field.type().equals("Ljava/util/ArrayList;")) errors.add("Invalid mutable story list field: "+name);
+        }
+        DexClass peer=cls(index,mapping,"org.telegram.tgnet.tl.TL_stories$PeerStories");
+        if(peer==null) errors.add("Missing PeerStories type for story filter");
         return errors;
     }
     private static void downloadField(DexClass owner, String name, String type, List<String> errors) {

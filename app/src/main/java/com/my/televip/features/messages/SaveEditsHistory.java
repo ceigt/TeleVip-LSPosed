@@ -26,7 +26,6 @@ import com.my.televip.virtuals.ActionBar.AlertDialog;
 import com.my.televip.virtuals.SQLite.SQLiteCursor;
 import com.my.televip.virtuals.SQLite.SQLiteDatabase;
 import com.my.televip.virtuals.SettingsIconResolver;
-import com.my.televip.virtuals.messenger.BaseController;
 import com.my.televip.virtuals.messenger.MessageObject;
 import com.my.televip.virtuals.messenger.MessagesStorage;
 import com.my.televip.virtuals.messenger.UserConfig;
@@ -129,7 +128,7 @@ public final class SaveEditsHistory {
                     @Override protected void beforeMethod(MethodHookParam param) {
                         if (!ConfigManager.saveEditsHistory.isEnable()) return;
                         boolean nagram = ClientManager.is(ClientManager.Client.Nagram);
-                        if ((int) param.args[nagram ? 0 : 2] != -2) return;
+                        boolean liveEdit = (int) param.args[nagram ? 0 : 2] == -2;
                         Object incoming = param.args[nagram ? 5 : 0];
                         if (incoming == null) return;
                         MessagesStorage storage = new MessagesStorage(param.thisObject);
@@ -139,6 +138,8 @@ public final class SaveEditsHistory {
                         long capturedAt = System.currentTimeMillis();
                         for (Object item : new TLRPC.messages_Messages(incoming).getMessages()) {
                             TLRPC.Message message = new TLRPC.Message(item);
+                            // History loads also carry edits made while this chat was closed/offline.
+                            if (!liveEdit && (message.getFlags() & (1 << 15)) == 0) continue;
                             long dialogId = MessageObject.getDialogId(message);
                             if (message.getId() > 0 && dialogId != 0 && message.getMessage() != null)
                                 pending.add(new PendingEdit(dialogId, message.getId(), message.getMessage(), capturedAt));

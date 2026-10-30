@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 20;
+    public static final int VERSION = 21;
 
     private TelegramFingerprints() {
     }
@@ -1079,6 +1079,12 @@ public final class TelegramFingerprints {
     // ------------------------------------------------------------------ stories
 
     private static void stories(List<Symbol> s) {
+
+        s.add(method("StoriesController", "<init>").sig("void", "int"));
+        s.add(field("StoriesController", "dialogListStories").type("java.util.ArrayList")
+                .writtenBy("StoriesController#<init>", 0));
+        s.add(field("StoriesController", "hiddenListStories").type("java.util.ArrayList")
+                .writtenBy("StoriesController#<init>", 1));
 
         // allowScreenshots(): false for noforwards stories, and for pinned ones of a noforwards
         // chat - the only boolean() in the app reading both flags of a story item.

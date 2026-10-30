@@ -6,6 +6,7 @@ public final class ConfigManager {
     public static ConfigItem hideSeen = new ConfigItem(ConfigItem.EXPANDABLE_SWITCH,"HideSeen",java.util.Arrays.asList(hideSeenPrivateChat,hideSeenChannel));
     public static ConfigItem hideTyping=item("HideTyping"),hideOnline=item("HideOnline"),hideStoryView=item("HideStoryView");
     public static ConfigItem secretMediaSave=item("SecretMediaSave"),removesContentSaving=item("RemovesContentSaving");
+    public static ConfigItem saveEditsHistory=item("SaveEditsHistory");
     private static ConfigItem item(String key){return new ConfigItem(ConfigItem.SWITCH,key,true,null);}
     public static boolean isGhostMode(){return hideSeen.isEnable()||hideTyping.isEnable()||hideOnline.isEnable()||hideStoryView.isEnable();}
     public static ConfigItem disableChannelSwipeBack = new ConfigItem(ConfigItem.SWITCH, "DisableChannelSwipeBack", true, null);

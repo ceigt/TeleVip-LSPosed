@@ -60,3 +60,16 @@ Refined the download-scope adaptation of TeleVIP a1081a3 using the actual instal
 Hook the extracted download byte-budget helper, including preload transitions outside start;
 retain the old typed start fallback for 13.1.0 and require complete Premium-caller coverage.
 No additional upstream source is imported for this refinement. Fingerprint cache version is 20.
+
+2026-10-30 upstream 1.5 adaptations:
+mustafa1dev/TeleVip-LSPosed remains at a879b70288794f09ebdf24c200e3c0ca8c3974a1.
+2B-4G10/TeleVIP (redirects to Re-TeleVIP) rewrote main to 9e8b49a39af90983d75b34463b678f95d9fbb65c
+and now distributes GPL source in release assets. Reviewed official v1.5 source asset:
+https://github.com/2B-4G10/Re-TeleVIP/releases/download/v1.5/Re-TeleVIP-1.5-source.zip
+SHA256: 687fd0d1ff2c2ce62c61857992a00b40245d9b3dab3bd7c6b70bd9d3944bbffe.
+Adaptations: features/SaveEditsHistory.java (edited normal history loads),
+features/DisableStories.java (typed PeerStories filtering in controller presentation lists).
+Local implementation preserves account/session and queue ordering protection, targets only two
+mapped presentation lists, handles cached entries and list edge cases, and audits the exact
+constructor/field layout against the authenticated Play APK. Fingerprint cache version is 21.
+No source-removal merge, privacy-policy change, dependency or default-switch change is imported.

@@ -29,9 +29,12 @@ $production = @(
     'diagnostics/PrivacyStatus.java', 'features/ghostMode/PrivacyProtection.java', 'features/ghostMode/PrivacyRequestKind.java',
     'features/ghostMode/PrivacyCallbacks.java', 'features/otherFeatures/AlwaysSaveMedia.java', 'features/media/MediaOpenScope.java',
     'features/media/MediaHookSelector.java', 'features/media/MediaPathOverride.java', 'features/ui/AdResponseFilter.java'
+    'features/messages/SaveEditsHistory.java', 'application/AndroidUtilities.java',
+    'virtuals/messenger/UserConfig.java', 'virtuals/ui/BaseFragment.java', 'features/stories/StoryLists.java'
 )
 foreach ($source in $production) { $javaSources += Join-Path $repo ('app/src/main/java/com/my/televip/' + $source) }
 $javaSources += Join-Path $repo 'tests/compat/src/com/my/televip/compat/FeatureSelectorsTest.java'
+$javaSources += Join-Path $repo 'tests/compat/src/com/my/televip/compat/StoryListsTest.java'
 $sourceList = Join-Path $runDir 'sources.txt'
 [IO.File]::WriteAllLines($sourceList, @($javaSources | ForEach-Object { '"' + $_.Replace('\','/') + '"' }), [Text.UTF8Encoding]::new($false))
 & (Join-Path $JavaHome 'bin/javac.exe') -encoding UTF-8 -source 8 -target 8 -classpath $androidJar -d $classes "@$sourceList"
@@ -63,6 +66,6 @@ if ($Serial) {
         $result = & $Adb -s $Serial shell am instrument -w org.televip.regression/.RegressionInstrumentation
         $result | Set-Content (Join-Path $runDir 'result.txt')
         $result | Write-Output
-        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 12 regression groups passed;')) { throw 'Device regressions failed' }
+        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 13 regression groups passed;')) { throw 'Device regressions failed' }
     } finally { & $Adb -s $Serial uninstall org.televip.regression }
 }

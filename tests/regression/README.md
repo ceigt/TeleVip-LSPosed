@@ -12,7 +12,7 @@ Omit `-Serial` to build only. `-Adb` defaults to `adb` on PATH. Each run creates
 
 ## Coverage
 
-Twelve groups cover:
+Thirteen groups cover:
 
 1. Message ID parsing, including empty input, signs and overflow.
 2. One-shot read permits: request identity, connection identity, expiration, concurrency and bounded capacity.
@@ -35,6 +35,8 @@ The initialization and swipe tests use the production reflection helpers and fea
 12. Startup failure recovery using production MainHook/BootstrapRequests against a controlled host: three bounded retries, ordinary request release and selective fallback; known read/typing/story/status classification, normal/timestamp response completion, peer/field/response faults, visible degradation, one-shot permits, switch off/on behavior, nested/exceptional TTL restoration, save-button gating and account checks that do not wait for a held database write lock.
 
 The new failure tests deliberately leave the main privacy feature hook unavailable to exercise the permanent bootstrap fallback. Protocol classes, native dispatcher and feature initialization are controlled fakes; tests do not send network traffic from Telegram or alter its messages. Temporary media restoration tests exercise the production scope helper; real one-time media remains a separate end-to-end check.
+
+13. Upstream 1.5 adaptations: the production edit-history hook and real module SQLite run against a controlled host queue. Cases cover offline/group and channel edits, account/dialog separation, live edits without an edit flag, unedited/no-op/missing-cache loads, disabled recording, old-text capture before the host overwrite, and cursor/buffer disposal. Typed story-list filtering covers existing items, indexed/bulk insertion, final instance fields, idempotence, unrelated upload lists and rejection before partial replacement. Host message decoding remains a controlled boundary; real remote edits still require disposable Telegram content.
 
 ## Device verification
 
