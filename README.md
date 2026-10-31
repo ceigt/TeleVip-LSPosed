@@ -12,6 +12,10 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 Adapts Re-TeleVIP 1.5.1/1.5.2: an optional always-visible Downloads shortcut, independent own/other-profile ID switches, profile status/ID centring fixes and Indonesian translations. Old ID preferences are inherited by both child switches; the new Downloads option defaults off. Runtime rendering scopes are nested and thread-local, and only module-owned ID labels receive width corrections. See [3.6.18 review and verification](docs/releases/3.6.18.md).
 
+## Hidden receipts and unread counts
+
+Hiding read receipts also prevents Telegram's server read position from advancing. This fork does not keep an independent persistent local read watermark, so refreshing server dialog state can restore older unread counts. To keep normal channel/group read synchronization while hiding private-chat receipts, turn off **Hide Seen > Channels and Groups** and leave **Private Chats** on. Existing unread backlogs are cleared by normal reading or an explicit mark-as-read action; changing this switch does not mark every chat read.
+
 ## 3.6.17 phone display coverage
 
 Version 3.6.17 fixes own-phone visibility in the Profile tab and the account change-number introduction on Play Telegram 13.1.1. The formatter mask now also runs inside the profile row binder (using that profile's owning account) and the change-number view builder. Telegram's account data and number-change business logic retain the real number. The original-certificate cloud build is installed and four-page on/off checks pass with original preferences restored. See [3.6.17 verification](docs/releases/3.6.17.md) for evidence and limits.

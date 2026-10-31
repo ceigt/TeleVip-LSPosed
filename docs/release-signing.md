@@ -83,3 +83,9 @@ The cloud-signed APK is installed over 3.6.15 with data preserved, and the pulle
 On 2026-10-31 (Asia/Taipei), [run 41211961263](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41211961263) builds and signs source `15a8506f160d62f975bf5bcf51a606ff38e5915e`. Signed APK SHA256: `1eda71c9d4235524ed41ddae87fc867949d5561cf9b6f583b83cf2732ca50f65`. Independent original-certificate, versionCode 359, package, alignment and API 102 checks pass. Both artifact archive digests and internal provenance match; signing preserves all unsigned ZIP entries.
 
 The APK is installed over 3.6.16 with data preserved and verified by pulling it back. Actual Profile, Settings, Account and change-number introduction checks pass with hiding on, and show the original number with hiding off. The original enabled configuration and temporary system setting are restored. See [3.6.17 verification and limits](releases/3.6.17.md).
+
+## Upstream UI adaptation 3.6.18
+
+On 2026-10-31 (Asia/Taipei), [run 41215755477](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41215755477) completed build and original-certificate signing for source `46998ddf7c4af7a3b7f0f826252e670387799170`. Signed APK SHA256: `3ac9eec166abdde098aadc0ab82e31d00e5f287084b2289c8fa4fa8b8e556434`. Independent certificate, package, versionCode 360, alignment and API 102 checks pass. Archive digests and provenance match; all 918 unsigned ZIP payload entries are preserved.
+
+The final artifact is installed with data preserved and is identical to the APK pulled back from the phone. Downloads and independent profile ID controls pass selected UI checks; the final profile fix passes three scroll cycles. The earlier run 41213634220 is superseded by this rendering correction. Temporary USB stay-awake is restored. Channel/group receipts are enabled at the user's request while private-chat hiding remains enabled. See [3.6.18 verification and limits](releases/3.6.18.md).
