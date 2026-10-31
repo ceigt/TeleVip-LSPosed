@@ -62,12 +62,13 @@ final class FeatureShapeAudit {
         }
         if (updates != 1) errors.add("Invalid Downloads visibility update scope");
         DexClass text = cls(index, mapping, "org.telegram.ui.ActionBar.SimpleTextView");
-        for (String key : new String[]{"getPaint", "getExactWidth"}) {
+        for (String key : new String[]{"getPaint", "getExactWidth", "setEllipsizeByGradient"}) {
             String name = mapping.resolveMethod("SimpleTextView", key);
             int methods = 0;
             if (text != null && name != null) for (DexClass.Method method : text.methods)
-                if (method.name().equals(name) && !method.isStatic() && method.parameterTypes().length == 0
-                        && method.returnType().equals(key.equals("getPaint") ? "Landroid/text/TextPaint;" : "F")) methods++;
+                if (method.name().equals(name) && !method.isStatic()
+                        && Arrays.equals(method.parameterTypes(), key.equals("setEllipsizeByGradient") ? new String[]{"Z"} : new String[0])
+                        && method.returnType().equals(key.equals("getPaint") ? "Landroid/text/TextPaint;" : key.equals("getExactWidth") ? "F" : "V")) methods++;
             if (methods != 1) errors.add("Invalid profile text metric: " + key);
         }
         return errors;

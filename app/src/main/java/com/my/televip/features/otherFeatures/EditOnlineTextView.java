@@ -96,6 +96,9 @@ public class EditOnlineTextView {
                                 if (idView instanceof View) {
                                     labels.put((View) idView, new IdLabel(id, own));
                                     new SimpleTextView(idView).setMaxLines(2);
+                                    // The host's gradient uses a cached hardware layer for a one-line status.
+                                    // With our added second line, scroll/reflow can leave that layer stale.
+                                    XposedHelpers.callMethod(idView, Obfuscate.getMethodName("SimpleTextView", "setEllipsizeByGradient"), false);
                                 }
                             } finally {
                                 scope.enter(new ProfileTextScope.Frame(param, status, copy, idView, id, offline));
@@ -114,6 +117,8 @@ public class EditOnlineTextView {
                                 if (!(frame.idView instanceof View)) return;
                                 SimpleTextView line = new SimpleTextView(frame.idView);
                                 if (!ProfileStatusLine.hasId(line.getText(), frame.id)) line.setText(withId(line.getText(), frame.id), true);
+                                line.getSimpleTextView().requestLayout();
+                                line.getSimpleTextView().invalidate();
                                 String id = frame.id;
                                 line.getSimpleTextView().setOnClickListener(v -> {
                                     Context activity = Utils.getCurrentActivity();

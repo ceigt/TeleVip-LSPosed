@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 23;
+    public static final int VERSION = 24;
 
     private TelegramFingerprints() {
     }
@@ -898,6 +898,8 @@ public final class TelegramFingerprints {
         s.add(method("SimpleTextView", "setText").sig("boolean", "java.lang.CharSequence"));
         s.add(method("SimpleTextView", "getText").sig("java.lang.CharSequence"));
         s.add(method("SimpleTextView", "getPaint").sig("android.text.TextPaint").isStatic(false));
+        s.add(method("SimpleTextView", "setEllipsizeByGradient").sig("void", "boolean").isStatic(false)
+                .where(callCount(2), callsSibling("void"), not(callsAnyNamed("requestLayout"))));
         s.add(method("SimpleTextView", "getExactWidth").sig("float").isStatic(false).where(any(
                 calls("android.text.TextPaint", "float", "java.lang.String"),
                 calls("android.graphics.Paint", "float", "java.lang.String"))));

@@ -38,6 +38,8 @@ The new failure tests deliberately leave the main privacy feature hook unavailab
 
 13. Upstream 1.5 adaptations: the production edit-history hook and real module SQLite run against a controlled host queue. Cases cover offline/group and channel edits, account/dialog separation, live edits without an edit flag, unedited/no-op/missing-cache loads, disabled recording, old-text capture before the host overwrite, and cursor/buffer disposal. Typed story-list filtering covers existing items, indexed/bulk insertion, final instance fields, idempotence, unrelated upload lists and rejection before partial replacement. Host message decoding remains a controlled boundary; real remote edits still require disposable Telegram content.
 
+14. Profile render scope: primary versus hidden overlay selection, stale/duplicate numeric ID removal, nested profile updates, callback-failure cleanup, unrelated-view preservation and thread isolation. Final text drawing, gradient-layer behavior, centring and Downloads/search transitions still require actual Telegram UI checks.
+
 ## Device verification
 
 For the priority fix build, confirm the TeleVip entry opens from Telegram settings and check startup logs for installed history, deletion and ghost mode hooks.

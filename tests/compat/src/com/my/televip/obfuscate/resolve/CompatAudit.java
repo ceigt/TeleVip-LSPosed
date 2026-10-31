@@ -43,7 +43,7 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
-        for(String key : new String[]{"DialogsActivity#updateProxyButton", "SimpleTextView#getExactWidth", "SimpleTextView#getPaint"}) {
+        for(String key : new String[]{"DialogsActivity#updateProxyButton", "SimpleTextView#getExactWidth", "SimpleTextView#getPaint", "SimpleTextView#setEllipsizeByGradient"}) {
             Mapping brokenUi = Mapping.deserialize(mapping.serialize());
             brokenUi.methods.put(key, "__missing__");
             if(FeatureShapeAudit.upstreamUi(index,brokenUi).isEmpty()) errors.add("Broken upstream UI target passed audit: " + key);
