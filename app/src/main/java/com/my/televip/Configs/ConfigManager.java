@@ -13,6 +13,7 @@ import com.my.televip.features.ghostMode.GhostMode;
 import com.my.televip.features.ghostMode.HidePhone;
 import com.my.televip.features.ui.HidePinnedMessages;
 import com.my.televip.features.ui.AdBlock;
+import com.my.televip.features.ui.DownloadsShortcut;
 import com.my.televip.features.other.HideUpdateApp;
 import com.my.televip.features.ui.HijriDate;
 import com.my.televip.features.media.PreventMedia;
@@ -83,6 +84,7 @@ public class ConfigManager {
     public static ConfigItem hideProxySponsor;
     public static ConfigItem blockAds;
     public static ConfigItem showUserID;
+    public static ConfigItem showUserIDSelf, showUserIDOthers, alwaysShowDownloads;
     public static ConfigItem customCalendar;
 
     // Other Features
@@ -203,6 +205,10 @@ public class ConfigManager {
         hidePinnedMessages = new ConfigItem(ConfigItem.SWITCH, Keys.HidePinnedMessages, ConfigPreferences.getBoolean(Keys.HidePinnedMessages), HidePinnedMessages::init);
         items.add(hidePinnedMessages);
 
+        alwaysShowDownloads = new ConfigItem(ConfigItem.SWITCH, Keys.AlwaysShowDownloads, true,
+                ConfigPreferences.getBoolean(Keys.AlwaysShowDownloads), DownloadsShortcut::init);
+        items.add(alwaysShowDownloads);
+
         disableChannelSwipeBack = new ConfigItem(ConfigItem.SWITCH, Keys.DisableChannelSwipeBack, ConfigPreferences.getBoolean(Keys.DisableChannelSwipeBack), DisableChannelSwipeBack::init);
         items.add(disableChannelSwipeBack);
 
@@ -216,7 +222,15 @@ public class ConfigManager {
         items.add(blockAds);
 
         if (!ClientManager.is(ClientManager.Client.Telegraph) && !ClientManager.is(ClientManager.Client.Nekogram) && !ClientManager.is(ClientManager.Client.Cherrygram)) {
-            showUserID = new ConfigItem(ConfigItem.SWITCH, Keys.ShowUserID, ConfigPreferences.getBoolean(Keys.ShowUserID), EditOnlineTextView::init);
+            // Migrate each missing child separately; preserve an already chosen child value.
+            for (String key : new String[]{Keys.ShowUserIDSelf, Keys.ShowUserIDOthers})
+                if (!ConfigPreferences.contains(key)) ConfigPreferences.putBoolean(key, ConfigPreferences.getBoolean(Keys.ShowUserID));
+            showUserIDSelf = new ConfigItem(ConfigItem.SWITCH, Keys.ShowUserIDSelf, true,
+                    ConfigPreferences.getBoolean(Keys.ShowUserIDSelf), EditOnlineTextView::init);
+            showUserIDOthers = new ConfigItem(ConfigItem.SWITCH, Keys.ShowUserIDOthers, true,
+                    ConfigPreferences.getBoolean(Keys.ShowUserIDOthers), EditOnlineTextView::init);
+            showUserID = new ConfigItem(ConfigItem.EXPANDABLE_SWITCH, Keys.ShowUserID,
+                    java.util.Arrays.asList(showUserIDSelf, showUserIDOthers));
             items.add(showUserID);
             customCalendar = new ConfigItem(ConfigItem.TEXT, Keys.Calendar, true, HijriDate::init);
             items.add(customCalendar);
@@ -283,6 +297,11 @@ public class ConfigManager {
         } catch (Throwable e) {
             Logger.e(e);
         }
+    }
+
+    public static boolean isUserIdShown(boolean ownProfile) {
+        ConfigItem item = ownProfile ? showUserIDSelf : showUserIDOthers;
+        return item != null && item.isEnable();
     }
 
     public static boolean isGhostMode(){

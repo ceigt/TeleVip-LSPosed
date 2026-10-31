@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 22;
+    public static final int VERSION = 23;
 
     private TelegramFingerprints() {
     }
@@ -176,6 +176,7 @@ public final class TelegramFingerprints {
         o.put("UserInfoActivity", "org.telegram.ui.UserInfoActivity");
         o.put("ProfileActivity$ListAdapter", "org.telegram.ui.ProfileActivity$ListAdapter");
         o.put("ChangePhoneHelpActivity", "org.telegram.ui.ChangePhoneHelpActivity");
+        o.put("DialogsActivity", "org.telegram.ui.DialogsActivity");
         o.put("TLRPC$TL_help_promoDataEmpty", "org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty");
         return Collections.unmodifiableMap(o);
     }
@@ -896,6 +897,10 @@ public final class TelegramFingerprints {
                         hasMethod(false, "java.lang.CharSequence")));
         s.add(method("SimpleTextView", "setText").sig("boolean", "java.lang.CharSequence"));
         s.add(method("SimpleTextView", "getText").sig("java.lang.CharSequence"));
+        s.add(method("SimpleTextView", "getPaint").sig("android.text.TextPaint").isStatic(false));
+        s.add(method("SimpleTextView", "getExactWidth").sig("float").isStatic(false).where(any(
+                calls("android.text.TextPaint", "float", "java.lang.String"),
+                calls("android.graphics.Paint", "float", "java.lang.String"))));
 
         // onFragmentCreate: userId = arguments.getLong("user_id"); chatId = ...("chat_id").
         s.add(method("ProfileActivity", "onFragmentCreate"));
@@ -930,6 +935,12 @@ public final class TelegramFingerprints {
     }
 
     private static void chat(List<Symbol> s) {
+        s.add(cls("org.telegram.ui.DialogsActivity")
+                .from(declaringStrings("archivehint_l", "cache_hint_showafter"),
+                        declaringStrings("archivehint_l", "filterhint", "proxy_enabled"))
+                .where(inherits("org.telegram.ui.ActionBar.BaseFragment")));
+        s.add(method("DialogsActivity", "updateProxyButton").sig("void", "boolean", "boolean")
+                .isStatic(false).where(string("proxy_enabled")));
         String cell = "org.telegram.ui.Cells.ChatMessageCell";
         String mo = "org.telegram.messenger.MessageObject";
         s.add(cls("org.telegram.ui.Cells.ChatMessageCell$MessageAccessibilityNodeProvider")

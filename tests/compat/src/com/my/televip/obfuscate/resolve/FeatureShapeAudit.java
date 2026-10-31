@@ -9,6 +9,7 @@ final class FeatureShapeAudit {
         List<String> errors=new ArrayList<>();
         errors.addAll(downloads(index, mapping));
         errors.addAll(stories(index, mapping));
+        errors.addAll(upstreamUi(index, mapping));
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -39,6 +40,36 @@ final class FeatureShapeAudit {
                 && Arrays.equals(m.parameterTypes(),new String[]{"J"}) && m.returnType().startsWith("L")) count++;
         if(count!=1) errors.add("Invalid sponsored cache getter");
         if("org.telegram.messenger".equals(packageName)) errors.addAll(phoneDisplay(index, mapping));
+        return errors;
+    }
+    static List<String> upstreamUi(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        DexClass dialogs = cls(index, mapping, "org.telegram.ui.DialogsActivity");
+        String update = mapping.resolveMethod("DialogsActivity", "updateProxyButton");
+        int updates = 0;
+        if (dialogs != null && update != null) for (DexClass.Method method : dialogs.methods) {
+            final boolean[] proxyKey = {false}, alpha = {false};
+            method.scan(new CodeScanner.Visitor() {
+                @Override public void string(int target) {
+                    if (dialogs.dex.string(target).equals("proxy_enabled")) proxyKey[0] = true;
+                }
+                @Override public void invoke(int opcode, int target) {
+                    if (dialogs.dex.methodName(target).equals("getAlpha")) alpha[0] = true;
+                }
+            });
+            if (method.name().equals(update) && !method.isStatic() && method.returnType().equals("V")
+                    && Arrays.equals(method.parameterTypes(), new String[]{"Z", "Z"}) && proxyKey[0] && alpha[0]) updates++;
+        }
+        if (updates != 1) errors.add("Invalid Downloads visibility update scope");
+        DexClass text = cls(index, mapping, "org.telegram.ui.ActionBar.SimpleTextView");
+        for (String key : new String[]{"getPaint", "getExactWidth"}) {
+            String name = mapping.resolveMethod("SimpleTextView", key);
+            int methods = 0;
+            if (text != null && name != null) for (DexClass.Method method : text.methods)
+                if (method.name().equals(name) && !method.isStatic() && method.parameterTypes().length == 0
+                        && method.returnType().equals(key.equals("getPaint") ? "Landroid/text/TextPaint;" : "F")) methods++;
+            if (methods != 1) errors.add("Invalid profile text metric: " + key);
+        }
         return errors;
     }
     static List<String> phoneDisplay(DexIndex index, Mapping mapping) {

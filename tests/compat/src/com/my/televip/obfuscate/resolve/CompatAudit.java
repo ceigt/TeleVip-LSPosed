@@ -43,6 +43,11 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
+        for(String key : new String[]{"DialogsActivity#updateProxyButton", "SimpleTextView#getExactWidth", "SimpleTextView#getPaint"}) {
+            Mapping brokenUi = Mapping.deserialize(mapping.serialize());
+            brokenUi.methods.put(key, "__missing__");
+            if(FeatureShapeAudit.upstreamUi(index,brokenUi).isEmpty()) errors.add("Broken upstream UI target passed audit: " + key);
+        }
         Mapping brokenStoryLists=Mapping.deserialize(mapping.serialize());
         brokenStoryLists.fields.put("StoriesController#dialogListStories", "__missing__");
         if(FeatureShapeAudit.stories(index,brokenStoryLists).isEmpty()) errors.add("Broken story list fields passed audit");

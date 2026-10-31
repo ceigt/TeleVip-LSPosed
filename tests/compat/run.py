@@ -24,6 +24,7 @@ sources += [base / 'compat/ReflectionLookup.java', base / 'features/media/MediaH
 sources += [base / 'features/ghostMode/PrivacyRequestKind.java']
 sources += [base / 'features/connections/DownloadPremiumScope.java', base / 'features/otherFeatures/ProfileStatusLine.java']
 sources += [base / 'features/stories/StoryLists.java']
+sources += [base / 'features/otherFeatures/ProfileTextScope.java']
 sources += list((root / 'tests/compat/src').rglob('*.java'))
 source_list = output / 'sources.txt'
 source_list.write_text('\n'.join('"' + str(p).replace('\\', '/') + '"' for p in sources), encoding='utf-8')
@@ -33,6 +34,7 @@ subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.Reflectio
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.FeatureSelectorsTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.MaintenancePolicyTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.StoryListsTest'], check=True)
+subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.ProfileRenderTest'], check=True)
 subprocess.run([sys.executable, str(root / 'tests/compat/test_audit.py')], check=True)
 inventory = output / 'inventory.tsv'
 subprocess.run([sys.executable, str(root / 'tests/compat/inventory.py'), str(inventory)], check=True)

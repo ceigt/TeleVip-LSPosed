@@ -84,7 +84,7 @@
   "PersianMonthDey": "德伊",
   "PersianMonthBahman": "巴赫曼",
   "PersianMonthEsfand": "埃斯凡德",
-  "QuranNotification" : "《古兰经》已启用。它是伊斯兰教的神圣经典，也是穆斯林立法和指导的主要来源之一。古兰经会在如礼拜等宗教活动中诵读，聆听其诵读被认为是穆斯林的一项重要实践，因为其中包含精神与反思层面的意义。\n\n一些研究表明，聆听古兰经的诵读可能有助于减轻压力，并提升平静与放松的感觉。这被认为与诵读的规律节奏以及声音的舒缓语调有关，从心理学角度来看，其效果类似于聆听舒缓的声音或柔和的音乐。",
+  "QuranNotification": "《古兰经》已启用。它是伊斯兰教的神圣经典，也是穆斯林立法和指导的主要来源之一。古兰经会在如礼拜等宗教活动中诵读，聆听其诵读被认为是穆斯林的一项重要实践，因为其中包含精神与反思层面的意义。\n\n一些研究表明，聆听古兰经的诵读可能有助于减轻压力，并提升平静与放松的感觉。这被认为与诵读的规律节奏以及声音的舒缓语调有关，从心理学角度来看，其效果类似于聆听舒缓的声音或柔和的音乐。",
   "GregorianMonthJanuary": "一月",
   "GregorianMonthFebruary": "二月",
   "GregorianMonthMarch": "三月",
@@ -106,7 +106,10 @@
   "Age": "账号年龄",
   "ApproximateCreationDateNotice": "此日期是根据 Telegram ID 推算得出的估计值，可能与实际创建日期不一致。",
   "EnableVoiceMessageSaving": "开启语音消息保存",
-    "BlockAds": "屏蔽广告（频道、搜索、视频和代理推广）",
+  "BlockAds": "屏蔽广告（频道、搜索、视频和代理推广）",
   "ProtectionWarning": "TeleVip 部分保护未能正常初始化或执行。正常联网已恢复，已识别的隐私请求仍会被拦截，但无法确认全部保护有效。请重启 Telegram；若提示仍出现，请更新 TeleVip 后再依赖隐私开关。",
-  "NoEditHistory": "这条消息暂无已记录的编辑历史。"
+  "NoEditHistory": "这条消息暂无已记录的编辑历史。",
+  "AlwaysShowDownloads": "始终显示下载",
+  "ShowUserIDSelf": "我的资料页",
+  "ShowUserIDOthers": "他人的资料页"
 }

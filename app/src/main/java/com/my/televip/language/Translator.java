@@ -34,6 +34,7 @@ public class Translator {
             JSONObject json = JsonAssetReader.readObject("assets/lang/" + fileName);
             if (json != null) {
                 langMap.put(langCode, json);
+                if ("id".equals(langCode)) langMap.put("in", json); // Android/Java legacy Indonesian code.
             }
         }
     }

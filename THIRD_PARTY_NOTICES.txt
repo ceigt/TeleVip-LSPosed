@@ -73,3 +73,14 @@ Local implementation preserves account/session and queue ordering protection, ta
 mapped presentation lists, handles cached entries and list edge cases, and audits the exact
 constructor/field layout against the authenticated Play APK. Fingerprint cache version is 21.
 No source-removal merge, privacy-policy change, dependency or default-switch change is imported.
+
+2026-10-31 upstream 1.5.1/1.5.2 adaptations (GPL-3.0):
+https://github.com/2B-4G10/Re-TeleVIP/releases/tag/v1.5.2
+Official source asset Re-TeleVIP-1.5.2-source.zip, SHA256:
+2fd244a1ea9788de00ff5894b3be7337077572722e1ed74f9835311c3b90cdd1.
+Adapted features/DownloadsShortcut.java, features/otherFeatures/EditOnlineTextView.java,
+Configs/ConfigManager.java (self/other ID preferences), and Indonesian/new-control translations.
+Local changes retain API 102 installation bookkeeping, require typed/unique menu selection,
+use nested thread-local profile rendering instead of global view state, limit width changes to
+module-owned labels, preserve individual migrated choices, and add exact DEX/negative controls.
+Source and feature-selection evidence: docs/releases/3.6.18.md.

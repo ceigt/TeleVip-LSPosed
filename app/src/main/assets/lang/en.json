@@ -84,7 +84,7 @@
   "PersianMonthDey": "Dey",
   "PersianMonthBahman": "Bahman",
   "PersianMonthEsfand": "Esfand",
-  "QuranNotification" : "The Holy Quran has been activated. It is the sacred book of Islam and one of the main sources of legislation and guidance for Muslims. The Quran is recited in acts of worship such as prayer, and listening to it is considered an important practice among Muslims due to its spiritual and reflective meanings.\n\nSome studies have shown that listening to the recitation of the Quran may help reduce stress and improve feelings of calmness and relaxation. This is attributed to the regular rhythm of the recitation and the soothing tone of the voice, producing an effect similar to listening to calming sounds or soft music from a psychological perspective.",
+  "QuranNotification": "The Holy Quran has been activated. It is the sacred book of Islam and one of the main sources of legislation and guidance for Muslims. The Quran is recited in acts of worship such as prayer, and listening to it is considered an important practice among Muslims due to its spiritual and reflective meanings.\n\nSome studies have shown that listening to the recitation of the Quran may help reduce stress and improve feelings of calmness and relaxation. This is attributed to the regular rhythm of the recitation and the soothing tone of the voice, producing an effect similar to listening to calming sounds or soft music from a psychological perspective.",
   "GregorianMonthJanuary": "January",
   "GregorianMonthFebruary": "February",
   "GregorianMonthMarch": "March",
@@ -107,7 +107,10 @@
   "ApproximateCreationDateNotice": "This date is based on an estimate derived from the Telegram ID and may not match the actual creation date.",
   "TeleVip": "TeleVip",
   "EnableVoiceMessageSaving": "Enable Saving Voice Messages",
-    "BlockAds": "Block ads (channels, search, video and proxy promo)",
+  "BlockAds": "Block ads (channels, search, video and proxy promo)",
   "ProtectionWarning": "Some TeleVip protection could not be initialized or completed. Normal networking is available. Recognized privacy requests are still blocked, but full protection is not confirmed. Restart Telegram; if this continues, update TeleVip before relying on privacy switches.",
-  "NoEditHistory": "No recorded edit history for this message."
+  "NoEditHistory": "No recorded edit history for this message.",
+  "AlwaysShowDownloads": "Always show Downloads",
+  "ShowUserIDSelf": "On my profile",
+  "ShowUserIDOthers": "On other profiles"
 }

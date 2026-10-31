@@ -97,6 +97,9 @@ public class Keys {
     public static final String GregorianMonthNovember = "GregorianMonthNovember";
     public static final String GregorianMonthDecember = "GregorianMonthDecember";
     public static final String ShowUserID = "ShowUserID";
+    public static final String ShowUserIDSelf = "ShowUserIDSelf";
+    public static final String ShowUserIDOthers = "ShowUserIDOthers";
+    public static final String AlwaysShowDownloads = "AlwaysShowDownloads";
     public static final String Open = "Open";
     public static final String OpenGhostMode = "OpenGhostMode";
     public static final String HideSeenPrivateChat = "HideSeenPrivateChat";
