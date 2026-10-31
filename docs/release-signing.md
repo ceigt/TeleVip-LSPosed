@@ -77,3 +77,9 @@ It is installed over 3.6.13 with data preserved. The pulled-back installed APK i
 On 2026-10-30 (Asia/Taipei), [run 41075655669](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41075655669) completed build and original-certificate signing for source `d2a660ca321839866d053e1ac003851f83993d28`. Signed APK SHA256: `ea3e5ad3f119728a89a874c1a7382052cbd1103b1c1632d4bc5fd346815ecd51`. Independent certificate, package, versionCode 358, alignment and API 102 verification passed, and unsigned ZIP payloads are unchanged after signing.
 
 The cloud-signed APK is installed over 3.6.15 with data preserved, and the pulled-back installed APK is identical. Selected settings, story-switch/restart and public-channel menu checks are complete; preferences and temporary USB stay-awake are restored. See [3.6.16 verification and limits](releases/3.6.16.md).
+
+## Phone display fix 3.6.17
+
+On 2026-10-31 (Asia/Taipei), [run 41211961263](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41211961263) builds and signs source `15a8506f160d62f975bf5bcf51a606ff38e5915e`. Signed APK SHA256: `1eda71c9d4235524ed41ddae87fc867949d5561cf9b6f583b83cf2732ca50f65`. Independent original-certificate, versionCode 359, package, alignment and API 102 checks pass. Both artifact archive digests and internal provenance match; signing preserves all unsigned ZIP entries.
+
+The APK is installed over 3.6.16 with data preserved and verified by pulling it back. Actual Profile, Settings, Account and change-number introduction checks pass with hiding on, and show the original number with hiding off. The original enabled configuration and temporary system setting are restored. See [3.6.17 verification and limits](releases/3.6.17.md).

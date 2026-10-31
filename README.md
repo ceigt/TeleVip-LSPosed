@@ -10,7 +10,7 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 ## 3.6.17 phone display coverage
 
-Version 3.6.17 fixes own-phone visibility in the Profile tab and the account change-number introduction on Play Telegram 13.1.1. The formatter mask now also runs inside the profile row binder (using that profile's owning account) and the change-number view builder. Telegram's account data and number-change business logic retain the real number. See [3.6.17 verification](docs/releases/3.6.17.md) for device status and limits.
+Version 3.6.17 fixes own-phone visibility in the Profile tab and the account change-number introduction on Play Telegram 13.1.1. The formatter mask now also runs inside the profile row binder (using that profile's owning account) and the change-number view builder. Telegram's account data and number-change business logic retain the real number. The original-certificate cloud build is installed and four-page on/off checks pass with original preferences restored. See [3.6.17 verification](docs/releases/3.6.17.md) for evidence and limits.
 
 ## 3.6.16 upstream maintenance
 
