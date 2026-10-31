@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 21;
+    public static final int VERSION = 22;
 
     private TelegramFingerprints() {
     }
@@ -174,6 +174,8 @@ public final class TelegramFingerprints {
         o.put("WriteToSocketDelegate", "org.telegram.tgnet.WriteToSocketDelegate");
         o.put("PhoneFormat", "org.telegram.PhoneFormat.PhoneFormat");
         o.put("UserInfoActivity", "org.telegram.ui.UserInfoActivity");
+        o.put("ProfileActivity$ListAdapter", "org.telegram.ui.ProfileActivity$ListAdapter");
+        o.put("ChangePhoneHelpActivity", "org.telegram.ui.ChangePhoneHelpActivity");
         o.put("TLRPC$TL_help_promoDataEmpty", "org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty");
         return Collections.unmodifiableMap(o);
     }
@@ -911,6 +913,20 @@ public final class TelegramFingerprints {
                 .readBy("ProfileActivity#createActionBarMenu", 0));
         // Fills in name, status and avatar; the only (boolean) method counting bot users.
         s.add(method("ProfileActivity", "updateProfileData").sig("void", "boolean").where(string("BotUsers")));
+        // The profile list owns its fragment and formats the phone while binding a row.
+        // R8 can outline format(String) but keeps the call obtaining the formatter here.
+        Body phoneDisplay = any(callsSymbol("PhoneFormat#format"),
+                calls("org.telegram.PhoneFormat.PhoneFormat", "org.telegram.PhoneFormat.PhoneFormat"));
+        s.add(cls("org.telegram.ui.ProfileActivity$ListAdapter").from(fieldTypesOf(p))
+                .where(hasConstructor(p, "android.content.Context"), hasField(false, p), someMethod(phoneDisplay)));
+        s.add(field("ProfileActivity$ListAdapter", "profileActivity").type(p).isStatic(false).onlyOneOfType());
+        s.add(method("ProfileActivity$ListAdapter", "onBindViewHolder")
+                .sig("void", Symbol.ANY, "int").isStatic(false).where(phoneDisplay));
+        // The change-number introduction displays "Keep <current phone>" separately.
+        s.add(cls("org.telegram.ui.ChangePhoneHelpActivity").from(declaringStrings("PhoneNumberKeepButton"))
+                .where(inherits("org.telegram.ui.ActionBar.BaseFragment")));
+        s.add(method("ChangePhoneHelpActivity", "createView").sig("android.view.View", "android.content.Context")
+                .isStatic(false).where(string("PhoneNumberKeepButton")));
     }
 
     private static void chat(List<Symbol> s) {

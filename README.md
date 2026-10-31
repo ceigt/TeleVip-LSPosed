@@ -8,6 +8,10 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## 3.6.17 phone display coverage
+
+Version 3.6.17 fixes own-phone visibility in the Profile tab and the account change-number introduction on Play Telegram 13.1.1. The formatter mask now also runs inside the profile row binder (using that profile's owning account) and the change-number view builder. Telegram's account data and number-change business logic retain the real number. See [3.6.17 verification](docs/releases/3.6.17.md) for device status and limits.
+
 ## 3.6.16 upstream maintenance
 
 Version 3.6.16 adapts the TeleVIP 1.5 story-row and edit-history fixes for the unchanged Google Play Telegram 13.1.1 (72371). Edited messages received in normal history loads can preserve the previously cached text, including when the chat was closed or offline. Story hiding filters only the two mapped presentation lists, including cached entries, and retains the existing restart requirement. Other story-controller collections and stored history are preserved. See [3.6.16 verification](docs/releases/3.6.16.md) for evidence and test limits.

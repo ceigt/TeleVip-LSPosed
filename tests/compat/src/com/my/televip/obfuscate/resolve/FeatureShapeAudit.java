@@ -38,8 +38,13 @@ final class FeatureShapeAudit {
         if(controller!=null) for(DexClass.Method m:controller.methods) if(m.name().equals(cache) && !m.isStatic()
                 && Arrays.equals(m.parameterTypes(),new String[]{"J"}) && m.returnType().startsWith("L")) count++;
         if(count!=1) errors.add("Invalid sponsored cache getter");
-        // HidePhone needs these concrete display scopes even if a settings callback alternative exists.
-        if("org.telegram.messenger".equals(packageName)) for(String owner:new String[]{"SettingsActivity","UserInfoActivity"}) {
+        if("org.telegram.messenger".equals(packageName)) errors.addAll(phoneDisplay(index, mapping));
+        return errors;
+    }
+    static List<String> phoneDisplay(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        // HidePhone needs these concrete scopes even if a settings callback alternative exists.
+        for(String owner:new String[]{"SettingsActivity","UserInfoActivity"}) {
             DexClass scope=cls(index,mapping,"org.telegram.ui."+owner);
             String fill=mapping.resolveMethod(owner,"fillItems");int fills=0;
             if(scope!=null && fill!=null) for(DexClass.Method m:scope.methods) if(m.name().equals(fill)
@@ -47,7 +52,53 @@ final class FeatureShapeAudit {
                     && (!m.isStatic() || m.parameterTypes().length>0 && m.parameterTypes()[0].equals(scope.descriptor))) fills++;
             if(fills!=1) errors.add("Invalid phone display scope: "+owner);
         }
+        DexClass adapter = cls(index, mapping, "org.telegram.ui.ProfileActivity$ListAdapter");
+        String ownerName = mapping.resolveField("ProfileActivity$ListAdapter", "profileActivity");
+        DexClass.Field owner = adapter == null || ownerName == null ? null : adapter.fieldNamed(ownerName);
+        if (owner == null || owner.isStatic() || !owner.type().equals(descriptor(mapping, "org.telegram.ui.ProfileActivity")))
+            errors.add("Invalid phone display profile owner");
+        String bind = mapping.resolveMethod("ProfileActivity$ListAdapter", "onBindViewHolder");
+        int binders = 0;
+        if (adapter != null && bind != null) for (DexClass.Method method : adapter.methods) {
+            String[] params = method.parameterTypes();
+            if (method.name().equals(bind) && !method.isStatic() && method.returnType().equals("V")
+                    && params.length == 2 && params[0].startsWith("L") && params[1].equals("I")
+                    && phoneFormatterCall(method, mapping)) binders++;
+        }
+        if (binders != 1) errors.add("Invalid phone display profile row binder");
+        DexClass help = cls(index, mapping, "org.telegram.ui.ChangePhoneHelpActivity");
+        String create = mapping.resolveMethod("ChangePhoneHelpActivity", "createView");
+        int views = 0;
+        if (help != null && create != null) for (DexClass.Method method : help.methods) {
+            final boolean[] keepLabel = {false};
+            method.scan(new CodeScanner.Visitor() {
+                @Override public void string(int target) {
+                    if (help.dex.string(target).equals("PhoneNumberKeepButton")) keepLabel[0] = true;
+                }
+            });
+            if (method.name().equals(create) && !method.isStatic() && method.returnType().equals("Landroid/view/View;")
+                    && Arrays.equals(method.parameterTypes(), new String[]{"Landroid/content/Context;"})
+                    && keepLabel[0] && phoneFormatterCall(method, mapping)) views++;
+        }
+        if (views != 1) errors.add("Invalid phone display change-number introduction");
         return errors;
+    }
+    private static boolean phoneFormatterCall(DexClass.Method method, Mapping mapping) {
+        final boolean[] found = {false};
+        String formatter = descriptor(mapping, "org.telegram.PhoneFormat.PhoneFormat");
+        method.scan(new CodeScanner.Visitor() {
+            @Override public void invoke(int opcode, int target) {
+                DexFile dex = method.owner.dex;
+                if (!dex.methodClass(target).equals(formatter)) return;
+                int proto = dex.methodProto(target);
+                String[] params = dex.protoParameters(proto);
+                // R8 outlines format(String), retaining getInstance() in the UI caller.
+                if (params.length == 0 && dex.protoReturnType(proto).equals(formatter)
+                        || Arrays.equals(params, new String[]{"Ljava/lang/String;"})
+                        && dex.protoReturnType(proto).equals("Ljava/lang/String;")) found[0] = true;
+            }
+        });
+        return found[0];
     }
     static List<String> downloads(DexIndex index, Mapping mapping) {
         List<String> errors = new ArrayList<>();

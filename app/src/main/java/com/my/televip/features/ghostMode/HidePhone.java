@@ -9,10 +9,11 @@ import com.my.televip.hooks.HMethod;
 import com.my.televip.hooks.HookInstallation;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.Obfuscate;
-import com.my.televip.settings.TelegramSettingsCompat;
+import com.my.televip.settings.NativeSettingsEntry;
 import com.my.televip.virtuals.tgnet.TLRPC;
 import com.my.televip.virtuals.ui.BaseFragment;
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
@@ -38,6 +39,23 @@ public final class HidePhone {
                 HMethod.hookMethod(com.my.televip.settings.NativeSettingsEntry.uniqueMethod(settings, Obfuscate.getMethodName("SettingsActivity", "fillItems"), ArrayList.class), displayScope());
                 HMethod.hookMethod(com.my.televip.settings.NativeSettingsEntry.uniqueMethod(
                         ClassLoad.getClass("org.telegram.ui.UserInfoActivity"), Obfuscate.getMethodName("UserInfoActivity", "fillItems"), ArrayList.class), displayScope());
+                // Profile rows are bound after updateProfileData has returned.
+                Class<?> profile = ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY);
+                Class<?> adapter = ClassLoad.getClass("org.telegram.ui.ProfileActivity$ListAdapter");
+                if (attempt.require(profile) && attempt.require(adapter)) {
+                    Field owner = adapter.getDeclaredField(Obfuscate.getFieldName("ProfileActivity$ListAdapter", "profileActivity"));
+                    if (Modifier.isStatic(owner.getModifiers()) || owner.getType() != profile)
+                        throw new NoSuchFieldException("Unexpected profile adapter owner");
+                    owner.setAccessible(true);
+                    Method bind = NativeSettingsEntry.uniqueMethod(adapter,
+                            Obfuscate.getMethodName("ProfileActivity$ListAdapter", "onBindViewHolder"), int.class);
+                    if (bind == null || Modifier.isStatic(bind.getModifiers()) || bind.getParameterCount() != 2
+                            || bind.getParameterTypes()[0].isPrimitive() || bind.getParameterTypes()[1] != int.class)
+                        throw new NoSuchMethodException("Unexpected profile row binder");
+                    HMethod.hookMethod(bind, displayScope(owner));
+                }
+                HMethod.hookMethod(ClassLoad.getClass("org.telegram.ui.ChangePhoneHelpActivity"),
+                        Obfuscate.getMethodName("ChangePhoneHelpActivity", "createView"), android.content.Context.class, displayScope());
             } else if (attempt.require(settings)) {
                 // Keep old clients' scopes on UI rendering methods only.
                 boolean found = false;
@@ -57,12 +75,17 @@ public final class HidePhone {
     }
 
     private static BaseMethodHook displayScope() {
+        return displayScope(null);
+    }
+
+    private static BaseMethodHook displayScope(Field owner) {
         return new BaseMethodHook() {
-            @Override protected void beforeMethod(MethodHookParam param) {
+            @Override protected void beforeMethod(MethodHookParam param) throws Throwable {
                 String phone = null;
                 try {
                     if (ConfigManager.hidePhone.isEnable()) {
-                        Object fragment = Modifier.isStatic(param.method.getModifiers()) ? param.args[0] : param.thisObject;
+                        Object fragment = owner != null ? owner.get(param.thisObject)
+                                : Modifier.isStatic(param.method.getModifiers()) ? param.args[0] : param.thisObject;
                         TLRPC.User user = new BaseFragment(fragment).getUserConfig().getCurrentUser();
                         if (user.getUser() != null) phone = user.getPhone();
                     }

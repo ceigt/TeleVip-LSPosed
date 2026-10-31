@@ -21,7 +21,7 @@ PLAY_OTHER_BRANCHES = {
 }
 DYNAMIC = {
     'features/stories/DisableStories.java: reflected Method hook': 'Exact int-account constructor and first two ArrayList fields checked by FeatureShapeAudit; typed transient-list filter tests, actual API 102 constructor hook checked on device',
-    'features/ghostMode/HidePhone.java: reflected Method hook': 'Play UI scopes require typed SettingsActivity/UserInfoActivity fillItems; PhoneDisplayMask regressions and real settings/profile tests',
+    'features/ghostMode/HidePhone.java: reflected Method hook': 'Play Settings/UserInfo fillItems, typed profile row binder and owning fragment field, and change-number introduction checked by FeatureShapeAudit including negative controls; PhoneDisplayMask isolation regressions and real UI checks',
     'features/media/PreventMedia.java: reflected Method hook': 'typed scheduler selectors checked against actual DEX by FeatureShapeAudit',
     'features/ui/AdBlock.java: reflected Method hook': 'typed response readers and empty constructors checked by FeatureShapeAudit',
     'settings/NativeSettingsEntry.java: reflected Method hook': 'settings factories and direct/callback routes checked by SettingsRouteAudit',

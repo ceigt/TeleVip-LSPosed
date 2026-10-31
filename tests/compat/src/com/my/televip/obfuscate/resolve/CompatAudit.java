@@ -77,6 +77,16 @@ public final class CompatAudit {
         Mapping brokenPhone=Mapping.deserialize(mapping.serialize());
         brokenPhone.methods.put("UserInfoActivity#fillItems","__missing__");
         if(pkg.equals("org.telegram.messenger") && FeatureShapeAudit.check(index,brokenPhone,pkg).isEmpty()) errors.add("Broken phone display scope passed audit");
+        if(pkg.equals("org.telegram.messenger")) {
+            for(String key : new String[]{"ProfileActivity$ListAdapter#onBindViewHolder", "ChangePhoneHelpActivity#createView"}) {
+                Mapping brokenDisplay = Mapping.deserialize(mapping.serialize());
+                brokenDisplay.methods.put(key, "__missing__");
+                if(FeatureShapeAudit.phoneDisplay(index,brokenDisplay).isEmpty()) errors.add("Broken phone UI path passed audit: " + key);
+            }
+            Mapping brokenOwner = Mapping.deserialize(mapping.serialize());
+            brokenOwner.fields.put("ProfileActivity$ListAdapter#profileActivity", "__missing__");
+            if(FeatureShapeAudit.phoneDisplay(index,brokenOwner).isEmpty()) errors.add("Broken profile phone account owner passed audit");
+        }
         // Negative controls: a broken factory, or both entry routes missing, must fail the gate.
         Mapping brokenFactory=Mapping.deserialize(mapping.serialize());
         brokenFactory.methods.put("SettingsActivity$SettingCell$Factory#ofIIIICCC","__missing__");
