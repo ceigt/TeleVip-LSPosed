@@ -100,6 +100,7 @@ public class EditOnlineTextView {
                                 if (idView instanceof View) {
                                     labels.put((View) idView, new IdLabel(id, own));
                                     new SimpleTextView(idView).setMaxLines(2);
+                                    if (modern) new SimpleTextView(idView).setAlignment(android.text.Layout.Alignment.ALIGN_CENTER);
                                     // The host's gradient uses a cached hardware layer for a one-line status.
                                     // With our added second line, scroll/reflow can leave that layer stale.
                                     XposedHelpers.callMethod(idView, Obfuscate.getMethodName("SimpleTextView", "setEllipsizeByGradient"), false);
