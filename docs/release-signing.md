@@ -89,3 +89,9 @@ The APK is installed over 3.6.16 with data preserved and verified by pulling it 
 On 2026-10-31 (Asia/Taipei), [run 41215755477](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/41215755477) completed build and original-certificate signing for source `46998ddf7c4af7a3b7f0f826252e670387799170`. Signed APK SHA256: `3ac9eec166abdde098aadc0ab82e31d00e5f287084b2289c8fa4fa8b8e556434`. Independent certificate, package, versionCode 360, alignment and API 102 checks pass. Archive digests and provenance match; all 918 unsigned ZIP payload entries are preserved.
 
 The final artifact is installed with data preserved and is identical to the APK pulled back from the phone. Downloads and independent profile ID controls pass selected UI checks; the final profile fix passes three scroll cycles. The earlier run 41213634220 is superseded by this rendering correction. Temporary USB stay-awake is restored. Channel/group receipts are enabled at the user's request while private-chat hiding remains enabled. See [3.6.18 verification and limits](releases/3.6.18.md).
+
+## Play 13.2.0 build and release 3.6.19
+
+On 2026-11-05 (Asia/Taipei), [run 42052313528](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/42052313528) builds/signs source `696f32fcdb081ffc178a91eeb10d324bd730991e`. Signed APK SHA256: `5a4fd2415fb7f0c1abf2d53ce75ae90adc4f3d2e8f9a23491d68a41dd1eddccd`. Original-certificate, package, versionCode 361, alignment, API 102, archive/provenance and unchanged ZIP payload checks pass. The APK is installed with data preserved; pulling it back gives the same hash.
+
+After selected device UI/log checks, [stable release 3.6.19](https://github.com/ceigt/TeleVip-LSPosed/releases/tag/v3.6.19-telegram-13.2.0-api102) is published. Its tag points to the signed source and APK asset digest matches the installed file. All original preferences and temporary system settings are restored. See [3.6.19 verification and limits](releases/3.6.19.md).
