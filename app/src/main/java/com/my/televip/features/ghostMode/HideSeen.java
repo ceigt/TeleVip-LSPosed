@@ -236,7 +236,7 @@ public class HideSeen {
                 TLRPC.TL_channels_readHistory request;
                 if (!ClientManager.is(ClientManager.Client.Nagram)) {
                     request = new TLRPC.TL_channels_readHistory();
-                    request.setChannel(MessagesController.getInputChannel(peer));
+                    request.setChannel(MessagesController.getInstance(account).getInputChannelForAccount(peer.getChannel_id()));
                 } else {
                     if (TLChannels_readHistory == null) return;
                     request = new TLRPC.TL_channels_readHistory(XposedHelpers.newInstance(TLChannels_readHistory.getClass()));

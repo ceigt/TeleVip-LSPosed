@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 24;
+    public static final int VERSION = 25;
 
     private TelegramFingerprints() {
     }
@@ -106,6 +106,8 @@ public final class TelegramFingerprints {
         o.put("PhotoViewer$PhotoViewerProvider", "org.telegram.ui.PhotoViewer$PhotoViewerProvider");
         o.put("PhotoViewer$PlaceProviderObject", "org.telegram.ui.PhotoViewer$PlaceProviderObject");
         o.put("ProfileActivity", "org.telegram.ui.ProfileActivity");
+        o.put("ProfileActivity$StatusTextView", "org.telegram.ui.ProfileActivity$StatusTextView");
+        o.put("ProfileStatusTextView", "org.telegram.ui.Components.ProfileStatusTextView");
         o.put("QuickAckDelegate", "org.telegram.tgnet.QuickAckDelegate");
         o.put("RequestDelegate", "org.telegram.tgnet.RequestDelegate");
         o.put("RequestDelegateTimestamp", "org.telegram.tgnet.RequestDelegateTimestamp");
@@ -241,7 +243,8 @@ public final class TelegramFingerprints {
                 .from(declaringStrings("addObserver allowed only from MAIN thread", "postNotificationName allowed only from MAIN thread"),
                         withStaticFields("int", 300))
                 .where(anyOf(hasMethod(false, "void", "int", "boolean", "java.lang.Object[]"),
-                        hasMethod(false, "void", "boolean", "int", "java.lang.Object[]"))));
+                        hasMethod(false, "void", "boolean", "int", "java.lang.Object[]"),
+                        hasMethod(false, "void", "java.lang.Object[]", "int", "boolean"))));
         s.add(cls("org.telegram.messenger.NotificationsController")
                 .from(declaringStrings("showExtraNotifications: [", "resetNotificationSound")));
         s.add(cls("org.telegram.messenger.SharedConfig")
@@ -268,7 +271,9 @@ public final class TelegramFingerprints {
         // Utilities' queues are its only Thread-typed fields.
         s.add(cls("org.telegram.messenger.DispatchQueue")
                 .from(fieldTypesOf("org.telegram.messenger.Utilities"))
-                .where(extendsType("java.lang.Thread")));
+                .where(extendsType("java.lang.Thread"),
+                        hasConstructor("java.lang.String"),
+                        hasMethod(false, "boolean", "java.lang.Runnable", "long")));
         // sendRequestInternal(object, onComplete, onCompleteTimestamp, onQuickAck, onWriteToSocket,
         // flags, datacenterId, connectionType, immediate, requestToken). Nekogram 12.10.5+ inlines it
         // into sendRequest's lambda, which takes the same parameters - and is what to hook there.
@@ -374,10 +379,15 @@ public final class TelegramFingerprints {
                 .readBy("MessagesController#cleanup", 1));
         // Marks a dialog's cached messages deleted: dialogMessage.get(id), then obj.deleted = true
         // for each Integer id that matches.
-        s.add(method("MessagesController", "markDialogMessageAsDeleted").sig("void", "long", "java.util.ArrayList")
+        s.add(method("MessagesController", "markDialogMessageAsDeleted").sig("void", "long", "java.util.ArrayList").anyOrder()
                 .where(refersTo("java.lang.Integer"), writesFieldOfType("org.telegram.messenger.MessageObject", "boolean")));
+        s.add(field("MessagesController", "dialogMessage").type("androidx.collection.LongSparseArray")
+                .readBy("MessagesController#markDialogMessageAsDeleted", 0));
         // Event ids are assigned in declaration order from 1; forks append theirs after Telegram's.
         s.add(method("NotificationCenter", "<clinit>").isStatic(true).sig("void"));
+        s.add(method("LaunchActivity", "didReceivedNotification").sig("void", "int", "int", "java.lang.Object[]"));
+        s.add(field("NotificationCenter", "tlSchemeParseException").type("int").isStatic(true)
+                .readBeforeString("LaunchActivity#didReceivedNotification", "TL Error"));
         // deleteMessages posts messagesDeleted after any other event it reads (quickRepliesUpdated);
         // Telegram 10.x does the work in the ten-parameter overload. Where R8 folds the read into
         // a constant (Nekogram 12.10.5+), the id it posts picks the field holding that value. The
@@ -488,7 +498,7 @@ public final class TelegramFingerprints {
         s.add(method("AndroidUtilities", "isTabletInternal").sig("boolean")
                 .where(writesFieldOfType("org.telegram.messenger.AndroidUtilities", "java.lang.Boolean"),
                         Body.any(callsSibling("boolean"), calls("android.content.res.Resources", "boolean", "int"))));
-        s.add(method("DispatchQueue", "postRunnableR").named("postRunnable").sig("boolean", "java.lang.Runnable")
+        s.add(method("DispatchQueue", "postRunnableR").named("postRunnable").sig("boolean", "java.lang.Runnable").voidable()
                 .where(callsSibling("boolean", "java.lang.Runnable", "long")));
         s.add(method("DispatchQueue", "postRunnableRJ").named("postRunnable")
                 .sig("boolean", "java.lang.Runnable", "long"));
@@ -499,7 +509,7 @@ public final class TelegramFingerprints {
         s.add(method("FileLoadOperation", "updateDownloadByteBudget").sig("void")
                 .where(callsSymbol("UserConfig#isPremium")));
         s.add(field("FileLoadOperation", "currentAccount").type("int")
-                .handedTo("FileLoadOperation#startSJZ", "getInstance"));
+                .handedTo("FileLoadOperation#updateDownloadByteBudget", "UserConfig#getInstance"));
         s.add(method("FileLoader", "getInstance").sig("org.telegram.messenger.FileLoader", "int"));
         s.add(method("FileLoader", "getPathToMessageO").named("getPathToMessage")
                 .sig("java.io.File", "org.telegram.tgnet.TLRPC$Message"));
@@ -528,6 +538,9 @@ public final class TelegramFingerprints {
                 .where(callsSymbol("MessageObject#isMusicMessage")));
         s.add(method("MessageObject", "isSecret").sig("boolean")
                 .where(refersTo("org.telegram.tgnet.TLRPC$TL_message_secret"), callCount(0)));
+        s.add(method("MessageObject", "needDrawBluredPreview").sig("boolean").isStatic(false)
+                .where(refersTo("org.telegram.tgnet.TLRPC$TL_message_secret"), callsAnyNamed("max"),
+                        touchesField("org.telegram.tgnet.TLRPC$MessageMedia", "ttl_seconds")));
         // isVoiceOnce also reads the message's ttl against 0x7FFFFFFF.
         s.add(method("MessageObject", "isVoice").sig("boolean")
                 .where(callsSymbol("MessageObject#isVoiceMessage"), callCount(1), not(constant(0x7FFFFFFF))));
@@ -614,7 +627,8 @@ public final class TelegramFingerprints {
                 .where(touchesFieldSymbol("MessagesStorage.storageQueue")));   // not its body's lambda
         s.add(method("NotificationCenter", "postNotificationName").sig("void", "int", "java.lang.Object[]")
                 .where(Body.any(callsSibling("void", "int", "boolean", "java.lang.Object[]"),
-                        callsSibling("void", "boolean", "int", "java.lang.Object[]"))));
+                        callsSibling("void", "boolean", "int", "java.lang.Object[]"),
+                        callsSibling("void", "java.lang.Object[]", "int", "boolean"))));
         s.add(method("NotificationsController", "removeDeletedMessagesFromNotifications")
                 .sig("void", "androidx.collection.LongSparseArray", "boolean"));
         s.add(method("SharedConfig", "isAppUpdateAvailable").sig("boolean")
@@ -622,9 +636,17 @@ public final class TelegramFingerprints {
         // void where it always answers true (Nekogram 12.10.5+).
         s.add(method("SharedConfig", "setNewAppVersionAvailable")
                 .sig("boolean", "org.telegram.tgnet.TLRPC$TL_help_appUpdate").voidable());
+        s.add(field("SharedConfig", "pendingAppUpdate").isStatic(true).type("org.telegram.tgnet.TLRPC$TL_help_appUpdate").onlyOneOfType());
+        s.add(method("SharedConfig", "loadConfig").isStatic(true).sig("void")
+                .where(string("appUpdate"), callsNamed("android.content.SharedPreferences", "getString")));
         s.add(method("UserConfig", "getClientUserId").sig("long")
                 .where(touchesFieldSymbol("UserConfig.currentUser"), callCount(0)));
         s.add(method("UserConfig", "getCurrentUser").sig("org.telegram.tgnet.TLRPC$User"));
+        s.add(method("UserConfig", "getInstance").isStatic(true).sig("org.telegram.messenger.UserConfig", "int"));
+        s.add(method("UserConfig", "clearConfig").isStatic(false).sig("void")
+                .where(callsAnyNamed("clear"), writesFieldOfType("org.telegram.messenger.UserConfig", "org.telegram.tgnet.TLRPC$User")));
+        s.add(method("MessagesController", "processUpdateArray").isStatic(false)
+                .sig("boolean", "java.util.ArrayList", "java.util.ArrayList", "java.util.ArrayList", "boolean", "int"));
         s.add(method("UserConfig", "isPremium").sig("boolean")
                 .where(touchesFieldSymbol("UserConfig.currentUser"), touchesField("org.telegram.tgnet.TLRPC$User", "premium")));
         s.add(method("FastDateFormat", "formatD").named("format").sig("java.lang.String", "java.util.Date"));
@@ -678,7 +700,8 @@ public final class TelegramFingerprints {
                         "AwaitingEncryption"),
                         declaringStrings("processLoadedDiscussionMessage reset history", "AwaitingEncryption")));
         s.add(cls("org.telegram.ui.SettingsActivity")
-                .from(declaringStrings("disable shadows in settings", "enable debug view metrics")));
+                .from(declaringStrings("disable shadows in settings", "enable debug view metrics"),
+                        declaringStrings("hasMainTabs", "PREMIUM_GRACE", "VALIDATE_PHONE_NUMBER", "store bundled ")));
 
         // Helpers: not used by call sites directly, but other fingerprints anchor on them.
         s.add(cls("org.telegram.ui.ActionBar.BaseFragment")
@@ -896,6 +919,7 @@ public final class TelegramFingerprints {
                         hasMethod(false, "boolean", "java.lang.CharSequence", "boolean"),
                         hasMethod(false, "java.lang.CharSequence")));
         s.add(method("SimpleTextView", "setText").sig("boolean", "java.lang.CharSequence"));
+        s.add(method("SimpleTextView", "setTextCZ").named("setText").sig("boolean", "java.lang.CharSequence", "boolean"));
         s.add(method("SimpleTextView", "getText").sig("java.lang.CharSequence"));
         s.add(method("SimpleTextView", "getPaint").sig("android.text.TextPaint").isStatic(false));
         s.add(method("SimpleTextView", "setEllipsizeByGradient").sig("void", "boolean").isStatic(false)
@@ -913,11 +937,22 @@ public final class TelegramFingerprints {
         s.add(method("ProfileActivity", "<init>").where(usesOpcode(0x23)));
         s.add(field("ProfileActivity", "nameTextView").type(stv + "[]").writtenBy("ProfileActivity#<init>", 0));
         s.add(field("ProfileActivity", "onlineTextView").type(stv + "[]").writtenBy("ProfileActivity#<init>", 1));
+        s.add(field("ProfileActivity", "nameTextViewSingle").type(stv).narrowed()
+                .readBy("ProfileActivity#updateProfileData", 0));
+        // 13.2 replaces the status array with a single animated SimpleTextView subclass.
+        s.add(cls("org.telegram.ui.ProfileActivity$StatusTextView").from(fieldTypesOf(p))
+                .where(inherits(stv), hasConstructor(p, "android.content.Context")));
+        s.add(cls("org.telegram.ui.Components.ProfileStatusTextView")
+                .from(superclassOf("org.telegram.ui.ProfileActivity$StatusTextView")));
+        s.add(field("ProfileActivity", "statusTextView").type("org.telegram.ui.ProfileActivity$StatusTextView").onlyOneOfType());
+        s.add(method("ProfileStatusTextView", "setText").sig("boolean", "java.lang.CharSequence", "boolean"));
+        s.add(method("ProfileActivity", "updateStatusText").sig("void").isStatic(false)
+                .where(touchesFieldSymbol("ProfileActivity.statusTextView"), callsSymbol("ProfileStatusTextView#setText")));
 
         // Rebuilds the three-dot menu; the only (boolean) method offering "delete topics".
         s.add(method("ProfileActivity", "createActionBarMenu").sig("void", "boolean").where(string("DeleteTopics")));
         s.add(field("ProfileActivity", "otherItem").type("org.telegram.ui.ActionBar.ActionBarMenuItem")
-                .readBy("ProfileActivity#createActionBarMenu", 0));
+                .readBy("ProfileActivity#createActionBarMenu", 0).narrowed());
         // Fills in name, status and avatar; the only (boolean) method counting bot users.
         s.add(method("ProfileActivity", "updateProfileData").sig("void", "boolean").where(string("BotUsers")));
         // The profile list owns its fragment and formats the phone while binding a row.
@@ -1013,11 +1048,13 @@ public final class TelegramFingerprints {
         // ChatActivity's cell delegate. Many screens implement the delegate interface; this one
         // holds its ChatActivity, and its didPressImage flags media for the downloads list.
         // R8 may drop didPressImage's fullPreview flag, so look for both shapes.
-        Body pressesImage = touchesField("org.telegram.messenger.MessageObject", "putInDownloadsStore");
+        Body pressesImage = Body.any(touchesField("org.telegram.messenger.MessageObject", "putInDownloadsStore"),
+                Body.all(writesFieldOfType("org.telegram.messenger.MessageObject", "boolean"),
+                        touchesField("org.telegram.tgnet.tl.TL_stories$StoryItem", "messageId")));
         s.add(cls("org.telegram.ui.ChatActivity$ChatMessageCellDelegate")
                 .from(declaringMethod("void", cell, "float", "float", "boolean"),
                         declaringMethod("void", cell, "float", "float"))
-                .where(someMethod(pressesImage)));
+                .where(hasField(false, "org.telegram.ui.ChatActivity"), someMethod(pressesImage)));
         // The hook reads only the cell (args[0]); the real parameter list is published for it.
         s.add(method("ChatActivity$ChatMessageCellDelegate", "didPressImage")
                 .sig("void", cell, "float", "float", "boolean").reads(0).where(pressesImage));

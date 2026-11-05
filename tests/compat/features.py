@@ -13,6 +13,7 @@ LEGACY_SOURCES = {
     'virtuals/TeleVip/Bridge/Bridge.java', 'virtuals/Adapters/DrawerLayoutAdapter.java',
     'virtuals/ui/Components/RecyclerListView.java', 'virtuals/androidx/Adapter.java',
     'virtuals/ui/Cells/ShadowSectionCell.java', 'virtuals/ui/Cells/TextCheckCell.java',
+    'virtuals/ui/Cells/TextSettingsCell.java',
 }
 PLAY_OTHER_BRANCHES = {
     ('PhotoViewer', 'openPhoto', 'virtuals/ui/PhotoViewer.java'),
@@ -31,19 +32,33 @@ DYNAMIC = {
     'features/other/TelePremium.java: reflected Method hook': 'DownloadPremiumScope policy selector and nested/thread/exception scope regressions; actual direct Premium caller, account and fallback routes checked by FeatureShapeAudit',
     'settings/hook/SettingsHook.java: onClick dynamic parameters': 'legacy settings entry; Play uses NativeSettingsEntry',
     'virtuals/TeleVip/Bridge/Bridge.java: dynamic hook owner/signature': 'injected legacy adapter; Play uses platform settings dialog',
+    'features/media/SecretMediaSave.java: reflected Method hook': 'Optional exact zero-argument boolean isSecret convenience method; required preview predicate, canonical file path, media click and ttl scope remain audited',
+    'features/otherFeatures/EditOnlineTextView.java: dynamic hook owner/signature': 'Legacy status array or 13.2 animated status field/setter/update scope required by FeatureShapeAudit; actual text layout checked on device',
 }
 PLATFORM = {('android.app.Activity', 'onCreate'), ('android.app.Activity', 'onResume'), ('android.app.Application', 'attach')}
 
 def classify(row, package):
     status, kind, owner, member, source, *_ = row
-    if source == 'features/other/TelePremium.java' and kind == 'M' and (owner, member) == ('FileLoadOperation', 'updateDownloadByteBudget'):
+    if source == 'features/other/TelePremium.java' and kind == 'M' and owner == 'FileLoadOperation' and member in {'updateDownloadByteBudget', 'startSJZ'}:
         return 'ROUTE', '13.1.1 budget helper or older start policy required by FeatureShapeAudit; every direct download Premium caller must match the selected scope'
     if package == PLAY:
         if source in LEGACY_SOURCES: return 'INACTIVE', 'Play uses NativeSettingsEntry and SettingsFallback, bypassing the legacy adapter/drawer'
+        if source in {'virtuals/messenger/FileLoader.java', 'virtuals/messenger/ImageReceiver.java'}: return 'INACTIVE', 'Only called from the non-Play SecretMediaViewer path; Play uses the canonical message file path'
+        if kind == 'C' and owner == 'org.telegram.messenger.R$drawable' and source == 'Class/ClassLoad.java': return 'INACTIVE', 'Diagnostic name comparison in the class loader; icons use Android resources by name'
         if (owner, member, source) in PLAY_OTHER_BRANCHES: return 'INACTIVE', 'non-Play viewer branch; Play uses the regular photo viewer'
         if source in {'Clients/Telegraph.java', 'features/ui/HideProxySponsor.java'}: return 'INACTIVE', 'not started by the Play configuration; AdBlock replaces HideProxySponsor'
     if source == 'settings/NativeSettingsEntry.java' and kind == 'M' and (owner, member) in {('SettingsActivity', 'fillItems'), ('SettingsActivity', 'onClick'), ('SettingsActivity$SettingCell$Factory', 'of'), ('SettingsActivity$SettingCell$Factory', 'ofIIIICCC')}:
         return 'ROUTE', 'factory and direct/callback alternatives validated by SettingsRouteAudit'
+    if source == 'virtuals/ui/ProfileActivity.java' and owner == 'ProfileActivity' and member in {'onlineTextView', 'nameTextView'}:
+        return 'ROUTE', 'legacy status array or modern status field required by FeatureShapeAudit'
+    if source == 'features/otherFeatures/EditOnlineTextView.java' and (owner, member) in {('org.telegram.ui.Components.ProfileStatusTextView', ''), ('ProfileStatusTextView', 'setText')}:
+        return 'ROUTE', 'modern status setter required when the legacy array is absent; FeatureShapeAudit validates both routes'
+    if source == 'features/media/SecretMediaSave.java' and owner == 'MessageObject' and member == 'isSecret':
+        return 'ROUTE', 'optional inlined convenience predicate; required preview and canonical media path remain enforced'
+    if source == 'virtuals/messenger/MessagesController.java' and owner == 'MessagesController' and member == 'processNewDifferenceParams':
+        return 'ROUTE', 'three/four integer difference update alternatives enforced by FeatureShapeAudit'
+    if source == 'features/other/HideUpdateApp.java' and owner == 'SharedConfig' and member in {'isAppUpdateAvailable', 'setNewAppVersionAvailable'}:
+        return 'ROUTE', 'legacy update methods or pending-update field/load scope enforced by FeatureShapeAudit'
     if (owner, member) in PLATFORM and source == 'MainHook.java': return 'PLATFORM', 'Android framework member, outside the client APK; startup checked on device'
     if kind == 'C' and owner.startswith('com.televip.SettingsAdapter.'): return 'MODULE', 'injected module DEX, outside the host APK'
     return ('PASS', '') if status == 'RESOLVED' else ('FAIL', 'required client symbol/signature is missing')

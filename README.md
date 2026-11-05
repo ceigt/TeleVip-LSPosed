@@ -8,6 +8,10 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+## 3.6.19 Telegram 13.2.0 compatibility
+
+Adapts the Play 13.2.0 settings entry, animated profile status/name layout, renamed message callbacks, download account scope and reordered count/history parameters. Promo preferences use the owning account directly, and media paths use the canonical host overload. Keeps the existing channel/group normal-read and private-chat hidden-read choices. See [3.6.19 verification](docs/releases/3.6.19.md) for tested paths and limits.
+
 ## 3.6.18 upstream UI improvements
 
 Adapts Re-TeleVIP 1.5.1/1.5.2: an optional always-visible Downloads shortcut, independent own/other-profile ID switches, profile status/ID centring fixes and Indonesian translations. Old ID preferences are inherited by both child switches; the new Downloads option defaults off. Runtime rendering scopes are nested and thread-local, and only module-owned ID labels receive width corrections. See [3.6.18 review and verification](docs/releases/3.6.18.md).

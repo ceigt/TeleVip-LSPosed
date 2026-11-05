@@ -27,7 +27,7 @@ public class SimpleTextView {
 
     public void setText(CharSequence text, boolean force){
         XposedHelpers.callMethod(simpleTextView,
-                ClientManager.is(ClientManager.Client.Telegram) ? "l" : Obfuscate.getMethodName("SimpleTextView", "setText"),
+                Obfuscate.getMethodName("SimpleTextView", "setTextCZ"),
                 text, force);
     }
 

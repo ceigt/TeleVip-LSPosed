@@ -43,6 +43,18 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
+        Mapping brokenAdapted = Mapping.deserialize(mapping.serialize());
+        brokenAdapted.fields.put("ProfileActivity#onlineTextView","__missing__");
+        brokenAdapted.fields.put("ProfileActivity#statusTextView","__missing__");
+        if (FeatureShapeAudit.adaptedRoutes(index,brokenAdapted).isEmpty()) errors.add("Missing both profile routes passed audit");
+        Mapping brokenDifference = Mapping.deserialize(mapping.serialize());
+        brokenDifference.methods.put("MessagesController#processNewDifferenceParams","__missing__");
+        brokenDifference.methods.put("MessagesController#processNewDifferenceParamsIII","__missing__");
+        if (FeatureShapeAudit.adaptedRoutes(index,brokenDifference).isEmpty()) errors.add("Missing both difference routes passed audit");
+        Mapping brokenUpdates = Mapping.deserialize(mapping.serialize());
+        brokenUpdates.fields.put("SharedConfig#pendingAppUpdate","__missing__");
+        brokenUpdates.methods.put("SharedConfig#isAppUpdateAvailable","__missing__");
+        if (FeatureShapeAudit.adaptedRoutes(index,brokenUpdates).isEmpty()) errors.add("Missing both update routes passed audit");
         for(String key : new String[]{"DialogsActivity#updateProxyButton", "SimpleTextView#getExactWidth", "SimpleTextView#getPaint", "SimpleTextView#setEllipsizeByGradient"}) {
             Mapping brokenUi = Mapping.deserialize(mapping.serialize());
             brokenUi.methods.put(key, "__missing__");
@@ -105,12 +117,12 @@ public final class CompatAudit {
         require(index,mapping, "UItem", "id", true, errors);
         require(index,mapping, "NotificationCenter", "messagesDeleted", true, errors);
         String[][] methods = {{"ConnectionsManager","sendRequestInternal"}, {"MessagesController","checkPromoInfoInternal"},
-                {"MessagesController","removePromoDialog"}, {"MessagesController","getMainSettings"},
+                {"MessagesController","removePromoDialog"}, {"MessagesController","getInstance"},
                 {"PhoneFormat","format"}, {"ChatActivity","createView"}, {"ProfileActivity","createView"}, {"ProfileActivity","createActionBarMenu"},
                 {"ChatActivity","scrollToMessageId"}, {"StoriesController","hasStories"}};
         for (String[] member : methods) require(index,mapping, member[0], member[1], false, errors);
         String[][] fields = {{"ChatActivity","currentChat"}, {"ChatActivity","headerItem"},
-                {"ProfileActivity","otherItem"}, {"ProfileActivity","userId"}, {"TLRPC$TL_help_promoDataEmpty","expires"}};
+                {"ProfileActivity","otherItem"}, {"ProfileActivity","userId"}, {"MessagesController","mainPreferences"}, {"TLRPC$TL_help_promoDataEmpty","expires"}};
         for (String[] member : fields) require(index,mapping, member[0], member[1], true, errors);
         for (String error : errors) System.err.println(error);
         if (!errors.isEmpty()) throw new AssertionError("Compatibility audit failed: " + errors.size());
@@ -144,6 +156,8 @@ public final class CompatAudit {
                         if(!m.name().equals(resolved)) continue;
                         if(!kind.equals("H")) {found=true;continue;}
                         String[] expected=p[5].equals("-")?new String[0]:p[5].split(",");
+                        String[] adapted = mapping.resolveParameters(name);
+                        if (adapted != null) expected = adapted;
                         String[] actual=m.parameterTypes();
                         if(expected.length!=actual.length) continue;
                         boolean fits=true;

@@ -40,6 +40,8 @@ The new failure tests deliberately leave the main privacy feature hook unavailab
 
 14. Profile render scope: primary versus hidden overlay selection, stale/duplicate numeric ID removal, nested profile updates, callback-failure cleanup, unrelated-view preservation and thread isolation. Final text drawing, gradient-layer behavior, centring and Downloads/search transitions still require actual Telegram UI checks.
 
+The 13.2 adaptation extends group 13 with the actual reordered storage prototype `(int, int, int, long, long, messages_Messages, boolean)` for live and offline edits. The suite now reports 2716 assertions. This checks production capture/SQLite behavior against controlled host storage; it does not send remote edits.
+
 ## Device verification
 
 For the priority fix build, confirm the TeleVip entry opens from Telegram settings and check startup logs for installed history, deletion and ghost mode hooks.

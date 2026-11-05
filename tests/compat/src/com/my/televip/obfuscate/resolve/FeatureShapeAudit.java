@@ -10,6 +10,7 @@ final class FeatureShapeAudit {
         errors.addAll(downloads(index, mapping));
         errors.addAll(stories(index, mapping));
         errors.addAll(upstreamUi(index, mapping));
+        errors.addAll(adaptedRoutes(index, mapping));
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -41,6 +42,50 @@ final class FeatureShapeAudit {
         if(count!=1) errors.add("Invalid sponsored cache getter");
         if("org.telegram.messenger".equals(packageName)) errors.addAll(phoneDisplay(index, mapping));
         return errors;
+    }
+    static List<String> adaptedRoutes(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        DexClass profile = cls(index, mapping, "org.telegram.ui.ProfileActivity");
+        String array = mapping.resolveField("ProfileActivity", "onlineTextView");
+        String modern = mapping.resolveField("ProfileActivity", "statusTextView");
+        DexClass.Field old = profile == null || array == null ? null : profile.fieldNamed(array);
+        DexClass.Field current = profile == null || modern == null ? null : profile.fieldNamed(modern);
+        boolean legacy = old != null && old.type().equals("[" + descriptor(mapping, "org.telegram.ui.ActionBar.SimpleTextView"));
+        boolean next = current != null && subtype(index, current.type(), descriptor(mapping, "org.telegram.ui.ActionBar.SimpleTextView"), new HashSet<>())
+                && exact(index,mapping,"ProfileActivity","updateStatusText","V")
+                && exact(index,mapping,"ProfileStatusTextView","setText","Z","Ljava/lang/CharSequence;","Z");
+        if (!legacy && !next) errors.add("Missing validated profile status route");
+        String titleArray = mapping.resolveField("ProfileActivity", "nameTextView");
+        String titleSingle = mapping.resolveField("ProfileActivity", "nameTextViewSingle");
+        DexClass.Field title = profile == null ? null : titleSingle == null ? null : profile.fieldNamed(titleSingle);
+        DexClass.Field titles = profile == null ? null : titleArray == null ? null : profile.fieldNamed(titleArray);
+        if (!(titles != null && titles.type().equals("[" + descriptor(mapping,"org.telegram.ui.ActionBar.SimpleTextView")))
+                && !(title != null && subtype(index,title.type(),descriptor(mapping,"org.telegram.ui.ActionBar.SimpleTextView"),new HashSet<>())))
+            errors.add("Missing validated profile name route");
+        if (!exact(index,mapping,"SimpleTextView","setTextCZ","Z","Ljava/lang/CharSequence;","Z")) errors.add("Missing forced profile text setter");
+        if (!exact(index,mapping,"MessagesController","processNewDifferenceParams","V","I","I","I","I")
+                && !exact(index,mapping,"MessagesController","processNewDifferenceParamsIII","V","I","I","I")) errors.add("Missing difference update route");
+        if (!exact(index,mapping,"MessageObject","needDrawBluredPreview","Z")) errors.add("Missing secret preview predicate");
+        DexClass shared = cls(index,mapping,"org.telegram.messenger.SharedConfig");
+        String field = mapping.resolveField("SharedConfig","pendingAppUpdate");
+        DexClass.Field update = shared == null || field == null ? null : shared.fieldNamed(field);
+        boolean pending = update != null && update.isStatic()
+                && update.type().equals("Lorg/telegram/tgnet/TLRPC$TL_help_appUpdate;")
+                && exact(index,mapping,"SharedConfig","loadConfig","V");
+        boolean oldUpdate = exact(index,mapping,"SharedConfig","isAppUpdateAvailable","Z")
+                && (exact(index,mapping,"SharedConfig","setNewAppVersionAvailable","Z","Lorg/telegram/tgnet/TLRPC$TL_help_appUpdate;")
+                    || exact(index,mapping,"SharedConfig","setNewAppVersionAvailable","V","Lorg/telegram/tgnet/TLRPC$TL_help_appUpdate;"));
+        if (!pending && !oldUpdate) errors.add("Missing update suppression route");
+        return errors;
+    }
+    private static boolean exact(DexIndex index, Mapping mapping, String owner, String key, String result, String... parameters) {
+        String full = TelegramFingerprints.owners().get(owner);
+        DexClass type = full == null ? null : cls(index,mapping,full);
+        String name = mapping.resolveMethod(owner,key);
+        int count = 0;
+        if (type != null && name != null) for (DexClass.Method m : type.methods)
+            if (m.name().equals(name) && m.returnType().equals(result) && Arrays.equals(m.parameterTypes(),parameters)) count++;
+        return count == 1;
     }
     static List<String> upstreamUi(DexIndex index, Mapping mapping) {
         List<String> errors = new ArrayList<>();

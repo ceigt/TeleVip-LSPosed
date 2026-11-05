@@ -11,6 +11,10 @@ public final class MessagesStorage {
     public long getAccountUserId() { return owner==null ? accountId : owner.accountId; }
     public DispatchQueue getStorageQueue() { return queue; }
     public SQLiteDatabase getDatabase() { return database; }
+    public void putMessages(int loadType,int maxId,int mode,long dialog,long thread,
+            com.my.televip.virtuals.tgnet.TLRPC.messages_Messages messages,boolean create) {
+        putMessages(messages,dialog,loadType,maxId,create,mode,thread);
+    }
     public void putMessages(com.my.televip.virtuals.tgnet.TLRPC.messages_Messages messages,long dialog,
             int loadType,int maxId,boolean create,int mode,long thread) {
         queue.postRunnable(() -> {

@@ -37,6 +37,7 @@ public final class XposedHelpers {
     public static long getLongField(Object object, String name) { return (long) getObjectField(object, name); }
     public static boolean getStaticBooleanField(Class<?> type, String name) { return (boolean) getStaticObjectField(type, name); }
     public static void setObjectField(Object object, String name, Object value) { set(object, object.getClass(), name, value); }
+    public static void setStaticObjectField(Class<?> type, String name, Object value) { set(null, type, name, value); }
     public static void setIntField(Object object, String name, int value) { setObjectField(object, name, value); }
     public static void setBooleanField(Object object, String name, boolean value) { setObjectField(object, name, value); }
 

@@ -427,6 +427,7 @@ public abstract class Symbol {
         int flagBit;
         String[] lastReaders;
         String postMethod;
+        String readHost, beforeString;
         boolean intLike;
 
         FieldSymbol(String owner, String name) {
@@ -436,7 +437,7 @@ public abstract class Symbol {
 
         @Override
         boolean hasFingerprint() {
-            return keyHost != null || flagHost != null
+            return keyHost != null || flagHost != null || readHost != null
                     || type != null && (uniqueOfType || writtenBy != null || lastReaders != null || handedIn != null);
         }
 
@@ -547,6 +548,13 @@ public abstract class Symbol {
             return this;
         }
 
+        /** The last field of this owner/type read before a distinctive branch's string. */
+        public FieldSymbol readBeforeString(String methodSymbolId, String text) {
+            readHost = methodSymbolId;
+            beforeString = text;
+            return this;
+        }
+
         /** The type some builds declare the field with instead (for writtenBy / readBy). */
         public FieldSymbol orType(String sourceType) {
             this.alternativeType = sourceType;
@@ -582,6 +590,27 @@ public abstract class Symbol {
             DexClass.Field kept = tryName(r) ? cls.fieldNamed(name) : null;
             if (kept != null && (name.length() > 3 || typeDesc == null || typeDesc.equals(kept.type()))) {
                 return Resolver.Attempt.of(kept, true);
+            }
+            if (readHost != null) {
+                DexClass.Method host = r.methods.get(readHost);
+                if (host == null) return r.isResolvedOrPending(readHost) ? Resolver.Attempt.waiting() : Resolver.Attempt.notFound();
+                final String[] last = {null};
+                final java.util.Set<String> found = new java.util.LinkedHashSet<>();
+                host.scan(new CodeScanner.Visitor() {
+                    @Override public void field(int opcode, int i, boolean write) {
+                        if (!write && host.owner.dex.fieldClass(i).equals(cls.descriptor)
+                                && host.owner.dex.fieldType(i).equals(typeDesc)) last[0] = host.owner.dex.fieldName(i);
+                    }
+                    @Override public void string(int i) {
+                        if (host.owner.dex.string(i).equals(beforeString) && last[0] != null) found.add(last[0]);
+                    }
+                });
+                List<DexClass.Field> matches = new ArrayList<>();
+                for (String f : found) {
+                    DexClass.Field declared = cls.fieldNamed(f);
+                    if (declared != null && (isStatic == null || declared.isStatic() == isStatic)) matches.add(declared);
+                }
+                return Resolver.Attempt.single(matches);
             }
             if (typeDesc != null && handedIn != null) {
                 // A symbol id ("Owner#key") names the called method by what it resolved to.

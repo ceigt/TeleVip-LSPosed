@@ -85,6 +85,20 @@ public final class Upstream15Tests {
             check(first.database.queries.size()==queries,"Disabled recording queried host storage");
             check(db.getHistory(session,-100,11).isEmpty(),"Disabled recording wrote history");
             ConfigManager.saveEditsHistory.setEnable(true);
+            // Actual 13.2 prototype: the payload moves to index 5, regardless of client branding.
+            com.my.televip.obfuscate.ArgsResolver.groupedStorage=true;
+            java.lang.reflect.Field storageHook=SaveEditsHistory.class.getDeclaredField("storageHook");storageHook.setAccessible(true);storageHook.setBoolean(null,false);
+            SaveEditsHistory.init();
+            java.lang.reflect.Method grouped=MessagesStorage.class.getMethod("putMessages",int.class,int.class,int.class,long.class,long.class,TLRPC.messages_Messages.class,boolean.class);
+            old(first,12,-100,"grouped-live-old");
+            XposedBridge.invoke(grouped,first,-2,0,0,-100L,0L,new TLRPC.messages_Messages(new ArrayList<Object>(Arrays.asList(new TLRPC.MessageData(12,-100,0,"grouped-live-new")))),false);
+            drain(handler);
+            check(db.getHistory(session,-100,12).get(0).text.equals("grouped-live-old"),"Grouped live edit lost or read wrong integer");
+            old(first,13,-100,"grouped-offline-old");
+            XposedBridge.invoke(grouped,first,0,-2,0,-100L,0L,new TLRPC.messages_Messages(new ArrayList<Object>(Arrays.asList(new TLRPC.MessageData(13,-100,1<<15,"grouped-offline-new")))),false);
+            drain(handler);
+            check(db.getHistory(session,-100,13).get(0).text.equals("grouped-offline-old"),"Grouped offline edit payload lost");
+            com.my.televip.obfuscate.ArgsResolver.groupedStorage=false;
             for(com.my.televip.virtuals.SQLite.SQLiteCursor cursor:first.database.cursors) {
                 check(cursor.disposed,"History cursor leaked");
                 if(cursor.data.previous!=null)check(cursor.data.reused,"History byte buffer leaked");

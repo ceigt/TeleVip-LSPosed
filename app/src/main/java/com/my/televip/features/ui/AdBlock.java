@@ -106,7 +106,10 @@ public final class AdBlock {
     private static synchronized void forgetPromo(int account) {
         SharedPreferences preferences=settings.get(account);
         if(preferences==null) {
-            preferences=(SharedPreferences)XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","getMainSettings"),account);
+            Object controller=XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),
+                    Obfuscate.getMethodName("MessagesController","getInstance"),account);
+            preferences=(SharedPreferences)XposedHelpers.getObjectField(controller,
+                    Obfuscate.getFieldName("MessagesController","mainPreferences"));
             settings.put(account,preferences);
         }
         boolean saved=false;

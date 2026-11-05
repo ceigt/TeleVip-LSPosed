@@ -21,6 +21,7 @@ import com.my.televip.language.Translator;
 import com.my.televip.logging.Logger;
 import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.obfuscate.RuntimeMappings;
 import com.my.televip.ui.ThemeColors;
 import com.my.televip.utils.Utils;
 import com.my.televip.virtuals.ActionBar.SimpleTextView;
@@ -44,8 +45,7 @@ public class EditOnlineTextView {
         if (isEnable) return;
         try (HookInstallation attempt = HookInstallation.begin()) {
             Class<?> textView = ClassLoad.getClass("org.telegram.ui.ActionBar.SimpleTextView");
-            HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "setText"), CharSequence.class,
-                    new BaseMethodHook() {
+            BaseMethodHook textHook = new BaseMethodHook() {
                         @Override protected void beforeMethod(MethodHookParam param) {
                             CharSequence text = scope.status(param.thisObject, (CharSequence) param.args[0]);
                             ProfileTextScope.Frame frame = scope.current();
@@ -53,7 +53,11 @@ public class EditOnlineTextView {
                                 text = withId(text, frame.id);
                             param.args[0] = text;
                         }
-                    });
+                    };
+            HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "setText"), CharSequence.class, textHook);
+            boolean modern = RuntimeMappings.active().resolveField("ProfileActivity", "statusTextView") != null;
+            if (modern) HMethod.hookMethod(ClassLoad.getClass("org.telegram.ui.Components.ProfileStatusTextView"),
+                    Obfuscate.getMethodName("ProfileStatusTextView", "setText"), CharSequence.class, boolean.class, textHook);
             HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "getExactWidth"), new BaseMethodHook() {
                 @Override protected void afterMethod(MethodHookParam param) {
                     IdLabel label = labels.get(param.thisObject);
@@ -69,8 +73,8 @@ public class EditOnlineTextView {
                 }
             });
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY),
-                    Obfuscate.getMethodName("ProfileActivity", "updateProfileData"),
-                    ArgsResolver.merge("updateProfileData", new Class[]{boolean.class}, new BaseMethodHook() {
+                    Obfuscate.getMethodName("ProfileActivity", modern ? "updateStatusText" : "updateProfileData"),
+                    ArgsResolver.merge("updateProfileData", modern ? new Class<?>[0] : new Class[]{boolean.class}, new BaseMethodHook() {
                         @Override protected void beforeMethod(MethodHookParam param) {
                             Object status = null, copy = null, idView = null;
                             String id = null, offline = null;

@@ -19,21 +19,18 @@ public class MessagesController {
         this.messagesController = instance;
     }
 
-    public void processNewDifferenceParams(int seq, int pts, int date, int pts_count) {
-        XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "processNewDifferenceParams"), seq, pts, date, pts_count);
+    public void processNewDifferenceParams(int seq, int pts, int date, int ptsCount) {
+        String method = com.my.televip.obfuscate.RuntimeMappings.active().resolveMethod("MessagesController", "processNewDifferenceParamsIII");
+        if (method != null) XposedHelpers.callMethod(messagesController, method, pts, date, ptsCount);
+        else XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "processNewDifferenceParams"), seq, pts, date, ptsCount);
     }
 
-    public void processNewDifferenceParams(int pts, int date, int pts_count) {
-        //Nagram
-        XposedHelpers.callMethod(messagesController, "processNewDifferenceParams", pts, date, pts_count);
+    public void processNewDifferenceParams(int pts, int date, int ptsCount) {
+        processNewDifferenceParams(-1, pts, date, ptsCount);
     }
 
     public void removePromoDialog() {
         XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "removePromoDialog"));
-    }
-
-    public static Object getInputChannel(TLRPC.InputPeer peer) {
-        return XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER), Obfuscate.getMethodName("MessagesController", "getInputChannel"), peer.getInputPeer());
     }
 
     public SparseArray<Object> getDialogMessagesByIds() {
@@ -48,12 +45,8 @@ public class MessagesController {
         return (SharedPreferences) XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER), Obfuscate.getMethodName("MessagesController", "getGlobalMainSettings"));
     }
 
-    public static Object getInputChannel(long id) {
-        return XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER), Obfuscate.getMethodName("MessagesController", "getInputChannel"), id);
-    }
-
     public Object getInputChannelForAccount(long id) {
-        return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getInputChannel"), id);
+        return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getInputChannelJ"), id);
     }
 
     public MessagesStorage getMessagesStorage() {

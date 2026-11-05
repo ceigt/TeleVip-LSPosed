@@ -10,6 +10,8 @@ public class ArgsResolver {
     public static ResolverRegistry resolverRegistry = new ResolverRegistry(ResolverRegistry.getResolverClass());
 
     public static Class<?>[] resolveObject(String name, Class<?>[] classes) {
+        String[] actual = RuntimeMappings.active().resolveParameters(name);
+        if (actual != null) return com.my.televip.compat.HookParameterTypes.resolve(actual, com.my.televip.utils.Utils.classLoader);
         if (RuntimeMappings.mayUseLegacyTable() && resolverRegistry != null) {
             if (resolverRegistry.hasParameter(name)) {
                 return resolverRegistry.resolveParameter(name);

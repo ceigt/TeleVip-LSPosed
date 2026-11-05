@@ -127,9 +127,9 @@ public final class SaveEditsHistory {
                         long.class, int.class, int.class, boolean.class, int.class, long.class}, new BaseMethodHook() {
                     @Override protected void beforeMethod(MethodHookParam param) {
                         if (!ConfigManager.saveEditsHistory.isEnable()) return;
-                        boolean nagram = ClientManager.is(ClientManager.Client.Nagram);
-                        boolean liveEdit = (int) param.args[nagram ? 0 : 2] == -2;
-                        Object incoming = param.args[nagram ? 5 : 0];
+                        boolean grouped = param.args[0] instanceof Integer;
+                        boolean liveEdit = (int) param.args[grouped ? 0 : 2] == -2;
+                        Object incoming = param.args[grouped ? 5 : 0];
                         if (incoming == null) return;
                         MessagesStorage storage = new MessagesStorage(param.thisObject);
                         AccountSession session = database.session(storage.getAccountUserId());

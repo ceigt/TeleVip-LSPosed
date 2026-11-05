@@ -22,6 +22,7 @@ import com.my.televip.virtuals.ui.PhotoViewer;
 import com.my.televip.virtuals.ui.SecretMediaViewer;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 public class SecretMediaSave {
 
@@ -36,14 +37,19 @@ public class SecretMediaSave {
         try (HookInstallation attempt = HookInstallation.begin()) {
             if (!isEnable) {
                 if (attempt.require(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT))) {
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), Obfuscate.getMethodName("MessageObject", "isSecret"), new BaseMethodHook() {
+                    // R8 can inline this convenience predicate completely; ttl/preview scopes remain required.
+                    Method secret = null;
+                    for (Method method : ClassLoad.getClass(ClassNames.MESSAGE_OBJECT).getDeclaredMethods())
+                        if (method.getName().equals(Obfuscate.getMethodName("MessageObject", "isSecret"))
+                                && method.getReturnType() == boolean.class && method.getParameterCount() == 0) secret = method;
+                    if (secret != null) HMethod.hookMethod(secret, new BaseMethodHook() {
                         @Override
                         protected void beforeMethod(MethodHookParam param) {
                             if (ConfigManager.secretMediaSave.isEnable() && openingInRegularViewer.contains(param.thisObject)) param.setResult(false);
                         }
                     });
                     if (ClientManager.is(ClientManager.Client.Telegram)) {
-                        HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), "needDrawBluredPreview", new BaseMethodHook() {
+                        HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGE_OBJECT), Obfuscate.getMethodName("MessageObject", "needDrawBluredPreview"), new BaseMethodHook() {
                             @Override
                             protected void beforeMethod(MethodHookParam param) {
                                 if (ConfigManager.secretMediaSave.isEnable() && openingInRegularViewer.contains(param.thisObject))
@@ -87,10 +93,7 @@ public class SecretMediaSave {
                             if (path != null && path.isFile()) param.setResult(path);
                         }
                     };
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessage"),
-                            ClassLoad.getClass(ClassNames.MESSAGE), pathHook);
-                    HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessageOZ"),
-                            ClassLoad.getClass(ClassNames.MESSAGE), boolean.class, pathHook);
+                    // Every convenience overload delegates here, including wrappers retained by R8.
                     HMethod.hookMethod(ClassLoad.getClass(ClassNames.FILE_LOADER), Obfuscate.getMethodName("FileLoader", "getPathToMessageOZZ"),
                             ClassLoad.getClass(ClassNames.MESSAGE), boolean.class, boolean.class, pathHook);
                 }

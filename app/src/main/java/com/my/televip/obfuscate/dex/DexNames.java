@@ -18,6 +18,8 @@ public final class DexNames {
 
     /** {@code org.x.Y$Z} to {@code Lorg/x/Y$Z;}. */
     public static String toDescriptor(String javaName) {
+        if (javaName.startsWith("[")) return javaName.replace('.', '/');
+        if (javaName.length() == 1 && "VZBSCIJFD".contains(javaName)) return javaName;
         switch (javaName) {
             case "void": return "V";
             case "boolean": return "Z";

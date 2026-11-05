@@ -22,10 +22,14 @@ public class ProfileActivity {
     }
 
     public Object[] getNameTextView(){
-        return  (Object[]) XposedHelpers.getObjectField(profileActivity, Obfuscate.getFieldName("ProfileActivity", "nameTextView"));
+        String name = com.my.televip.obfuscate.RuntimeMappings.active().resolveField("ProfileActivity", "nameTextViewSingle");
+        if (name != null) return new Object[]{null, XposedHelpers.getObjectField(profileActivity, name)};
+        return (Object[]) XposedHelpers.getObjectField(profileActivity, Obfuscate.getFieldName("ProfileActivity", "nameTextView"));
     }
 
     public Object[] getOnlineTextView(){
+        String status = com.my.televip.obfuscate.RuntimeMappings.active().resolveField("ProfileActivity", "statusTextView");
+        if (status != null) return new Object[]{null, XposedHelpers.getObjectField(profileActivity, status)};
         return  (Object[]) XposedHelpers.getObjectField(profileActivity, Obfuscate.getFieldName("ProfileActivity", "onlineTextView"));
     }
 

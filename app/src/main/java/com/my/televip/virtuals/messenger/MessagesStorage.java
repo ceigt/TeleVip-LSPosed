@@ -29,10 +29,6 @@ public class MessagesStorage {
         return new DispatchQueue(XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "getStorageQueue")));
     }
 
-    public int getLastPtsValue() {
-        return (int) XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "getLastPtsValue"));
-    }
-
     public static MessagesStorage getInstance(int num) {
         return new MessagesStorage(XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_STORAGE), Obfuscate.getMethodName("MessagesStorage", "getInstance"), num));
     }
