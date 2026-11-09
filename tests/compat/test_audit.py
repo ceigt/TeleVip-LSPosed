@@ -1,6 +1,6 @@
 import unittest
-from inventory import collect, split_args, calls, class_type
-from features import verdict, review_dynamic, DYNAMIC
+from inventory import collect, split_args, calls, class_type, JAVA
+from features import verdict, review_dynamic, review_browser_branch, DYNAMIC
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -25,6 +25,30 @@ class AuditTests(unittest.TestCase):
     def test_no_empty_success(self):
         with self.assertRaises(ValueError): verdict([], 'org.telegram.messenger')
         with self.assertRaises(ValueError): verdict([['RESOLVED']], 'org.telegram.messenger')
+    def test_legacy_browser_scope(self):
+        browser = site('UNRESOLVED', owner='Browser', member='openUrl', source='virtuals/messenger/browser/Browser.java')
+        self.assertEqual(verdict([browser], 'org.telegram.messenger')[0][0], 'INACTIVE')
+        self.assertEqual(verdict([browser], 'org.telegram.messenger.web')[0][0], 'FAIL')
+        browser[4] = 'features/new/Future.java'
+        self.assertEqual(verdict([browser], 'org.telegram.messenger')[0][0], 'FAIL')
+        browser[4] = 'virtuals/messenger/browser/Browser.java'
+        browser[3] = 'newMethod'
+        self.assertEqual(verdict([browser], 'org.telegram.messenger')[0][0], 'FAIL')
+        review_browser_branch()
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'Future.java').write_text('Browser.openUrl(context, url);', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'callers'):
+                review_browser_branch(root)
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            for source in ['TeleVip.java', 'settings/controller/SettingsController.java', 'settings/ui/SettingsAdapter.java']:
+                target = root / source
+                target.parent.mkdir(parents=True, exist_ok=True)
+                text = (JAVA / source).read_text(encoding='utf-8')
+                target.write_text(text.replace('return NativeSettingsEntry.init();', 'NativeSettingsEntry.init();'), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'Play return'):
+                review_browser_branch(root)
     def test_privacy_hooks_and_arrays_collected(self):
         sites, gaps = collect()
         self.assertIn(('M','ChatActivity','sendSecretMessageRead','features/media/PreventMedia.java',''), sites)

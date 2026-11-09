@@ -5,6 +5,7 @@ Inspired by Re:TeleVIP CallSites; kept separate from runtime hooking.
 from collections import Counter
 from pathlib import Path
 import sys
+import re
 from inventory import JAVA
 
 PLAY = 'org.telegram.messenger'
@@ -42,6 +43,8 @@ def classify(row, package):
     if source == 'features/other/TelePremium.java' and kind == 'M' and owner == 'FileLoadOperation' and member in {'updateDownloadByteBudget', 'startSJZ'}:
         return 'ROUTE', '13.1.1 budget helper or older start policy required by FeatureShapeAudit; every direct download Premium caller must match the selected scope'
     if package == PLAY:
+        if (kind, owner, member, source) == ('M', 'Browser', 'openUrl', 'virtuals/messenger/browser/Browser.java'):
+            return 'INACTIVE', 'Only legacy SettingsController/SettingsAdapter call this wrapper; Play returns through NativeSettingsEntry and uses ACTION_VIEW'
         if source in LEGACY_SOURCES: return 'INACTIVE', 'Play uses NativeSettingsEntry and SettingsFallback, bypassing the legacy adapter/drawer'
         if source in {'virtuals/messenger/FileLoader.java', 'virtuals/messenger/ImageReceiver.java'}: return 'INACTIVE', 'Only called from the non-Play SecretMediaViewer path; Play uses the canonical message file path'
         if kind == 'C' and owner == 'org.telegram.messenger.R$drawable' and source == 'Class/ClassLoad.java': return 'INACTIVE', 'Diagnostic name comparison in the class loader; icons use Android resources by name'
@@ -77,8 +80,22 @@ def review_dynamic(gaps):
     stale = [gap for gap in DYNAMIC if gap not in gaps]
     if unknown or stale: raise ValueError(f'Dynamic-selector review required: new={unknown}, stale={stale}')
 
+def review_browser_branch(java=JAVA):
+    callers = set()
+    for path in java.rglob('*.java'):
+        if re.search(r'\bBrowser\s*\.\s*openUrl\s*\(', path.read_text(encoding='utf-8')):
+            callers.add(path.relative_to(java).as_posix())
+    if callers != {'settings/controller/SettingsController.java', 'settings/ui/SettingsAdapter.java'}:
+        raise ValueError('Review Browser wrapper callers: ' + str(sorted(callers)))
+    entry = (java / 'TeleVip.java').read_text(encoding='utf-8')
+    branch = re.search(r'if\s*\(ClientManager\.is\(ClientManager\.Client\.Telegram\)\)\s*\{\s*'
+                       r'ConfigManager\.loadAndRead\(\);\s*return NativeSettingsEntry\.init\(\);\s*\}', entry)
+    if branch is None or branch.end() > entry.index('new SettingsController()'):
+        raise ValueError('Review Play return before legacy settings initialization')
+
 def main(report):
     package = (report / 'package.txt').read_text(encoding='utf-8').strip()
+    if package == PLAY: review_browser_branch()
     rows = [line.split('\t') for line in (report / 'call-sites.tsv').read_text(encoding='utf-8').splitlines()]
     result = verdict(rows, package)
     gaps = (report / 'dynamic-sites.txt').read_text(encoding='utf-8').splitlines()

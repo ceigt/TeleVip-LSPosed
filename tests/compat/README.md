@@ -6,6 +6,8 @@ The runner compiles pure Java safety tests, checks reflection overload selection
 
 `features.md` groups the verdict by source/feature. A new missing required site fails the run. Play-only branch exemptions are scoped to `org.telegram.messenger`; the legacy UI and non-Play secret viewer are explicitly listed. Known dynamic selectors are reviewed separately; new selectors require updating the review list. Framework hooks and injected module DEX cannot be proved by host APK inspection.
 
+The legacy `Browser.openUrl` wrapper is inactive only for the exact Play call site. Its two callers are the old settings controller and adapter, constructed after Play's early return through `NativeSettingsEntry`; the actual Play settings dialog opens links using Android ACTION_VIEW. The gate checks that return and the caller set on every Play run. A new caller, another method or another client is not exempt. This classification does not repair or certify the legacy browser route on other clients.
+
 Limitations: source extraction is conservative and is not a Java compiler or a full control-flow analysis. Reflection argument *values*, field contents, dynamically created listener instances, networking and media behavior still need device tests. Nine dynamic selector groups are explicitly documented. The Play branch's conditional parameter lists are checked; other clients require their own device and branch validation. No APK compatibility result authorizes a release automatically.
 
 Reports: `call-sites.tsv`, `feature-verdict.tsv`, `features.md`, `dynamic-sites.txt`, `package.txt`, `mapping.txt`, `symbols.tsv`.
