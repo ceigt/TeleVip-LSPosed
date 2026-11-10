@@ -8,6 +8,8 @@
 
 A powerful LSPosed module that adds advanced customization features to Telegram clients.
 
+This fork maintains Telegram compatibility independently. Public upstream feature descriptions may inform new local designs; repairs do not depend on upstream patches. See the [independent maintenance direction and feature shortlist](docs/maintenance/independent-maintenance-roadmap.md). Existing user choices and the actual-APK verification/signing/device gates remain the basis for changes.
+
 ## 3.6.19 Telegram 13.2.0 compatibility
 
 Adapts the Play 13.2.0 settings entry, animated profile status/name layout, renamed message callbacks, download account scope and reordered count/history parameters. Promo preferences use the owning account directly, and media paths use the canonical host overload. Keeps the existing channel/group normal-read and private-chat hidden-read choices. See [3.6.19 verification](docs/releases/3.6.19.md) for tested paths and limits.
