@@ -19,6 +19,13 @@ public class ConnectionsManager {
         XposedHelpers.callMethod(connectionsManager, Obfuscate.getMethodName("ConnectionsManager", "sendRequest"), object, completionBlock);
     }
 
+    public int sendRequestTracked(Object request,Object callback) {
+        return ((Number)XposedHelpers.callMethod(connectionsManager, Obfuscate.getMethodName("ConnectionsManager", "sendRequest"), request, callback)).intValue();
+    }
+    public void cancelRequest(int id) {
+        XposedHelpers.callMethod(connectionsManager, Obfuscate.getMethodName("ConnectionsManager", "cancelRequest"), id, true);
+    }
+
     public Object getInstanceObject() { return connectionsManager; }
 
     public int getCurrentTime(){

@@ -99,7 +99,7 @@ public final class ArchiveUi {
                 Button item=new Button(activity);item.setAllCaps(false);
                 String preview=row.text.isEmpty()?Translator.get("ArchivedMedia"):row.text.substring(0,Math.min(160,row.text.length()));
                 item.setText(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm",Locale.getDefault()).format(new Date(row.captured))+"\n"+preview);
-                item.setOnClickListener(v->details(activity,row));list.addView(item);
+                item.setOnClickListener(v->details(activity,row,()->{rows.remove(row);search.setText(search.getText().toString());}));list.addView(item);
             }
             if(count==0){TextView empty=new TextView(activity);empty.setText(Translator.get("ArchiveEmpty"));list.addView(empty);}
         };
@@ -108,14 +108,16 @@ public final class ArchiveUi {
         Button more=new Button(activity);more.setText(Translator.get("MoreArchive"));more.setOnClickListener(v->{limit[0]+=50;render.run();});outer.addView(more);
         render.run();new AlertDialog.Builder(activity).setTitle(Translator.get("ArchivedMessages")).setView(outer).setPositiveButton(android.R.string.ok,null).show();
     }
-    private static void details(Activity activity,LocalStateStore.Record row){
+    private static void details(Activity activity,LocalStateStore.Record row,Runnable removed){
         TextView text=new TextView(activity);text.setTextIsSelectable(true);text.setPadding(24,16,24,16);
         text.setText((row.text.isEmpty()?Translator.get("ArchivedMedia"):row.text)+"\n\n"+Translator.get("ArchiveIdentity",row.dialog,row.id));
         ScrollView scroll=new ScrollView(activity);scroll.addView(text);
         new AlertDialog.Builder(activity).setTitle(Translator.get("ArchivedMessages")).setView(scroll).setPositiveButton(android.R.string.ok,null)
             .setNeutralButton(Translator.get("ForgetArchive"),(d,w)->new AlertDialog.Builder(activity).setMessage(Translator.get("ForgetArchiveNotice"))
                 .setNegativeButton(android.R.string.cancel,null).setPositiveButton(android.R.string.ok,(confirm,which)->MessageStorage.post(()->{
-                    try{LocalData.store().forget(row.account,row.dialog,Collections.singletonList(row.id));toast(activity,"ArchiveCopyRemoved");}catch(Throwable error){LocalData.issue(error);toast(activity,"ArchiveFailed");}
+                    try{LocalData.store().forget(row.account,row.dialog,Collections.singletonList(row.id));
+                        AndroidUtilities.runOnUIThread(()->{if(alive(activity)&&row.account==UserConfig.getUserConfig().getClientUserId())removed.run();});
+                        toast(activity,"ArchiveCopyRemoved");}catch(Throwable error){LocalData.issue(error);toast(activity,"ArchiveFailed");}
                 })).show()).show();
     }
 }

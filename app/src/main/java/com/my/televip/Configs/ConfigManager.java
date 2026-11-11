@@ -62,6 +62,7 @@ public class ConfigManager {
     // Messages
     public static ConfigItem messages;
     public static ConfigItem showDeletedMessages;
+    public static ConfigItem showSeconds, showReadTime;
     public static ConfigItem showMessageId;
     public static ConfigItem saveEditsHistory;
     public static ConfigItem durableDeletedMessages, localReadPosition, extendedContentSaving, autoMuteNewChats;
@@ -170,6 +171,11 @@ public class ConfigManager {
             showMessageId = new ConfigItem(ConfigItem.SWITCH, Keys.ShowMessageID, ConfigPreferences.getBoolean(Keys.ShowMessageID), MessageTimeModifier::init);
             items.add(showMessageId);
         }
+
+        showSeconds = new ConfigItem(ConfigItem.SWITCH, "ShowSeconds", true, ConfigPreferences.getBoolean("ShowSeconds"), com.my.televip.features.messages.SecondsDisplay::init);
+        items.add(showSeconds);
+        showReadTime = new ConfigItem(ConfigItem.SWITCH, "ShowReadTime", true, ConfigPreferences.getBoolean("ShowReadTime"), com.my.televip.features.messages.ReadTimeMenu::init);
+        items.add(showReadTime);
 
         saveEditsHistory = new ConfigItem(ConfigItem.SWITCH, Keys.SaveEditsHistory, ConfigPreferences.getBoolean(Keys.SaveEditsHistory), SaveEditsHistory::init);
         items.add(saveEditsHistory);
@@ -297,6 +303,7 @@ public class ConfigManager {
     public static void readFeature() {
         try {
             SaveEditsHistory.initAccountCleanup();
+            com.my.televip.features.messages.ReadTimeMenu.initCleanup();
             com.my.televip.features.messages.LocalData.initCleanup();
             for (ConfigItem item : items) {
                 if (item == null) continue;

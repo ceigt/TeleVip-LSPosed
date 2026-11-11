@@ -159,5 +159,13 @@
   "Desc_SaveEditsHistory": "Keep previously cached text per account and conversation. Offline intermediate edits and uncached originals cannot be reconstructed.",
   "Desc_ShowDeletedMessages": "Keep server-deleted messages in Telegram’s current local cache. Enable independent copies to retain captured records through cache rebuilds.",
   "AutoMuteNewChats": "Mute newly joined chats",
-  "Desc_AutoMuteNewChats": "After a successful channel/group join or a first bot start, mute notifications using Telegram’s normal setting. Existing conversations stay unchanged; you can unmute manually. Restart required."
+  "Desc_AutoMuteNewChats": "After a successful channel/group join or a first bot start, mute notifications using Telegram’s normal setting. Existing conversations stay unchanged; you can unmute manually. Restart required.",
+  "ShowSeconds": "Show message time seconds",
+  "Desc_ShowSeconds": "Off by default. Adds seconds inside native message-time formatting before layout. Keeps the original hour cycle and other time labels. Restart after changing.",
+  "ShowReadTime": "Outgoing read-time menu",
+  "Desc_ShowReadTime": "Off by default. Query a recent, already-read outgoing private message only when you choose the menu action. Telegram privacy, account and expiry rules still apply. No read receipt is sent. Restart after changing.",
+  "QueryReadTime": "Query read time",
+  "ReadTimeRateLimited": "A query is already running, or you are querying too quickly. Try again shortly.",
+  "ReadTimeLoading": "Querying Telegram…",
+  "ReadTimeUnavailable": "Telegram did not provide a read time for this message. It may be unavailable because of privacy, account rules or expiry."
 }

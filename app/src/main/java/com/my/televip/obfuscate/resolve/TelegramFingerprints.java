@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 30;
+    public static final int VERSION = 31;
 
     private TelegramFingerprints() {
     }
@@ -92,6 +92,8 @@ public final class TelegramFingerprints {
         o.put("TLRPC$TL_messageActionChatCreate","org.telegram.tgnet.TLRPC$TL_messageActionChatCreate");
         o.put("TLRPC$TL_messageActionChannelCreate","org.telegram.tgnet.TLRPC$TL_messageActionChannelCreate");
         o.put("TLRPC$ChatFull", "org.telegram.tgnet.TLRPC$ChatFull");
+        o.put("TLRPC$TL_messages_getOutboxReadDate", "org.telegram.tgnet.TLRPC$TL_messages_getOutboxReadDate");
+        o.put("TLRPC$TL_outboxReadDate", "org.telegram.tgnet.TLRPC$TL_outboxReadDate");
         o.put("TLRPC$UserFull", "org.telegram.tgnet.TLRPC$UserFull");
         o.put("TLRPC$MessageMedia", "org.telegram.tgnet.TLRPC$MessageMedia");
         o.put("ChatMessagePoll", "org.telegram.ui.Cells.ChatMessagePoll");
@@ -698,6 +700,18 @@ public final class TelegramFingerprints {
         s.add(method("UserConfig", "getInstance").isStatic(true).sig("org.telegram.messenger.UserConfig", "int"));
         s.add(method("UserConfig", "clearConfig").isStatic(false).sig("void")
                 .where(callsAnyNamed("clear"), writesFieldOfType("org.telegram.messenger.UserConfig", "org.telegram.tgnet.TLRPC$User")));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_getOutboxReadDate", 0x8c4bfe5d));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_outboxReadDate", 0x3bb842ac));
+        s.add(field("TLRPC$TL_messages_getOutboxReadDate", "peer").type("org.telegram.tgnet.TLRPC$InputPeer").onlyOneOfType());
+        s.add(field("TLRPC$TL_messages_getOutboxReadDate", "msg_id").type("int").onlyOneOfType());
+        s.add(field("TLRPC$TL_outboxReadDate", "date").type("int").onlyOneOfType());
+        s.add(method("MessagesController", "getInputPeerJ").named("getInputPeer").isStatic(false).sig("org.telegram.tgnet.TLRPC$InputPeer", "long"));
+        s.add(method("ConnectionsManager", "cancelRequest").named("cancelRequest").isStatic(false).sig("void", "int", "boolean"));
+        s.add(field("TLRPC$UserFull", "read_dates_private").type("boolean"));
+        for(String flag:new String[]{"out", "unread", "media_unread"})s.add(field("TLRPC$Message",flag).type("boolean"));
+        s.add(field("MessagesController", "pmReadDateExpirePeriod").type("int").keyedBy("MessagesController#<init>", "pmReadDateExpirePeriod"));
+        s.add(method("ChatMessageCell", "timeString").named("timeString").isStatic(true)
+                .sig("java.lang.String", "org.telegram.messenger.MessageObject", "org.telegram.messenger.MessageObject", "boolean", "int"));
         s.add(method("MessagesController", "deleteMessagesByPush").named("deleteMessagesByPush").isStatic(false)
                 .sig("void", "long", "java.util.ArrayList", "long").anyOrder()
                 .where(touchesFieldSymbol("MessagesStorage.storageQueue")));

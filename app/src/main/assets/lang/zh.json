@@ -158,5 +158,13 @@
   "Desc_SaveEditsHistory": "按账号和会话保留已缓存的旧文字，无法重建离线期间的中间版本或没有缓存的原文。",
   "Desc_ShowDeletedMessages": "在 Telegram 当前聊天缓存中保留服务器删除的消息。开启独立保存，可在缓存重建后从副本页查看已捕获记录。",
   "AutoMuteNewChats": "新加入会话默认静音",
-  "Desc_AutoMuteNewChats": "成功加入频道／群组或首次启动机器人后，使用 Telegram 原生设置静音。已有会话不变，可随时手动取消静音。需要重启。"
+  "Desc_AutoMuteNewChats": "成功加入频道／群组或首次启动机器人后，使用 Telegram 原生设置静音。已有会话不变，可随时手动取消静音。需要重启。",
+  "ShowSeconds": "消息时间显示秒数",
+  "Desc_ShowSeconds": "默认关闭。在原生消息时间排版前加入秒数，保留原有小时制和时间标记。更改后重启 Telegram。",
+  "ShowReadTime": "发送消息的已读时间菜单",
+  "Desc_ShowReadTime": "默认关闭。仅在主动点击菜单时查询近期、已被阅读的私聊发送消息。仍受 Telegram 隐私、账号和期限限制；不发送已读回执。更改后重启 Telegram。",
+  "QueryReadTime": "查询已读时间",
+  "ReadTimeRateLimited": "已有查询正在运行，或查询过于频繁，请稍后重试。",
+  "ReadTimeLoading": "正在向 Telegram 查询…",
+  "ReadTimeUnavailable": "Telegram 未提供此消息的已读时间，可能受隐私、账号规则或有效期限限制。"
 }

@@ -94,3 +94,9 @@ Reviewed ChatActivity, ChatMessageCell/ChatMessagePoll, DialogCell, MessagesCont
 NotificationsController, PhotoViewer, SettingsActivity, SendMessagesHelper and TLRPC protocol
 layouts against the actual authenticated Play 13.2.1 APK. No dependency or telemetry added.
 Earlier upstream-derived functionality keeps its existing attribution above.
+
+2026-11-11 time and push follow-up:
+Additional official structural references at the same Telegram commit: PushListenerController
+MESSAGE_DELETED routing and messages.getOutboxReadDate / outboxReadDate protocol.
+Local implementations retain native notification cleanup, account privacy and expiry semantics;
+no upstream closed-source implementation, dependency or telemetry is included.

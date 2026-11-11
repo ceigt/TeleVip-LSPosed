@@ -48,6 +48,10 @@ final class FeatureShapeAudit {
         List<String> errors=new ArrayList<>();
         String[][] fields={
             {"NativeByteBuffer","buffer","Ljava/nio/ByteBuffer;"},
+            {"TLRPC$TL_messages_getOutboxReadDate","peer",descriptor(mapping,"org.telegram.tgnet.TLRPC$InputPeer")},
+            {"TLRPC$TL_messages_getOutboxReadDate","msg_id","I"},{"TLRPC$TL_outboxReadDate","date","I"},
+            {"TLRPC$UserFull","read_dates_private","Z"},{"MessagesController","pmReadDateExpirePeriod","I"},
+            {"TLRPC$Message","out","Z"},{"TLRPC$Message","unread","Z"},{"TLRPC$Message","media_unread","Z"},
             {"TLRPC$Message","send_state","I"},{"TLRPC$Message","date","I"},{"TLRPC$Message","media",descriptor(mapping,"org.telegram.tgnet.TLRPC$MessageMedia")},
             {"TLRPC$MessageMedia","ttl_seconds","I"},{"BaseFragment","arguments","Landroid/os/Bundle;"},
             {"BaseFragment","currentAccount","I"},{"BaseController","currentAccount","I"},{"MessageObject","currentAccount","I"},
@@ -67,6 +71,9 @@ final class FeatureShapeAudit {
         for(String[] f:fields)downloadField(cls(index,mapping,TelegramFingerprints.owners().get(f[0])),mapping.resolveField(f[0],f[1]),f[2],errors);
         if(!exact(index,mapping,"ChatMessagePoll","setMessageContentIfPoll","V",descriptor(mapping,"org.telegram.messenger.MessageObject"),"Z"))errors.add("Invalid poll layout callback");
         if(!exact(index,mapping,"ChatActivity","onFragmentCreate","Z")||!exact(index,mapping,"ChatActivity","onPause","V"))errors.add("Invalid local reading lifecycle");
+        if(!exact(index,mapping,"ChatMessageCell","timeString","Ljava/lang/String;",descriptor(mapping,"org.telegram.messenger.MessageObject"),descriptor(mapping,"org.telegram.messenger.MessageObject"),"Z","I"))errors.add("Invalid pre-measure message time formatter");
+        if(!exact(index,mapping,"MessagesController","getInputPeerJ",descriptor(mapping,"org.telegram.tgnet.TLRPC$InputPeer"),"J"))errors.add("Invalid read-time owning-account peer lookup");
+        if(!exact(index,mapping,"ConnectionsManager","cancelRequest","V","I","Z"))errors.add("Invalid read-time request cancellation");
         String push=mapping.resolveMethod("MessagesController","deleteMessagesByPush");
         DexClass pushController=cls(index,mapping,"org.telegram.messenger.MessagesController");int pushRoutes=0;
         if(pushController!=null)for(DexClass.Method m:pushController.methods)if(m.name().equals(push)&&!m.isStatic()&&m.returnType().equals("V")){
