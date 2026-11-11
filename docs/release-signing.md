@@ -95,3 +95,9 @@ The final artifact is installed with data preserved and is identical to the APK 
 On 2026-11-05 (Asia/Taipei), [run 42052313528](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/42052313528) builds/signs source `696f32fcdb081ffc178a91eeb10d324bd730991e`. Signed APK SHA256: `5a4fd2415fb7f0c1abf2d53ce75ae90adc4f3d2e8f9a23491d68a41dd1eddccd`. Original-certificate, package, versionCode 361, alignment, API 102, archive/provenance and unchanged ZIP payload checks pass. The APK is installed with data preserved; pulling it back gives the same hash.
 
 After selected device UI/log checks, [stable release 3.6.19](https://github.com/ceigt/TeleVip-LSPosed/releases/tag/v3.6.19-telegram-13.2.0-api102) is published. Its tag points to the signed source and APK asset digest matches the installed file. All original preferences and temporary system settings are restored. See [3.6.19 verification and limits](releases/3.6.19.md).
+
+## Independent-feature candidate 3.6.20
+
+On 2026-11-11 (Asia/Singapore), [run 42951770095](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/42951770095) completes build and original-certificate signing for source `8086f97af4ff10710df80507998fb315f349854b`. Signed APK SHA256: `f2c8d3ce4ef6b80ec64a48c35815346c8fa4b168003f5c1b4e2791603bfa4c68`. Independent certificate/package/version 362/alignment/API 102 verification passes; artifact digests and signing provenance agree, and all 918 unsigned ZIP entries are preserved.
+
+This is a verified signed candidate, not a stable release. Latest phone installation/testing is paused at the user's request; see [candidate evidence and pending gates](releases/3.6.20.md).
