@@ -56,6 +56,9 @@ public class MessagesController {
     public static MessagesController getInstance(int num){
         return new MessagesController(XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER), Obfuscate.getMethodName("MessagesController", "getInstance"), num));
     }
+    public Object getUserFull(long id) {
+        return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getUserFull"), id);
+    }
 
     public static MessagesController getMessagesController() {
         return getInstance(UserConfig.getSelectedAccount());

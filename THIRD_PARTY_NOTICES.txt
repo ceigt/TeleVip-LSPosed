@@ -84,3 +84,13 @@ Local changes retain API 102 installation bookkeeping, require typed/unique menu
 use nested thread-local profile rendering instead of global view state, limit width changes to
 module-owned labels, preserve individual migrated choices, and add exact DEX/negative controls.
 Source and feature-selection evidence: docs/releases/3.6.18.md.
+
+2026-11-11 independent feature implementation:
+No closed-source upstream binary or unavailable source is copied. New archive/reading-position,
+backup/search/status/default-mute and scoped local UI logic are implemented in this fork.
+Official Telegram structural reference (GPL-2.0-or-later):
+https://github.com/DrKLO/Telegram/tree/7be672ead283d022812d75c729d3a04dd4c2a2c6
+Reviewed ChatActivity, ChatMessageCell/ChatMessagePoll, DialogCell, MessagesController/Storage,
+NotificationsController, PhotoViewer, SettingsActivity, SendMessagesHelper and TLRPC protocol
+layouts against the actual authenticated Play 13.2.1 APK. No dependency or telemetry added.
+Earlier upstream-derived functionality keeps its existing attribution above.

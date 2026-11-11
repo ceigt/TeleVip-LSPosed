@@ -11,6 +11,7 @@ final class FeatureShapeAudit {
         errors.addAll(stories(index, mapping));
         errors.addAll(upstreamUi(index, mapping));
         errors.addAll(adaptedRoutes(index, mapping));
+        if("org.telegram.messenger".equals(packageName))errors.addAll(independent(index,mapping));
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -41,6 +42,36 @@ final class FeatureShapeAudit {
                 && Arrays.equals(m.parameterTypes(),new String[]{"J"}) && m.returnType().startsWith("L")) count++;
         if(count!=1) errors.add("Invalid sponsored cache getter");
         if("org.telegram.messenger".equals(packageName)) errors.addAll(phoneDisplay(index, mapping));
+        return errors;
+    }
+    static List<String> independent(DexIndex index,Mapping mapping){
+        List<String> errors=new ArrayList<>();
+        String[][] fields={
+            {"NativeByteBuffer","buffer","Ljava/nio/ByteBuffer;"},
+            {"TLRPC$Message","date","I"},{"TLRPC$Message","media",descriptor(mapping,"org.telegram.tgnet.TLRPC$MessageMedia")},
+            {"TLRPC$MessageMedia","ttl_seconds","I"},{"BaseFragment","arguments","Landroid/os/Bundle;"},
+            {"BaseFragment","currentAccount","I"},{"BaseController","currentAccount","I"},{"MessageObject","currentAccount","I"},
+            {"ChatActivity","threadMessageId","J"},{"PhotoViewer","imagesArr","Ljava/util/ArrayList;"},
+            {"TLRPC$UserFull","noforwards_peer_enabled","Z"},{"TLRPC$UserFull","noforwards_my_enabled","Z"},
+            {"ChatMessagePoll","cell",descriptor(mapping,"org.telegram.ui.Cells.ChatMessageCell")},
+            {"ChatMessageCell","totalHeight","I"},{"ChatMessageCell","instantTextNewLine","Z"},
+            {"ChatMessageCell","availableTimeWidth","I"},{"ChatMessageCell","backgroundWidth","I"},
+            {"TLRPC$TL_channels_joinChannel","channel",descriptor(mapping,"org.telegram.tgnet.TLRPC$InputChannel")},
+            {"TLRPC$InputChannel","channel_id","J"},{"TLRPC$Chat","id","J"},{"TLRPC$Chat","left","Z"},
+            {"TLRPC$User","bot","Z"},{"TLRPC$TL_messages_startBot","peer",descriptor(mapping,"org.telegram.tgnet.TLRPC$InputPeer")},
+            {"TLRPC$TL_messages_sendMessage","message","Ljava/lang/String;"},
+            {"TLRPC$Updates","chats","Ljava/util/ArrayList;"},{"TLRPC$TL_chatInviteJoinResultOk","updates",descriptor(mapping,"org.telegram.tgnet.TLRPC$Updates")},
+            {"TLRPC$Message","action",descriptor(mapping,"org.telegram.tgnet.TLRPC$MessageAction")},{"TLRPC$MessageAction","users","Ljava/util/ArrayList;"}
+        };
+        for(String[] f:fields)downloadField(cls(index,mapping,TelegramFingerprints.owners().get(f[0])),mapping.resolveField(f[0],f[1]),f[2],errors);
+        if(!exact(index,mapping,"ChatMessagePoll","setMessageContentIfPoll","V",descriptor(mapping,"org.telegram.messenger.MessageObject"),"Z"))errors.add("Invalid poll layout callback");
+        if(!exact(index,mapping,"ChatActivity","onFragmentCreate","Z")||!exact(index,mapping,"ChatActivity","onPause","V"))errors.add("Invalid local reading lifecycle");
+        if(!exact(index,mapping,"MessagesController","getUserFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$UserFull"),"J"))errors.add("Invalid owning-account user-full lookup");
+        if(!exact(index,mapping,"MessagesController","getUser",descriptor(mapping,"org.telegram.tgnet.TLRPC$User"),"Ljava/lang/Long;"))errors.add("Invalid owning-account bot lookup");
+        if(!exact(index,mapping,"NotificationsController","muteDialog","V","J","J","Z"))errors.add("Invalid native mute action");
+        // These native private methods reorder parameters; the handlers use the published types.
+        for(String[] pair:new String[][]{{"MessagesController","updateInterfaceWithMessages"},{"NotificationsController","muteUntil"}})
+            if(mapping.resolveMethod(pair[0],pair[1])==null)errors.add("Missing reviewed reordered route: "+Arrays.toString(pair));
         return errors;
     }
     static List<String> adaptedRoutes(DexIndex index, Mapping mapping) {

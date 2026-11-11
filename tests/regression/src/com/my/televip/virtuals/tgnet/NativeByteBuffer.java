@@ -1,6 +1,7 @@
 package com.my.televip.virtuals.tgnet;
 public final class NativeByteBuffer {
     public final Object nativeByteBuffer = this;
+    public final java.nio.ByteBuffer buffer=java.nio.ByteBuffer.allocate(16);
     public boolean reused;
     public int flags;
     public TLRPC.MessageData previous;

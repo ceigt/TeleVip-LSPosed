@@ -4,6 +4,8 @@ import java.util.ArrayList;
 public final class TLRPC {
     public static final class MessageData {
         public final int id,flags; public final long dialog; public final String text;
+        public int date=123,ttl;
+        public Object media;
         public MessageData(int id,long dialog,int flags,String text) { this.id=id;this.dialog=dialog;this.flags=flags;this.text=text; }
     }
     public static final class Message {
@@ -12,6 +14,7 @@ public final class TLRPC {
         public Object get_Message() { return data; }
         public int getId() { return data.id; }
         public int getFlags() { return data.flags; }
+        public int getTtl() { return data.ttl; }
         public String getMessage() { return data.text; }
         public static Message TLdeserialize(NativeByteBuffer buffer,int id,boolean exception) {
             return buffer.previous==null ? null : new Message(buffer.previous);

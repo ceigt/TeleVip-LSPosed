@@ -49,14 +49,14 @@ public final class MessageStorage {
                 try {
                     if (!ConfigManager.showDeletedMessages.isEnable() || messagesStorage.getAccountUserId() != accountId) return;
                     SQLiteDatabase db = messagesStorage.getDatabase();
-                    markTable(db, "messages_v2", dialogId, snapshot);
-                    markTable(db, "messages_topics", dialogId, snapshot);
+                    markTable(messagesStorage, db, "messages_v2", dialogId, snapshot);
+                    markTable(messagesStorage, db, "messages_topics", dialogId, snapshot);
                 } catch (Throwable error) { Logger.e(error); }
             });
         } catch (Throwable error) { Logger.e(error); }
     }
 
-    private static void markTable(SQLiteDatabase db, String table, long dialogId, ArrayList<Integer> ids) {
+    private static void markTable(MessagesStorage storage, SQLiteDatabase db, String table, long dialogId, ArrayList<Integer> ids) {
         SQLiteCursor cursor = null;
         SQLitePreparedStatement statement = null;
         try {
@@ -78,6 +78,7 @@ public final class MessageStorage {
                     statement.bindLong(2, cursor.longValue(2));
                     statement.bindInteger(3, cursor.intValue(1));
                     statement.step();
+                    com.my.televip.features.messages.LocalData.capture(storage, cursor.longValue(2), cursor.intValue(1), data);
                 } finally { data.reuse(); }
             }
         } finally {

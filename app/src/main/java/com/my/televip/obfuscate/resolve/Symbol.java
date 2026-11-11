@@ -428,6 +428,8 @@ public abstract class Symbol {
         String[] lastReaders;
         String postMethod;
         String readHost, beforeString;
+        Long beforeConstant;
+        boolean writeAfterConstant;
         boolean intLike;
 
         FieldSymbol(String owner, String name) {
@@ -554,6 +556,17 @@ public abstract class Symbol {
             beforeString = text;
             return this;
         }
+        public FieldSymbol readBeforeConstant(String methodSymbolId, long value) {
+            readHost = methodSymbolId;
+            beforeConstant = value;
+            return this;
+        }
+        public FieldSymbol writtenAfterConstant(String methodSymbolId, long value) {
+            readHost = methodSymbolId;
+            beforeConstant = value;
+            writeAfterConstant = true;
+            return this;
+        }
 
         /** The type some builds declare the field with instead (for writtenBy / readBy). */
         public FieldSymbol orType(String sourceType) {
@@ -595,14 +608,25 @@ public abstract class Symbol {
                 DexClass.Method host = r.methods.get(readHost);
                 if (host == null) return r.isResolvedOrPending(readHost) ? Resolver.Attempt.waiting() : Resolver.Attempt.notFound();
                 final String[] last = {null};
+                final boolean[] waitingWrite = {false};
                 final java.util.Set<String> found = new java.util.LinkedHashSet<>();
                 host.scan(new CodeScanner.Visitor() {
                     @Override public void field(int opcode, int i, boolean write) {
+                        if (writeAfterConstant && waitingWrite[0] && write
+                                && host.owner.dex.fieldClass(i).equals(cls.descriptor) && host.owner.dex.fieldType(i).equals(typeDesc)) {
+                            found.add(host.owner.dex.fieldName(i)); waitingWrite[0] = false;
+                        }
                         if (!write && host.owner.dex.fieldClass(i).equals(cls.descriptor)
                                 && host.owner.dex.fieldType(i).equals(typeDesc)) last[0] = host.owner.dex.fieldName(i);
                     }
                     @Override public void string(int i) {
                         if (host.owner.dex.string(i).equals(beforeString) && last[0] != null) found.add(last[0]);
+                    }
+                    @Override public void constant(long value) {
+                        if (beforeConstant != null && value == beforeConstant) {
+                            if (writeAfterConstant) waitingWrite[0] = true;
+                            else if (last[0] != null) found.add(last[0]);
+                        }
                     }
                 });
                 List<DexClass.Field> matches = new ArrayList<>();

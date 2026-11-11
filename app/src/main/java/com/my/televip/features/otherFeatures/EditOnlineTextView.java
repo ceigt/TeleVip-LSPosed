@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.Canvas;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -40,6 +41,7 @@ public class EditOnlineTextView {
         IdLabel(String id, boolean own) { this.id = id; this.own = own; }
     }
     private static final Map<View, IdLabel> labels = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final ThreadLocal<java.util.ArrayDeque<Integer>> drawing = ThreadLocal.withInitial(java.util.ArrayDeque::new);
 
     public static synchronized void init() {
         if (isEnable) return;
@@ -56,6 +58,21 @@ public class EditOnlineTextView {
                     };
             HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "setText"), CharSequence.class, textHook);
             boolean modern = RuntimeMappings.active().resolveField("ProfileActivity", "statusTextView") != null;
+            if (modern) HMethod.hookMethod(textView, "onDraw", Canvas.class, new BaseMethodHook() {
+                @Override protected void beforeMethod(MethodHookParam param) {
+                    View view = (View) param.thisObject;
+                    IdLabel label = labels.get(view);
+                    int state = label != null && ConfigManager.isUserIdShown(label.own) ? (view.isClickable() ? 1 : 0) : -1;
+                    drawing.get().push(state);
+                    // This host draws a permanent pill whenever isClickable() is true, not just when pressed.
+                    if (state == 1) view.setClickable(false);
+                }
+                @Override protected void afterMethod(MethodHookParam param) {
+                    java.util.ArrayDeque<Integer> stack = drawing.get();
+                    try { if (!stack.isEmpty() && stack.pop() == 1) ((View) param.thisObject).setClickable(true); }
+                    finally { if (stack.isEmpty()) drawing.remove(); }
+                }
+            });
             if (modern) HMethod.hookMethod(ClassLoad.getClass("org.telegram.ui.Components.ProfileStatusTextView"),
                     Obfuscate.getMethodName("ProfileStatusTextView", "setText"), CharSequence.class, boolean.class, textHook);
             HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "getExactWidth"), new BaseMethodHook() {

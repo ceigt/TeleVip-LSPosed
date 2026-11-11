@@ -10,6 +10,10 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 This fork maintains Telegram compatibility independently. Public upstream feature descriptions may inform new local designs; repairs do not depend on upstream patches. See the [independent maintenance direction and feature shortlist](docs/maintenance/independent-maintenance-roadmap.md). Existing user choices and the actual-APK verification/signing/device gates remain the basis for changes.
 
+## 3.6.20 independent feature candidate
+
+Adds searchable settings, a local compatibility page, optional persistent reading positions, independent deleted-message copies with archive export/import, local save/viewer protection scopes, profile/poll layout fixes and an optional mute default for new joins/bot starts. The TeleVip entry precedes Account. New switches default off; existing preferences and edit-history data remain intact. The candidate is undergoing signed-build/device validation; see [scope and verification](docs/releases/3.6.20.md).
+
 ## 3.6.19 Telegram 13.2.0 compatibility
 
 Adapts the Play 13.2.0 settings entry, animated profile status/name layout, renamed message callbacks, download account scope and reordered count/history parameters. Promo preferences use the owning account directly, and media paths use the canonical host overload. Keeps the existing channel/group normal-read and private-chat hidden-read choices. See [3.6.19 verification](docs/releases/3.6.19.md) for tested paths and limits.
@@ -22,7 +26,7 @@ Adapts Re-TeleVIP 1.5.1/1.5.2: an optional always-visible Downloads shortcut, in
 
 ## Hidden receipts and unread counts
 
-Hiding read receipts also prevents Telegram's server read position from advancing. This fork does not keep an independent persistent local read watermark, so refreshing server dialog state can restore older unread counts. To keep normal channel/group read synchronization while hiding private-chat receipts, turn off **Hide Seen > Channels and Groups** and leave **Private Chats** on. Existing unread backlogs are cleared by normal reading or an explicit mark-as-read action; changing this switch does not mark every chat read.
+Hiding read receipts also prevents Telegram's server read position from advancing. The optional 3.6.20 local reading-position store keeps an independent resume position and visible-message watermark. Server/global unread counts are still server-owned, so refreshing server dialog state can restore older unread counts. To keep normal channel/group read synchronization while hiding private-chat receipts, turn off **Hide Seen > Channels and Groups** and leave **Private Chats** on. Existing unread backlogs are cleared by normal reading or an explicit mark-as-read action; changing this switch does not mark every chat read.
 
 ## 3.6.17 phone display coverage
 

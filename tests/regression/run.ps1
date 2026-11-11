@@ -17,6 +17,9 @@ $env:JAVA_HOME = $JavaHome
 $javaSources = @(Get-ChildItem (Join-Path $PSScriptRoot 'src') -Recurse -Filter '*.java' | ForEach-Object { $_.FullName })
 $production = @(
     'Configs/ConfigItem.java', 'Configs/ConfigPreferences.java', 'Database/MessageDatabase.java',
+    'Database/LocalStateStore.java', 'features/messages/LocalData.java', 'features/other/BooleanFieldScope.java',
+    'settings/SettingsSearch.java', 'virtuals/messenger/BaseController.java',
+    'features/other/AutoMuteNewChats.java',
     'messages/MessageStorage.java', 'utils/MessageIdParser.java',
     'features/ghostMode/ReadRequestPermits.java', 'calendar/CalendarDate.java',
     'calendar/ConverterCalendar.java', 'language/Keys.java',
@@ -68,6 +71,6 @@ if ($Serial) {
         $result = & $Adb -s $Serial shell am instrument -w org.televip.regression/.RegressionInstrumentation
         $result | Set-Content (Join-Path $runDir 'result.txt')
         $result | Write-Output
-        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 14 regression groups passed;')) { throw 'Device regressions failed' }
+        if (-not (($result -join [Environment]::NewLine) -match 'TELEVIP_REGRESSION_PASS: 16 regression groups passed;')) { throw 'Device regressions failed' }
     } finally { & $Adb -s $Serial uninstall org.televip.regression }
 }

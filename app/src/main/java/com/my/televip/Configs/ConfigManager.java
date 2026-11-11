@@ -64,6 +64,7 @@ public class ConfigManager {
     public static ConfigItem showDeletedMessages;
     public static ConfigItem showMessageId;
     public static ConfigItem saveEditsHistory;
+    public static ConfigItem durableDeletedMessages, localReadPosition, extendedContentSaving, autoMuteNewChats;
 
     // Connections
     public static ConfigItem connections;
@@ -121,6 +122,9 @@ public class ConfigManager {
 
         hideSeen = new ConfigItem(ConfigItem.EXPANDABLE_SWITCH, Keys.HideSeen, childrenHideSeen);
         items.add(hideSeen);
+        localReadPosition = new ConfigItem(ConfigItem.SWITCH, "LocalReadPosition", true,
+                ConfigPreferences.getBoolean("LocalReadPosition"), com.my.televip.features.messages.LocalData::initReading);
+        items.add(localReadPosition);
 
         markReadAfterSend = new ConfigItem(ConfigItem.SWITCH, Keys.MarkReadAfterSend, ConfigPreferences.getBoolean(Keys.MarkReadAfterSend), GhostMode::init);
         items.add(markReadAfterSend);
@@ -158,6 +162,9 @@ public class ConfigManager {
 
         showDeletedMessages = new ConfigItem(ConfigItem.SWITCH, Keys.ShowDeletedMessages, ConfigPreferences.getBoolean(Keys.ShowDeletedMessages), ShowDeletedMessages::init);
         items.add(showDeletedMessages);
+        durableDeletedMessages = new ConfigItem(ConfigItem.SWITCH, "DurableDeletedMessages", true,
+                ConfigPreferences.getBoolean("DurableDeletedMessages"), com.my.televip.features.messages.LocalData::initArchive);
+        items.add(durableDeletedMessages);
 
         if (!ClientManager.is(ClientManager.Client.NagramX)) {
             showMessageId = new ConfigItem(ConfigItem.SWITCH, Keys.ShowMessageID, ConfigPreferences.getBoolean(Keys.ShowMessageID), MessageTimeModifier::init);
@@ -168,6 +175,10 @@ public class ConfigManager {
         items.add(saveEditsHistory);
 
         items.add(shadows);
+
+        autoMuteNewChats = new ConfigItem(ConfigItem.SWITCH, "AutoMuteNewChats", true,
+                ConfigPreferences.getBoolean("AutoMuteNewChats"), com.my.televip.features.other.AutoMuteNewChats::init);
+        items.add(autoMuteNewChats);
 
         // Connections
         connections = new ConfigItem(ConfigItem.HEADER, Keys.ConnectionsSettings);
@@ -244,6 +255,9 @@ public class ConfigManager {
 
         removesContentSaving = new ConfigItem(ConfigItem.SWITCH, Keys.RemovesContentSaving, ConfigPreferences.getBoolean(Keys.RemovesContentSaving), RemovesContentSaving::init);
         items.add(removesContentSaving);
+        extendedContentSaving = new ConfigItem(ConfigItem.SWITCH, "ExtendedContentSaving", true,
+                ConfigPreferences.getBoolean("ExtendedContentSaving"), com.my.televip.features.other.ContentSavingScope::init);
+        items.add(extendedContentSaving);
 
         telegramPremium = new ConfigItem(ConfigItem.SWITCH, Keys.TelegramPremium, ConfigPreferences.getBoolean(Keys.TelegramPremium), TelePremium::init);
         items.add(telegramPremium);
@@ -259,6 +273,9 @@ public class ConfigManager {
 
         items.add(shadows);
 
+        items.add(new ConfigItem(ConfigItem.HEADER, "LocalTools"));
+        for (String action : new String[]{"CompatibilityStatus", "ArchivedMessages", "ExportArchive", "ImportArchive"})
+            items.add(new ConfigItem(ConfigItem.TEXT, action));
         btnChannel = new ConfigItem(ConfigItem.TEXT, Keys.DeveloperChannel);
         items.add(btnChannel);
 
@@ -280,6 +297,7 @@ public class ConfigManager {
     public static void readFeature() {
         try {
             SaveEditsHistory.initAccountCleanup();
+            com.my.televip.features.messages.LocalData.initCleanup();
             for (ConfigItem item : items) {
                 if (item == null) continue;
                 item.runEnabledFeatures();
@@ -291,6 +309,10 @@ public class ConfigManager {
                 EditOnlineTextView.init();
             }
             AlwaysSaveMedia.init();
+            if (ClientManager.is(ClientManager.Client.Telegram)) {
+                MessageTimeModifier.init();
+                com.my.televip.features.messages.PollLayout.init();
+            }
 
             if (ClientManager.is(ClientManager.Client.Telegraph)) Telegraph.removeAd();
 

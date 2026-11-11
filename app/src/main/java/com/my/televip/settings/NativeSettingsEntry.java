@@ -85,7 +85,7 @@ public final class NativeSettingsEntry {
             for(int i=0;i<items.size();i++) {
                 int value=id(items.get(i));
                 if(value==SettingsFallback.ROW_ID) return;
-                if(value==10) position=i+1;
+                if(value==1) position=i;
             }
             Activity activity=Utils.getCurrentActivity();
             if(activity==null) return;

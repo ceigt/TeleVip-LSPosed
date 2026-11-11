@@ -2,6 +2,8 @@ package com.my.televip.virtuals.messenger;
 import android.os.Handler;
 import com.my.televip.virtuals.SQLite.SQLiteDatabase;
 public final class MessagesStorage {
+    public static MessagesStorage instance;
+    public static MessagesStorage getInstance(int slot){return instance;}
     public final SQLiteDatabase database;
     private final DispatchQueue queue;
     private final MessagesStorage owner;

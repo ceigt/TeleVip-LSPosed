@@ -55,3 +55,9 @@ Use disposable messages between your own accounts for functional checks:
 - Invalid message ID input must show a validation message without crashing.
 
 Passing the suite confirms these isolated regression cases; it does not certify every TeleVip feature or replace the functional checks above.
+
+15. Independent local features: actual module SQLite, account/dialog/topic boundaries, monotonic reading watermark versus scroll, reopen persistence, logout generations and persisted cleanup, production serialized-row capture and TTL exclusion, Unicode JSON round trips, current-account-only merge, atomic failure rollback, duplicate/tombstone/clear-cutoff behavior, payload/total storage limits without eviction and failed-output preservation. Also tests search matching and nested/failing/thread-isolated permission-field restoration. UI/SAF and real host decoding remain device gates.
+
+16. Default mute: production request/delegate wrapper with isolated host/native-action fixtures. Successful joins, requested-channel matching, error and web-challenge exclusion, ordinary/timestamp callback preservation, once-only application, existing versus first bot conversation, human /start exclusion, account changes and cursor cleanup. No bot command or network request is sent by the suite. Real join approval/invitation delivery requires separate server fixtures.
+
+The 3.6.20 isolated suite reports 16 groups / 2814 assertions on the connected Android 16 test device. It does not execute a real bot start or remote peer deletion.

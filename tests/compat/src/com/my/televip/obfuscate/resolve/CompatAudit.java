@@ -43,6 +43,12 @@ public final class CompatAudit {
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
+        if("org.telegram.messenger".equals(pkg)){
+            for(String key:new String[]{"ChatMessageCell#instantTextNewLine","TLRPC$User#bot","TLRPC$Updates#chats","MessageObject#currentAccount","PhotoViewer#imagesArr"}){
+                Mapping broken=Mapping.deserialize(mapping.serialize());broken.fields.put(key,"__missing__");
+                if(FeatureShapeAudit.independent(index,broken).isEmpty())errors.add("Broken independent feature field passed: "+key);
+            }
+        }
         Mapping brokenAdapted = Mapping.deserialize(mapping.serialize());
         brokenAdapted.fields.put("ProfileActivity#onlineTextView","__missing__");
         brokenAdapted.fields.put("ProfileActivity#statusTextView","__missing__");

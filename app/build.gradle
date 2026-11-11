@@ -3,13 +3,14 @@ apply plugin: 'com.android.application'
 android {
     namespace 'com.my.televip'
     compileSdk 36
+    buildFeatures { buildConfig true }
 
     defaultConfig {
         applicationId "org.televip"
         minSdk 27
         targetSdk 36
-        versionCode 361
-        versionName "3.6.19-telegram-13.2.0-api102"
+        versionCode 362
+        versionName "3.6.20-telegram-13.2.1-api102"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

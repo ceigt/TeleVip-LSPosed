@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 25;
+    public static final int VERSION = 26;
 
     private TelegramFingerprints() {
     }
@@ -79,6 +79,21 @@ public final class TelegramFingerprints {
         o.put("BaseController", "org.telegram.messenger.BaseController");
         o.put("BaseFragment", "org.telegram.ui.ActionBar.BaseFragment");
         o.put("Browser", "org.telegram.messenger.browser.Browser");
+        o.put("TLRPC$TL_channels_joinChannel", "org.telegram.tgnet.TLRPC$TL_channels_joinChannel");
+        o.put("TLRPC$TL_messages_importChatInvite", "org.telegram.tgnet.TLRPC$TL_messages_importChatInvite");
+        o.put("TLRPC$TL_messages_startBot", "org.telegram.tgnet.TLRPC$TL_messages_startBot");
+        o.put("TLRPC$TL_chatInviteJoinResultOk", "org.telegram.tgnet.TLRPC$TL_chatInviteJoinResultOk");
+        o.put("TLRPC$Updates", "org.telegram.tgnet.TLRPC$Updates");
+        o.put("TLRPC$InputChannel", "org.telegram.tgnet.TLRPC$InputChannel");
+        o.put("TLRPC$TL_updates", "org.telegram.tgnet.TLRPC$TL_updates");
+        o.put("TLRPC$MessageAction","org.telegram.tgnet.TLRPC$MessageAction");
+        o.put("TLRPC$TL_messageActionChatAddUser","org.telegram.tgnet.TLRPC$TL_messageActionChatAddUser");
+        o.put("TLRPC$TL_messageActionChatJoinedByLink","org.telegram.tgnet.TLRPC$TL_messageActionChatJoinedByLink");
+        o.put("TLRPC$TL_messageActionChatCreate","org.telegram.tgnet.TLRPC$TL_messageActionChatCreate");
+        o.put("TLRPC$TL_messageActionChannelCreate","org.telegram.tgnet.TLRPC$TL_messageActionChannelCreate");
+        o.put("TLRPC$UserFull", "org.telegram.tgnet.TLRPC$UserFull");
+        o.put("TLRPC$MessageMedia", "org.telegram.tgnet.TLRPC$MessageMedia");
+        o.put("ChatMessagePoll", "org.telegram.ui.Cells.ChatMessagePoll");
         o.put("ChatActivity", "org.telegram.ui.ChatActivity");
         o.put("ChatActivity$ChatMessageCellDelegate", "org.telegram.ui.ChatActivity$ChatMessageCellDelegate");
         o.put("ChatMessageCell", "org.telegram.ui.Cells.ChatMessageCell");
@@ -210,6 +225,29 @@ public final class TelegramFingerprints {
         photoViewer(s);
         stories(s);
         misc(s);
+        s.add(field("BaseController","currentAccount").type("int"));
+        s.add(method("MessagesController","getUser").named("getUser").isStatic(false).sig("org.telegram.tgnet.TLRPC$User","java.lang.Long"));
+        s.add(method("NotificationsController","getInstance").named("getInstance").isStatic(true).sig("org.telegram.messenger.NotificationsController","int"));
+        s.add(method("NotificationsController","muteUntil").named("muteUntil").isStatic(false).sig("void","long","long","int").anyOrder().where(string("notify2_"),string("notifyuntil_"),callsNamed("android.content.SharedPreferences$Editor","apply")));
+        s.add(method("NotificationsController","muteDialog").named("muteDialog").isStatic(false).sig("void","long","long","boolean").where(callsSymbol("NotificationsController#muteUntil")));
+        s.add(field("TLRPC$User","bot").flagOf("TLRPC$TL_user#serializeToStream",14));
+        s.add(field("TLRPC$Chat","id").type("long"));
+        s.add(field("TLRPC$Chat","left").flagOf("TLRPC$TL_channel#serializeToStream",2));
+        s.add(field("TLRPC$InputChannel","channel_id").type("long"));
+        s.add(field("TLRPC$TL_channels_joinChannel","channel").type("org.telegram.tgnet.TLRPC$InputChannel").onlyOneOfType());
+        s.add(field("TLRPC$TL_messages_startBot","peer").type("org.telegram.tgnet.TLRPC$InputPeer").onlyOneOfType());
+        s.add(field("TLRPC$TL_messages_sendMessage","message").type("java.lang.String"));
+        s.add(field("TLRPC$TL_chatInviteJoinResultOk","updates").type("org.telegram.tgnet.TLRPC$Updates").onlyOneOfType());
+        s.add(method("TLRPC$TL_updates","serializeToStream").sig("void","org.telegram.tgnet.OutputSerializedData"));
+        s.add(field("TLRPC$Updates","chats").type("java.util.ArrayList").readBy("TLRPC$TL_updates#serializeToStream",2));
+        s.add(method("MessagesController","updateInterfaceWithMessages").named("updateInterfaceWithMessages").isStatic(false).sig("boolean","long","java.util.ArrayList","int").anyOrder().where(callsSymbol("NotificationCenter#postNotificationName")));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messageActionChatAddUser",0x15cefd00));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messageActionChatJoinedByLink",0x031224c3));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messageActionChatCreate",0xbd47cbad));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messageActionChannelCreate",0x95d2ac92));
+        s.add(cls("org.telegram.tgnet.TLRPC$MessageAction").from(superclassOf("org.telegram.tgnet.TLRPC$TL_messageActionChatAddUser")));
+        s.add(field("TLRPC$Message","action").type("org.telegram.tgnet.TLRPC$MessageAction").onlyOneOfType());
+        s.add(field("TLRPC$MessageAction","users").type("java.util.ArrayList"));
         return s;
     }
 
@@ -308,6 +346,12 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.tgnet.TLRPC$InputPeer")
                 .from(superclassOf("org.telegram.tgnet.TLRPC$TL_inputPeerChannel")));
         s.add(cls("org.telegram.tgnet.TLRPC$Peer").from(superclassOf("org.telegram.tgnet.TLRPC$TL_peerUser")));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_channels_joinChannel", 0x7f6a1e22));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_importChatInvite", 0x6c50051c));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_startBot", 0xe6df7378));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_chatInviteJoinResultOk", 0x445663a7));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_updates", 0x74ae4240));
+        s.add(cls("org.telegram.tgnet.TLRPC$Updates").from(superclassOf("org.telegram.tgnet.TLRPC$TL_updates")));
         s.add(tl("org.telegram.tgnet.TLRPC$TL_channels_readHistory", 0xcc104937));
         s.add(tl("org.telegram.tgnet.TLRPC$TL_channels_readMessageContents", 0xeab5dc38));
         s.add(tl("org.telegram.tgnet.TLRPC$TL_inputPeerChannel", 0x27bcbbfc));
@@ -1181,6 +1225,39 @@ public final class TelegramFingerprints {
     // --------------------------------------------------------------------- misc
 
     private static void misc(List<Symbol> s) {
+        s.add(field("NativeByteBuffer", "buffer").type("java.nio.ByteBuffer").onlyOneOfType());
+        s.add(field("TLRPC$Message", "date").type("int"));
+        s.add(field("TLRPC$Message", "media").type("org.telegram.tgnet.TLRPC$MessageMedia"));
+        s.add(field("TLRPC$MessageMedia", "ttl_seconds").type("int"));
+        s.add(field("BaseFragment", "arguments").type("android.os.Bundle").onlyOneOfType());
+        s.add(method("ChatActivity", "setThreadMessages").named("setThreadMessages").isStatic(false)
+                .sig("void", "java.util.ArrayList", "org.telegram.tgnet.TLRPC$Chat", "int", "int", "int", "org.telegram.tgnet.TLRPC$TL_forumTopic"));
+        s.add(field("ChatActivity", "threadMessageId").type("long").writtenBy("ChatActivity#setThreadMessages", 0));
+        s.add(method("ChatActivity", "onFragmentCreate").named("onFragmentCreate").isStatic(false).sig("boolean")
+                .where(string("chat_id"), string("user_id")));
+        s.add(method("ChatActivity", "onPause").named("onPause").isStatic(false).sig("void")
+                .where(string("diditem")));
+        s.add(method("MessagesController", "deleteDialogLocal").named("deleteDialog").isStatic(false).sig("void", "long", "int", "int", "int", "boolean", "org.telegram.tgnet.TLRPC$InputPeer", "long"));
+        s.add(field("BaseFragment", "currentAccount").type("int").handedTo("BaseFragment#getUserConfig", "UserConfig#getInstance"));
+        s.add(method("MessageObject", "isOutOwner").named("isOutOwner").isStatic(false).sig("boolean")
+                .where(writesFieldOfType("org.telegram.messenger.MessageObject", "java.lang.Boolean"), callsSymbol("UserConfig#getInstance")));
+        s.add(field("MessageObject", "currentAccount").type("int").handedTo("MessageObject#isOutOwner", "UserConfig#getInstance"));
+        s.add(method("MessagesController", "getUserFull").named("getUserFull").isStatic(false).sig("org.telegram.tgnet.TLRPC$UserFull", "long"));
+        s.add(field("TLRPC$UserFull", "noforwards_peer_enabled").type("boolean"));
+        s.add(field("TLRPC$UserFull", "noforwards_my_enabled").type("boolean"));
+        s.add(method("MessagesController", "isUserNoForwards").named("isUserNoForwards")
+                .sig("boolean", "org.telegram.tgnet.TLRPC$UserFull"));
+        s.add(method("PhotoViewer", "onPhotoShow").named("onPhotoShow").isStatic(false)
+                .sig("void", "org.telegram.messenger.MessageObject", "org.telegram.tgnet.TLRPC$FileLocation", "org.telegram.messenger.ImageLocation", "org.telegram.messenger.ImageLocation", "java.util.ArrayList", "java.util.ArrayList", "java.util.List", "int", "org.telegram.ui.PhotoViewer$PlaceProviderObject"));
+        s.add(field("PhotoViewer", "imagesArr").type("java.util.ArrayList").readBy("PhotoViewer#setIsAboutToSwitchToIndexIZZZ", 0));
+        s.add(cls("org.telegram.ui.Cells.ChatMessagePoll").from(declaringStrings("TodoCompletedBy", "PollViewVotesAsAdmin")));
+        s.add(field("ChatMessagePoll", "cell").type("org.telegram.ui.Cells.ChatMessageCell").onlyOneOfType());
+        s.add(method("ChatMessagePoll", "setMessageContentIfPoll").named("setMessageContentIfPoll")
+                .sig("void", "org.telegram.messenger.MessageObject", "boolean").where(string("TodoCompletedBy")));
+        s.add(field("ChatMessageCell", "backgroundWidth").type("int").writtenBy("ChatMessagePoll#setMessageContentIfPoll", 0));
+        s.add(field("ChatMessageCell", "totalHeight").type("int").writtenAfterConstant("ChatMessagePoll#setMessageContentIfPoll", Float.floatToIntBits(73f)));
+        s.add(field("ChatMessageCell", "instantTextNewLine").type("boolean").writtenBy("ChatMessagePoll#setMessageContentIfPoll", 9));
+        s.add(field("ChatMessageCell", "availableTimeWidth").type("int").readBeforeConstant("ChatMessageCell#measureTime", Float.floatToIntBits(1000f)));
         String browser = "org.telegram.messenger.browser.Browser";
         String progress = "org.telegram.messenger.browser.Browser$Progress";
         String ctx = "android.content.Context";

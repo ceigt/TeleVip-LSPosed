@@ -20,10 +20,12 @@ import com.my.televip.virtuals.ActionBar.Theme;
 import com.my.televip.virtuals.messenger.MessageObject;
 import com.my.televip.virtuals.tgnet.TLRPC;
 import com.my.televip.virtuals.ui.Cells.ChatMessageCell;
+import com.my.televip.compat.XposedHelpers;
 
 public class MessageTimeModifier {
 
     public static volatile boolean loaded;
+    private static final ThreadLocal<java.util.ArrayDeque<Integer>> widths = ThreadLocal.withInitial(java.util.ArrayDeque::new);
 
     public static synchronized void init() {
 
@@ -36,11 +38,32 @@ public class MessageTimeModifier {
                     Obfuscate.getMethodName("ChatMessageCell", "measureTime"),
                     ArgsResolver.merge("measureTime", new Class[]{ClassLoad.getClass(ClassNames.MESSAGE_OBJECT)},
                             new BaseMethodHook() {
+                                @Override protected void beforeMethod(MethodHookParam param) {
+                                    java.util.ArrayDeque<Integer> stack=widths.get();stack.push(Integer.MIN_VALUE);
+                                    String field=com.my.televip.obfuscate.RuntimeMappings.active().resolveField("ChatMessageCell","availableTimeWidth");
+                                    if(field==null)return;
+                                    try {
+                                        int previous=XposedHelpers.getIntField(param.thisObject,field);stack.pop();stack.push(previous);
+                                        MessageObject wrapper=new MessageObject(param.args[0]);TLRPC.Message message=wrapper.getMessageOwner();
+                                        String prefix=prefix(message);
+                                        Object media=XposedHelpers.getObjectField(message.get_Message(),Obfuscate.getFieldName("TLRPC$Message","media"));
+                                        boolean poll=media!=null&&ClassLoad.getClass("org.telegram.tgnet.TLRPC$TL_messageMediaPoll").isInstance(media);
+                                        float density=((android.view.View)param.thisObject).getResources().getDisplayMetrics().density;
+                                        int available=previous>0?previous:poll?XposedHelpers.getIntField(param.thisObject,Obfuscate.getFieldName("ChatMessageCell","backgroundWidth"))-(int)Math.ceil(31*density):0;
+                                        TextPaint paint=Theme.getTextPaint();
+                                        if(available>0&&paint!=null)XposedHelpers.setIntField(param.thisObject,field,Math.max(1,available-(prefix==null?0:(int)Math.ceil(paint.measureText(prefix+" ")))));
+                                    }catch(Throwable error){Logger.e(error);}
+                                }
                                 @Override
                                 protected void afterMethod(MethodHookParam param) {
-
                                     try {
-                                        apply(param.thisObject, param.args[0]);
+                                        java.util.ArrayDeque<Integer> stack=widths.get();
+                                        if(!stack.isEmpty()){
+                                            int old=stack.pop();
+                                            try{if(old!=Integer.MIN_VALUE)XposedHelpers.setIntField(param.thisObject,Obfuscate.getFieldName("ChatMessageCell","availableTimeWidth"),old);}
+                                            finally{if(stack.isEmpty())widths.remove();}
+                                        }
+                                        if(!param.hasThrowable())apply(param.thisObject, param.args[0]);
                                     } catch (Throwable e) {
                                         Logger.e(e);
                                     }
@@ -51,6 +74,12 @@ public class MessageTimeModifier {
             Logger.e(e);
         }
 
+    }
+
+    private static String prefix(TLRPC.Message message) {
+        if(message==null||message.get_Message()==null)return null;
+        if(ConfigManager.showDeletedMessages!=null&&ConfigManager.showDeletedMessages.isEnable()&&(message.getFlags()&ShowDeletedMessages.FLAG_DELETED)!=0)return Translator.get(Keys.Deleted);
+        return ConfigManager.showMessageId!=null&&ConfigManager.showMessageId.isEnable()&&message.getId()!=0?"ID "+message.getId():null;
     }
 
     private static void apply(Object cellObject, Object messageObject)
