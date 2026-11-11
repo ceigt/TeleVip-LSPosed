@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 29;
+    public static final int VERSION = 30;
 
     private TelegramFingerprints() {
     }
@@ -698,6 +698,12 @@ public final class TelegramFingerprints {
         s.add(method("UserConfig", "getInstance").isStatic(true).sig("org.telegram.messenger.UserConfig", "int"));
         s.add(method("UserConfig", "clearConfig").isStatic(false).sig("void")
                 .where(callsAnyNamed("clear"), writesFieldOfType("org.telegram.messenger.UserConfig", "org.telegram.tgnet.TLRPC$User")));
+        s.add(method("MessagesController", "deleteMessagesByPush").named("deleteMessagesByPush").isStatic(false)
+                .sig("void", "long", "java.util.ArrayList", "long").anyOrder()
+                .where(touchesFieldSymbol("MessagesStorage.storageQueue")));
+        s.add(method("MessagesStorage", "deletePushMessages").named("deletePushMessages").isStatic(false)
+                .sig("void", "long", "java.util.ArrayList").anyOrder()
+                .where(Body.any(string("DELETE FROM unread_push_messages WHERE uid = "), string("DELETE FROM unread_push_messages WHERE uid = %d AND mid IN(%s)"))));
         s.add(method("MessagesController", "processUpdateArray").isStatic(false)
                 .sig("boolean", "java.util.ArrayList", "java.util.ArrayList", "java.util.ArrayList", "boolean", "int"));
         s.add(method("UserConfig", "isPremium").sig("boolean")

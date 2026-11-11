@@ -3,7 +3,7 @@ package com.my.televip.virtuals.tgnet;
 import java.util.ArrayList;
 public final class TLRPC {
     public static final class MessageData {
-        public final int id,flags; public final long dialog; public final String text;
+        public final int id; public int flags; public final long dialog; public final String text;
         public int date=123,ttl,send_state;
         public Object media;
         public MessageData(int id,long dialog,int flags,String text) { this.id=id;this.dialog=dialog;this.flags=flags;this.text=text; }
@@ -14,6 +14,7 @@ public final class TLRPC {
         public Object get_Message() { return data; }
         public int getId() { return data.id; }
         public int getFlags() { return data.flags; }
+        public void setFlags(int flags) { data.flags=flags; }
         public int getTtl() { return data.ttl; }
         public String getMessage() { return data.text; }
         public static Message TLdeserialize(NativeByteBuffer buffer,int id,boolean exception) {

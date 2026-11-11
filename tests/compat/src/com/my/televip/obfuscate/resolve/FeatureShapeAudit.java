@@ -67,6 +67,13 @@ final class FeatureShapeAudit {
         for(String[] f:fields)downloadField(cls(index,mapping,TelegramFingerprints.owners().get(f[0])),mapping.resolveField(f[0],f[1]),f[2],errors);
         if(!exact(index,mapping,"ChatMessagePoll","setMessageContentIfPoll","V",descriptor(mapping,"org.telegram.messenger.MessageObject"),"Z"))errors.add("Invalid poll layout callback");
         if(!exact(index,mapping,"ChatActivity","onFragmentCreate","Z")||!exact(index,mapping,"ChatActivity","onPause","V"))errors.add("Invalid local reading lifecycle");
+        String push=mapping.resolveMethod("MessagesController","deleteMessagesByPush");
+        DexClass pushController=cls(index,mapping,"org.telegram.messenger.MessagesController");int pushRoutes=0;
+        if(pushController!=null)for(DexClass.Method m:pushController.methods)if(m.name().equals(push)&&!m.isStatic()&&m.returnType().equals("V")){
+            String[] p=m.parameterTypes();
+            if(Arrays.equals(p,new String[]{"J","Ljava/util/ArrayList;","J"})||Arrays.equals(p,new String[]{"J","J","Ljava/util/ArrayList;"}))pushRoutes++;
+        }
+        if(pushRoutes!=1)errors.add("Invalid server-push deletion entry");
         if(!exact(index,mapping,"ChatActivity","isPeerNoForwards","Z"))errors.add("Invalid private-chat content predicate");
         if(!exact(index,mapping,"MessagesStorage","updatePinnedMessages","V","J","Ljava/util/ArrayList;","Z","I","I","Z","Ljava/util/HashMap;"))errors.add("Invalid local pinned cleanup route");
         if(!exact(index,mapping,"MessagesController","getChatFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$ChatFull"),"J"))errors.add("Invalid owning-account chat-full lookup");

@@ -33,6 +33,12 @@ public class MessagesStorage {
         return new MessagesStorage(XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_STORAGE), Obfuscate.getMethodName("MessagesStorage", "getInstance"), num));
     }
 
+    public void deletePushMessages(long dialog, java.util.ArrayList<Integer> ids) {
+        Class<?>[] types = com.my.televip.obfuscate.ArgsResolver.resolveObject("deletePushMessages", new Class[]{long.class, java.util.ArrayList.class});
+        if (types[0] == long.class) XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "deletePushMessages"), dialog, ids);
+        else XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "deletePushMessages"), ids, dialog);
+    }
+
     public void clearPinnedReferences(long dialog, java.util.ArrayList<Integer> ids) {
         if (dialog == 0 || ids == null || ids.isEmpty()) return;
         java.util.ArrayList<Integer> snapshot = new java.util.ArrayList<>(ids);

@@ -10,6 +10,8 @@ public final class MessagesStorage {
     public long accountId = 101;
     public MessagesStorage(Handler handler) { queue = new DispatchQueue(handler); database=new SQLiteDatabase(); owner=null; }
     public MessagesStorage(Object object) { owner=(MessagesStorage)object; queue=owner.queue; database=owner.database; }
+    public int pushCleanup;
+    public void deletePushMessages(long dialog,java.util.ArrayList<Integer> ids){pushCleanup++;}
     public final java.util.Map<Long,java.util.List<Integer>> unpinned = new java.util.HashMap<>();
     public void clearPinnedReferences(long dialog, java.util.ArrayList<Integer> ids) { unpinned.put(dialog,new java.util.ArrayList<>(ids)); }
     public long getAccountUserId() { return owner==null ? accountId : owner.accountId; }

@@ -125,6 +125,7 @@ public class ShowDeletedMessages {
     }
 
     public static synchronized void init() {
+        ServerPushDeletes.init();
         if (!reconcileHook) reconcileHook = HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY),
                 Obfuscate.getMethodName("ChatActivity", "onFragmentCreate"), new BaseMethodHook() {
                     @Override protected void afterMethod(MethodHookParam p) {
