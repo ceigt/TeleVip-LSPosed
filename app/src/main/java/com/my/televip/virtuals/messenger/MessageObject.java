@@ -2,7 +2,6 @@ package com.my.televip.virtuals.messenger;
 
 import com.my.televip.Class.ClassNames;
 import com.my.televip.Class.ClassLoad;
-import com.my.televip.obfuscate.ArgsResolver;
 import com.my.televip.obfuscate.Obfuscate;
 import com.my.televip.virtuals.tgnet.TLRPC;
 
@@ -22,7 +21,8 @@ public class MessageObject {
     }
 
     public long getDialogId() {
-        return (long) XposedHelpers.callMethod(messageObject, Obfuscate.getMethodName("MessageObject", "getDialogId"));
+        TLRPC.Message owner=getMessageOwner();
+        return owner==null?0:getDialogId(owner);
     }
 
     public boolean isVoice() {

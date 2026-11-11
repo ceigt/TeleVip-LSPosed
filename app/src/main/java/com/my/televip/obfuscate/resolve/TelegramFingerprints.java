@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 26;
+    public static final int VERSION = 27;
 
     private TelegramFingerprints() {
     }
@@ -665,6 +665,9 @@ public final class TelegramFingerprints {
                 .sig("void", "java.util.ArrayList", "boolean", "boolean", "boolean", "int", "int", "long"));
         s.add(method("MessagesStorage", "putMessagesAZZZIZIJ").named("putMessages")
                 .sig("void", "java.util.ArrayList", "boolean", "boolean", "boolean", "int", "boolean", "int", "long"));
+        s.add(method("MessagesStorage", "putMessagesStored").isStatic(false)
+                .sig("void", "org.telegram.tgnet.TLRPC$messages_Messages", "long", "int", "int", "boolean", "int", "long")
+                .anyOrder().where(string("REPLACE INTO messages_v2 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)")));
         s.add(method("MessagesStorage", "putMessagesOJIIZIJ").named("putMessages")
                 .sig("void", "org.telegram.tgnet.TLRPC$messages_Messages", "long", "int", "int", "boolean", "int", "long")
                 .anyOrder()     // grouped by type in Nagram and Nekogram 12.10.5+

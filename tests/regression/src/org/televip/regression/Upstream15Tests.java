@@ -22,6 +22,7 @@ public final class Upstream15Tests {
     }
     public static class HostConfig { public long clientUserId=101; public void clearConfig() {} }
     public static class HostChat {
+        public HostMessage selectedObject;
         public void fillMessageMenu(HostMessage message,ArrayList<?> icons,ArrayList<?> labels,ArrayList<?> options) {}
         public void processSelectedOption(int option) {}
     }
@@ -53,6 +54,17 @@ public final class Upstream15Tests {
         ConfigManager.saveEditsHistory.setEnable(true);
         SaveEditsHistory.init();
         check(SaveEditsHistory.isEnable,"Production history hooks did not install");
+        HostMessage selected=new HostMessage();selected.messageOwner=new TLRPC.MessageData(19,-1234567890123L,0,"menu fixture");
+        com.my.televip.virtuals.messenger.MessageObject wrapper=new com.my.televip.virtuals.messenger.MessageObject(selected);
+        check(wrapper.getDialogId()==-1234567890123L,"Instance wrapper did not use canonical static decoder");
+        selected.messageOwner=null;check(wrapper.getDialogId()==0,"Null owner dialog ID");
+        selected.messageOwner=new TLRPC.MessageData(19,-1234567890123L,0,"menu fixture");
+        HostChat hostChat=new HostChat();hostChat.selectedObject=selected;
+        ArrayList<Integer> icons=new ArrayList<>(),options=new ArrayList<>();ArrayList<CharSequence> labels=new ArrayList<>();
+        java.lang.reflect.Method menu=HostChat.class.getMethod("fillMessageMenu",HostMessage.class,ArrayList.class,ArrayList.class,ArrayList.class);
+        XposedBridge.invoke(menu,hostChat,selected,icons,labels,options);
+        check(options.contains(8353847)&&labels.size()==1,"Production history menu missing on optimized message wrapper");
+        XposedBridge.invoke(menu,hostChat,selected,icons,labels,options);check(labels.size()==1,"History menu duplicated");
         java.lang.reflect.Field field=SaveEditsHistory.class.getDeclaredField("database");field.setAccessible(true);
         MessageDatabase db=(MessageDatabase)field.get(null);
         HandlerThread thread=new HandlerThread("History capture host");thread.start();Handler handler=new Handler(thread.getLooper());

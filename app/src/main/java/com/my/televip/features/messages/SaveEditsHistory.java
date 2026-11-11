@@ -122,14 +122,18 @@ public final class SaveEditsHistory {
                     }
                 }));
         if (!storageHook) storageHook = HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_STORAGE),
-                Obfuscate.getMethodName("MessagesStorage", "putMessages"),
-                ArgsResolver.merge("putMessages", new Class[]{ClassLoad.getClass(ClassNames.TL_MESSAGES_MESSAGES),
+                Obfuscate.getMethodName("MessagesStorage", "putMessagesStored"),
+                ArgsResolver.merge("putMessagesStored", new Class[]{ClassLoad.getClass(ClassNames.TL_MESSAGES_MESSAGES),
                         long.class, int.class, int.class, boolean.class, int.class, long.class}, new BaseMethodHook() {
                     @Override protected void beforeMethod(MethodHookParam param) {
                         if (!ConfigManager.saveEditsHistory.isEnable()) return;
-                        boolean grouped = param.args[0] instanceof Integer;
-                        boolean liveEdit = (int) param.args[grouped ? 0 : 2] == -2;
-                        Object incoming = param.args[grouped ? 5 : 0];
+                        boolean liveEdit = false;
+                        Object incoming = null;
+                        Class<?> batchType=ClassLoad.getClass(ClassNames.TL_MESSAGES_MESSAGES);
+                        for(Object argument:param.args){
+                            if(argument instanceof Integer && (int)argument==-2)liveEdit=true;
+                            if(argument!=null && batchType.isInstance(argument))incoming=argument;
+                        }
                         if (incoming == null) return;
                         MessagesStorage storage = new MessagesStorage(param.thisObject);
                         AccountSession session = database.session(storage.getAccountUserId());
@@ -144,11 +148,9 @@ public final class SaveEditsHistory {
                             if (message.getId() > 0 && dialogId != 0 && message.getMessage() != null)
                                 pending.add(new PendingEdit(dialogId, message.getId(), message.getMessage(), capturedAt));
                         }
-                        // Enqueue before Telegram enqueues its write, so the previous version is still available.
-                        storage.getStorageQueue().postRunnable(() -> {
-                            try { capturePreviousVersions(storage, session, pending); }
-                            catch (Throwable error) { Logger.e(error); }
-                        });
+                        // This is the actual storage-queue body: the public enqueue wrapper can be inlined.
+                        try { capturePreviousVersions(storage, session, pending); }
+                        catch (Throwable error) { Logger.e(error); }
                     }
                 }));
         isEnable = menuHook && clickHook && storageHook && cleanupHook;

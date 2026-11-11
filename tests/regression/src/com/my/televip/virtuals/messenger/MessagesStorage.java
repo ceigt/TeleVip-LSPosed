@@ -20,10 +20,21 @@ public final class MessagesStorage {
     public void putMessages(com.my.televip.virtuals.tgnet.TLRPC.messages_Messages messages,long dialog,
             int loadType,int maxId,boolean create,int mode,long thread) {
         queue.postRunnable(() -> {
-            for(Object value:messages.getMessages()) {
-                com.my.televip.virtuals.tgnet.TLRPC.MessageData data=(com.my.televip.virtuals.tgnet.TLRPC.MessageData)value;
-                database.history.put(data.id+":"+data.dialog,data);
-            }
+            try {
+                if(com.my.televip.obfuscate.ArgsResolver.groupedStorage)
+                    com.my.televip.compat.XposedBridge.invoke(MessagesStorage.class.getMethod("putMessagesStored",int.class,int.class,int.class,long.class,long.class,com.my.televip.virtuals.tgnet.TLRPC.messages_Messages.class,boolean.class),this,loadType,maxId,mode,dialog,thread,messages,create);
+                else com.my.televip.compat.XposedBridge.invoke(MessagesStorage.class.getMethod("putMessagesStored",com.my.televip.virtuals.tgnet.TLRPC.messages_Messages.class,long.class,int.class,int.class,boolean.class,int.class,long.class),this,messages,dialog,loadType,maxId,create,mode,thread);
+            }catch(Throwable error){throw new AssertionError(error);}
         });
+    }
+    public void putMessagesStored(int loadType,int maxId,int mode,long dialog,long thread,
+            com.my.televip.virtuals.tgnet.TLRPC.messages_Messages messages,boolean create){
+        putMessagesStored(messages,dialog,loadType,maxId,create,mode,thread);
+    }
+    public void putMessagesStored(com.my.televip.virtuals.tgnet.TLRPC.messages_Messages messages,long dialog,int loadType,int maxId,boolean create,int mode,long thread){
+        for(Object value:messages.getMessages()) {
+            com.my.televip.virtuals.tgnet.TLRPC.MessageData data=(com.my.televip.virtuals.tgnet.TLRPC.MessageData)value;
+            database.history.put(data.id+":"+data.dialog,data);
+        }
     }
 }

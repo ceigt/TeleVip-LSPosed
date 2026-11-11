@@ -61,3 +61,5 @@ Passing the suite confirms these isolated regression cases; it does not certify 
 16. Default mute: production request/delegate wrapper with isolated host/native-action fixtures. Successful joins, requested-channel matching, error and web-challenge exclusion, ordinary/timestamp callback preservation, once-only application, existing versus first bot conversation, human /start exclusion, account changes and cursor cleanup. No bot command or network request is sent by the suite. Real join approval/invitation delivery requires separate server fixtures.
 
 The 3.6.20 isolated suite reports 16 groups / 2814 assertions on the connected Android 16 test device. It does not execute a real bot start or remote peer deletion.
+
+Device-discovered history repair: compile the production MessageObject wrapper, reject dependence on an absent zero-argument decoder, exercise the history menu, and invoke the production capture from the controlled native queue body rather than assuming the public enqueue wrapper remains on every live-edit path. Ordinary/grouped layouts pass 16 groups / 2818 assertions.

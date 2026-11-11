@@ -20,6 +20,7 @@ $production = @(
     'Database/LocalStateStore.java', 'features/messages/LocalData.java', 'features/other/BooleanFieldScope.java',
     'settings/SettingsSearch.java', 'virtuals/messenger/BaseController.java',
     'features/other/AutoMuteNewChats.java',
+    'virtuals/messenger/MessageObject.java',
     'messages/MessageStorage.java', 'utils/MessageIdParser.java',
     'features/ghostMode/ReadRequestPermits.java', 'calendar/CalendarDate.java',
     'calendar/ConverterCalendar.java', 'language/Keys.java',

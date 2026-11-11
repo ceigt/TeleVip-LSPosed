@@ -69,6 +69,15 @@ final class FeatureShapeAudit {
         if(!exact(index,mapping,"MessagesController","getUserFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$UserFull"),"J"))errors.add("Invalid owning-account user-full lookup");
         if(!exact(index,mapping,"MessagesController","getUser",descriptor(mapping,"org.telegram.tgnet.TLRPC$User"),"Ljava/lang/Long;"))errors.add("Invalid owning-account bot lookup");
         if(!exact(index,mapping,"NotificationsController","muteDialog","V","J","J","Z"))errors.add("Invalid native mute action");
+        if(!exact(index,mapping,"MessageObject","getDialogIdO","J",descriptor(mapping,"org.telegram.tgnet.TLRPC$Message")))errors.add("Invalid canonical dialog-id decoder");
+        DexClass storage=cls(index,mapping,"org.telegram.messenger.MessagesStorage");int writers=0;
+        String stored=mapping.resolveMethod("MessagesStorage","putMessagesStored");
+        if(storage!=null&&stored!=null)for(DexClass.Method method:storage.methods)if(method.name().equals(stored)&&!method.isStatic()){
+            final boolean[] writesMessages={false};
+            method.scan(new CodeScanner.Visitor(){@Override public void string(int target){if(storage.dex.string(target).startsWith("REPLACE INTO messages_v2 VALUES("))writesMessages[0]=true;}});
+            if(writesMessages[0])writers++;
+        }
+        if(writers!=1)errors.add("History hook does not target the actual message storage body");
         // These native private methods reorder parameters; the handlers use the published types.
         for(String[] pair:new String[][]{{"MessagesController","updateInterfaceWithMessages"},{"NotificationsController","muteUntil"}})
             if(mapping.resolveMethod(pair[0],pair[1])==null)errors.add("Missing reviewed reordered route: "+Arrays.toString(pair));
