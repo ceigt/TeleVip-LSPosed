@@ -29,11 +29,12 @@ public final class ContentSavingScope {
         MessageObject wrapper=new MessageObject(value);TLRPC.Message owner=wrapper.getMessageOwner();
         // Existing secret/expiring-media policy remains in charge of these messages.
         if(owner==null||owner.getTtl()!=0||owner.getId()<=0)return;
+        long dialog=wrapper.getDialogId();if(dialog==0||(dialog&0xffffffffL)==0)return;
         Object media=XposedHelpers.getObjectField(owner.get_Message(),Obfuscate.getFieldName("TLRPC$Message","media"));
         if(media!=null&&XposedHelpers.getIntField(media,Obfuscate.getFieldName("TLRPC$MessageMedia","ttl_seconds"))!=0)return;
         scope.clear(owner.get_Message(),Obfuscate.getFieldName("TLRPC$Message","noforwards"));
         int account=XposedHelpers.getIntField(value,Obfuscate.getFieldName("MessageObject","currentAccount"));
-        peer(account,wrapper.getDialogId());
+        peer(account,dialog);
     }
     private static void peer(int account,long dialog) throws ReflectiveOperationException {
         if(dialog<=0)return;
@@ -68,8 +69,13 @@ public final class ContentSavingScope {
                 }catch(Throwable error){Logger.e(error);}}
                 @Override protected void afterMethod(MethodHookParam p){scope.exit(p);}
             });
-            HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","isUserNoForwards"),ClassLoad.getClass("org.telegram.tgnet.TLRPC$UserFull"),new BaseMethodHook(){
-                @Override protected void beforeMethod(MethodHookParam p){if(enabled())p.setResult(false);}
+            HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY),Obfuscate.getMethodName("ChatActivity","isPeerNoForwards"),new BaseMethodHook(){
+                @Override protected void beforeMethod(MethodHookParam p){
+                    if(!enabled())return;
+                    android.os.Bundle args=(android.os.Bundle)XposedHelpers.getObjectField(p.thisObject,Obfuscate.getFieldName("BaseFragment","arguments"));
+                    // Keep the controller's real sharing/privacy metadata visible to native settings.
+                    if(args!=null&&args.getInt("enc_id",0)==0&&args.getLong("user_id",0)>0)p.setResult(false);
+                }
             });
             installed=attempt.isComplete();
         }catch(Throwable error){Logger.e(error);}

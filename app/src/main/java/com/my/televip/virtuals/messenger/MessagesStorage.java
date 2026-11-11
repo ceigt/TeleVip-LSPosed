@@ -33,6 +33,25 @@ public class MessagesStorage {
         return new MessagesStorage(XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_STORAGE), Obfuscate.getMethodName("MessagesStorage", "getInstance"), num));
     }
 
+    public void clearPinnedReferences(long dialog, java.util.ArrayList<Integer> ids) {
+        if (dialog == 0 || ids == null || ids.isEmpty()) return;
+        java.util.ArrayList<Integer> snapshot = new java.util.ArrayList<>(ids);
+        long accountId = getAccountUserId();
+        int slot = new BaseController(messagesStorage).getCurrentAccount();
+        // This native method updates local SQL and notifies the view; it sends no unpin request.
+        XposedHelpers.callMethod(messagesStorage, Obfuscate.getMethodName("MessagesStorage", "updatePinnedMessages"),
+                dialog, snapshot, false, -1, 0, false, null);
+        com.my.televip.application.AndroidUtilities.runOnUIThread(() -> {
+            try {
+                if (accountId == 0 || getAccountUserId() != accountId) return;
+                MessagesController controller = MessagesController.getInstance(slot);
+                Object full = dialog > 0 ? controller.getUserFull(dialog) : controller.getChatFull(-dialog);
+                com.my.televip.messages.PinnedReferences.clearCached(full,
+                        Obfuscate.getFieldName(dialog > 0 ? "TLRPC$UserFull" : "TLRPC$ChatFull", "pinned_msg_id"), snapshot);
+            } catch (Throwable error) { com.my.televip.logging.Logger.e(error); }
+        });
+    }
+
     public static MessagesStorage getMessagesStorage() {
         return getInstance(UserConfig.getSelectedAccount());
     }

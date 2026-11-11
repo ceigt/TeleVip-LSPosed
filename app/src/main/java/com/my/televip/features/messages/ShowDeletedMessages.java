@@ -66,6 +66,7 @@ public class ShowDeletedMessages {
         }
     }
 
+    private static boolean reconcileHook;
     private static boolean initProcessUpdateArray() {
         try {
             return HMethod.hookMethod(
@@ -124,6 +125,22 @@ public class ShowDeletedMessages {
     }
 
     public static synchronized void init() {
+        if (!reconcileHook) reconcileHook = HMethod.hookMethod(ClassLoad.getClass(ClassNames.CHAT_ACTIVITY),
+                Obfuscate.getMethodName("ChatActivity", "onFragmentCreate"), new BaseMethodHook() {
+                    @Override protected void afterMethod(MethodHookParam p) {
+                        if (!ConfigManager.showDeletedMessages.isEnable() || !Boolean.TRUE.equals(p.getResult())) return;
+                        try {
+                            android.os.Bundle args = (android.os.Bundle) com.my.televip.compat.XposedHelpers.getObjectField(p.thisObject,
+                                    Obfuscate.getFieldName("BaseFragment", "arguments"));
+                            if (args == null || args.getInt("enc_id", 0) != 0) return;
+                            long dialog = args.getLong("user_id", 0);
+                            if (dialog == 0) dialog = -args.getLong("chat_id", 0);
+                            int account = com.my.televip.compat.XposedHelpers.getIntField(p.thisObject,
+                                    Obfuscate.getFieldName("BaseFragment", "currentAccount"));
+                            MessageStorage.reconcileDeletedPins(MessagesStorage.getInstance(account), dialog);
+                        } catch (Throwable error) { Logger.e(error); }
+                    }
+                });
         if (!isEnable) {
             // Only server update objects are intercepted. User-initiated deletion,
             // logout and cache cleanup continue through Telegram's native flow.

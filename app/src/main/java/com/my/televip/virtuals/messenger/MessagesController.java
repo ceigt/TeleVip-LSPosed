@@ -60,6 +60,10 @@ public class MessagesController {
         return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getUserFull"), id);
     }
 
+    public Object getChatFull(long id) {
+        return XposedHelpers.callMethod(messagesController, Obfuscate.getMethodName("MessagesController", "getChatFull"), id);
+    }
+
     public static MessagesController getMessagesController() {
         return getInstance(UserConfig.getSelectedAccount());
     }

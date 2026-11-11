@@ -56,9 +56,36 @@ public final class MessageStorage {
         } catch (Throwable error) { Logger.e(error); }
     }
 
+    /** Repair pins retained by an earlier module build, only for locally flagged cached rows. */
+    public static void reconcileDeletedPins(MessagesStorage storage, long dialog) {
+        if (dialog == 0 || (dialog & 0xffffffffL) == 0) return;
+        long account = storage.getAccountUserId();
+        if (account == 0) return;
+        storage.getStorageQueue().postRunnable(() -> {
+            if (!ConfigManager.showDeletedMessages.isEnable() || storage.getAccountUserId() != account) return;
+            SQLiteCursor cursor = null;
+            ArrayList<Integer> ids = new ArrayList<>();
+            try {
+                cursor = storage.getDatabase().queryFinalized("SELECT m.data,m.mid FROM chat_pinned_v2 p INNER JOIN messages_v2 m ON m.uid=p.uid AND m.mid=p.mid WHERE p.uid=" + dialog + " LIMIT 1000", new Object[0]);
+                while (cursor.next()) {
+                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                    if (data == null || data.nativeByteBuffer == null) continue;
+                    try {
+                        data.position(4);
+                        if ((data.readInt32(true) & ShowDeletedMessages.FLAG_DELETED) != 0) ids.add(cursor.intValue(1));
+                    } finally { data.reuse(); }
+                }
+            } catch (Throwable error) { Logger.e(error); }
+            finally { if (cursor != null) cursor.dispose(); }
+            if (!ids.isEmpty() && storage.getAccountUserId() == account) storage.clearPinnedReferences(dialog, ids);
+        });
+    }
+
     private static void markTable(MessagesStorage storage, SQLiteDatabase db, String table, long dialogId, ArrayList<Integer> ids) {
         SQLiteCursor cursor = null;
         SQLitePreparedStatement statement = null;
+        java.util.Map<Long,ArrayList<Integer>> pins = new java.util.HashMap<>();
+        if ("messages_v2".equals(table) && dialogId != 0) pins.put(dialogId, new ArrayList<>(ids));
         try {
             cursor = db.queryFinalized("SELECT data,mid,uid FROM " + table + " WHERE "
                     + (dialogId == 0 ? "is_channel" : "uid") + " = " + dialogId
@@ -78,12 +105,18 @@ public final class MessageStorage {
                     statement.bindLong(2, cursor.longValue(2));
                     statement.bindInteger(3, cursor.intValue(1));
                     statement.step();
+                    if ("messages_v2".equals(table)) {
+                        ArrayList<Integer> group = pins.computeIfAbsent(cursor.longValue(2), key -> new ArrayList<>());
+                        if (!group.contains(cursor.intValue(1))) group.add(cursor.intValue(1));
+                    }
                     com.my.televip.features.messages.LocalData.capture(storage, cursor.longValue(2), cursor.intValue(1), data);
                 } finally { data.reuse(); }
             }
         } finally {
             try { if (cursor != null) cursor.dispose(); }
             finally { if (statement != null) statement.dispose(); }
+            for (java.util.Map.Entry<Long,ArrayList<Integer>> pin : pins.entrySet())
+                storage.clearPinnedReferences(pin.getKey(), pin.getValue());
         }
     }
 }

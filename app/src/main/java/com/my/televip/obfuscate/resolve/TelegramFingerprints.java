@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 28;
+    public static final int VERSION = 29;
 
     private TelegramFingerprints() {
     }
@@ -91,6 +91,7 @@ public final class TelegramFingerprints {
         o.put("TLRPC$TL_messageActionChatJoinedByLink","org.telegram.tgnet.TLRPC$TL_messageActionChatJoinedByLink");
         o.put("TLRPC$TL_messageActionChatCreate","org.telegram.tgnet.TLRPC$TL_messageActionChatCreate");
         o.put("TLRPC$TL_messageActionChannelCreate","org.telegram.tgnet.TLRPC$TL_messageActionChannelCreate");
+        o.put("TLRPC$ChatFull", "org.telegram.tgnet.TLRPC$ChatFull");
         o.put("TLRPC$UserFull", "org.telegram.tgnet.TLRPC$UserFull");
         o.put("TLRPC$MessageMedia", "org.telegram.tgnet.TLRPC$MessageMedia");
         o.put("ChatMessagePoll", "org.telegram.ui.Cells.ChatMessagePoll");
@@ -1251,10 +1252,17 @@ public final class TelegramFingerprints {
                 .where(writesFieldOfType("org.telegram.messenger.MessageObject", "java.lang.Boolean"), callsSymbol("UserConfig#getInstance")));
         s.add(field("MessageObject", "currentAccount").type("int").handedTo("MessageObject#isOutOwner", "UserConfig#getInstance"));
         s.add(method("MessagesController", "getUserFull").named("getUserFull").isStatic(false).sig("org.telegram.tgnet.TLRPC$UserFull", "long"));
+        s.add(method("MessagesController", "getChatFull").named("getChatFull").isStatic(false).sig("org.telegram.tgnet.TLRPC$ChatFull", "long"));
+        s.add(field("TLRPC$UserFull", "pinned_msg_id").type("int"));
+        s.add(field("TLRPC$ChatFull", "pinned_msg_id").type("int"));
+        s.add(method("MessagesStorage", "updatePinnedMessages").named("updatePinnedMessages").isStatic(false)
+                .sig("void", "long", "java.util.ArrayList", "boolean", "int", "int", "boolean", "java.util.HashMap"));
         s.add(field("TLRPC$UserFull", "noforwards_peer_enabled").type("boolean"));
         s.add(field("TLRPC$UserFull", "noforwards_my_enabled").type("boolean"));
         s.add(method("MessagesController", "isUserNoForwards").named("isUserNoForwards")
                 .sig("boolean", "org.telegram.tgnet.TLRPC$UserFull"));
+        s.add(method("ChatActivity", "isPeerNoForwards").named("isPeerNoForwards").isStatic(false).sig("boolean")
+                .where(callsSymbol("MessagesController#isUserNoForwards")));
         s.add(method("PhotoViewer", "onPhotoShow").named("onPhotoShow").isStatic(false)
                 .sig("void", "org.telegram.messenger.MessageObject", "org.telegram.tgnet.TLRPC$FileLocation", "org.telegram.messenger.ImageLocation", "org.telegram.messenger.ImageLocation", "java.util.ArrayList", "java.util.ArrayList", "java.util.List", "int", "org.telegram.ui.PhotoViewer$PlaceProviderObject"));
         s.add(field("PhotoViewer", "imagesArr").type("java.util.ArrayList").readBy("PhotoViewer#setIsAboutToSwitchToIndexIZZZ", 0));

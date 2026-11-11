@@ -21,7 +21,7 @@ $production = @(
     'settings/SettingsSearch.java', 'virtuals/messenger/BaseController.java',
     'features/other/AutoMuteNewChats.java',
     'virtuals/messenger/MessageObject.java',
-    'messages/MessageStorage.java', 'utils/MessageIdParser.java',
+    'messages/PinnedReferences.java', 'messages/MessageStorage.java', 'utils/MessageIdParser.java',
     'features/ghostMode/ReadRequestPermits.java', 'calendar/CalendarDate.java',
     'calendar/ConverterCalendar.java', 'language/Keys.java',
     'diagnostics/HookHealth.java', 'hooks/HookInstallation.java', 'hooks/HMethod.java', 'compat/XposedHelpers.java',

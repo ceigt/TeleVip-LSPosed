@@ -5,6 +5,7 @@ public final class SQLiteDatabase {
     public final List<SQLiteCursor> cursors = new ArrayList<>();
     public final List<SQLitePreparedStatement> statements = new ArrayList<>();
     public boolean empty, failStep;
+    public int fixtureFlags;
     public java.util.Map<String,com.my.televip.virtuals.tgnet.TLRPC.MessageData> history;
     public final List<String> queries = new ArrayList<>();
     public SQLiteCursor queryFinalized(String sql, Object[] args) {
@@ -17,6 +18,7 @@ public final class SQLiteDatabase {
         }
         SQLiteCursor cursor = new SQLiteCursor(empty || history!=null && old==null);
         cursor.data.previous=old;
+        cursor.data.flags=fixtureFlags;
         cursors.add(cursor);
         return cursor;
     }

@@ -117,6 +117,7 @@ public final class SaveEditsHistory {
                                 try {
                                     if (activity.isFinishing() || activity.isDestroyed() || !database.isCurrent(session)
                                             || !ConfigManager.saveEditsHistory.isEnable()
+                                            || UserConfig.getUserConfig().getClientUserId() != session.accountId
                                             || new BaseFragment(param.thisObject).getUserConfig().getClientUserId() != session.accountId) return;
                                     if (edits.isEmpty()) android.widget.Toast.makeText(activity, Translator.get("NoEditHistory"), android.widget.Toast.LENGTH_SHORT).show();
                                     else showHistory(activity, text.toString());

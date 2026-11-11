@@ -52,6 +52,7 @@ final class FeatureShapeAudit {
             {"TLRPC$MessageMedia","ttl_seconds","I"},{"BaseFragment","arguments","Landroid/os/Bundle;"},
             {"BaseFragment","currentAccount","I"},{"BaseController","currentAccount","I"},{"MessageObject","currentAccount","I"},
             {"ChatActivity","threadMessageId","J"},{"PhotoViewer","imagesArr","Ljava/util/ArrayList;"},
+            {"TLRPC$UserFull","pinned_msg_id","I"},{"TLRPC$ChatFull","pinned_msg_id","I"},
             {"TLRPC$UserFull","noforwards_peer_enabled","Z"},{"TLRPC$UserFull","noforwards_my_enabled","Z"},
             {"ChatMessagePoll","cell",descriptor(mapping,"org.telegram.ui.Cells.ChatMessageCell")},
             {"ChatMessageCell","totalHeight","I"},{"ChatMessageCell","instantTextNewLine","Z"},
@@ -66,6 +67,9 @@ final class FeatureShapeAudit {
         for(String[] f:fields)downloadField(cls(index,mapping,TelegramFingerprints.owners().get(f[0])),mapping.resolveField(f[0],f[1]),f[2],errors);
         if(!exact(index,mapping,"ChatMessagePoll","setMessageContentIfPoll","V",descriptor(mapping,"org.telegram.messenger.MessageObject"),"Z"))errors.add("Invalid poll layout callback");
         if(!exact(index,mapping,"ChatActivity","onFragmentCreate","Z")||!exact(index,mapping,"ChatActivity","onPause","V"))errors.add("Invalid local reading lifecycle");
+        if(!exact(index,mapping,"ChatActivity","isPeerNoForwards","Z"))errors.add("Invalid private-chat content predicate");
+        if(!exact(index,mapping,"MessagesStorage","updatePinnedMessages","V","J","Ljava/util/ArrayList;","Z","I","I","Z","Ljava/util/HashMap;"))errors.add("Invalid local pinned cleanup route");
+        if(!exact(index,mapping,"MessagesController","getChatFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$ChatFull"),"J"))errors.add("Invalid owning-account chat-full lookup");
         if(!exact(index,mapping,"MessagesController","getUserFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$UserFull"),"J"))errors.add("Invalid owning-account user-full lookup");
         if(!exact(index,mapping,"MessagesController","getUser",descriptor(mapping,"org.telegram.tgnet.TLRPC$User"),"Ljava/lang/Long;"))errors.add("Invalid owning-account bot lookup");
         if(!exact(index,mapping,"NotificationsController","muteDialog","V","J","J","Z"))errors.add("Invalid native mute action");

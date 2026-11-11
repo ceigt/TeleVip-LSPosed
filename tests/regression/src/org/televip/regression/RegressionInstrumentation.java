@@ -492,6 +492,8 @@ public final class RegressionInstrumentation extends Instrumentation {
         } finally { db.close(); }
     }
 
+    public static class PinnedFull { public int pinned_msg_id=7, unrelated=42; }
+
     private void nativeResources() throws Exception {
         HandlerThread thread = new HandlerThread("Fake Telegram storage");
         thread.start();
@@ -500,6 +502,26 @@ public final class RegressionInstrumentation extends Instrumentation {
             MessagesStorage normal = new MessagesStorage(queue);
             MessageStorage.markMessagesDeleted(normal, -100, new java.util.ArrayList<>(Arrays.asList(7)));
             drain(queue);
+            check(normal.unpinned.size()==1 && normal.unpinned.get(-100L).equals(Arrays.asList(7)), "pin cleanup duplicated or crossed dialogs");
+            PinnedFull full=new PinnedFull();
+            com.my.televip.messages.PinnedReferences.clearCached(full,"pinned_msg_id",Arrays.asList(8));
+            check(full.pinned_msg_id==7,"unrelated cached pin cleared");
+            com.my.televip.messages.PinnedReferences.clearCached(full,"pinned_msg_id",Arrays.asList(7));
+            check(full.pinned_msg_id==0 && full.unrelated==42,"matching cached pin not cleared safely");
+            MessagesStorage privateDialog=new MessagesStorage(queue);
+            MessageStorage.markMessagesDeleted(privateDialog,0,new java.util.ArrayList<>(Arrays.asList(7)));
+            drain(queue);
+            check(privateDialog.unpinned.size()==1 && privateDialog.unpinned.containsKey(-100L),"private delete not scoped to actual row dialog");
+            MessagesStorage stale=new MessagesStorage(queue);
+            MessageStorage.reconcileDeletedPins(stale,-100);drain(queue);
+            check(stale.unpinned.isEmpty(),"ordinary cached pin removed");
+            stale.database.fixtureFlags=Integer.MIN_VALUE;
+            MessageStorage.reconcileDeletedPins(stale,-100);drain(queue);
+            check(stale.unpinned.get(-100L).equals(Arrays.asList(7)),"old deleted pin not reconciled");
+            for(com.my.televip.virtuals.SQLite.SQLiteCursor cursor:stale.database.cursors)check(cursor.disposed&&cursor.data.reused,"pin scan leaked resources");
+            stale.accountId=0;int scanned=stale.database.cursors.size();
+            MessageStorage.reconcileDeletedPins(stale,-100);drain(queue);
+            check(stale.database.cursors.size()==scanned,"logged-out account pin scan");
             check(normal.database.cursors.size() == 2, "both tables not processed");
             for (com.my.televip.virtuals.SQLite.SQLiteCursor cursor : normal.database.cursors) {
                 check(cursor.disposed && cursor.data.reused, "native cursor or buffer leaked");
