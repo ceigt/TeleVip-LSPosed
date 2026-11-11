@@ -1,6 +1,7 @@
 package com.my.televip.features.messages;
 
 import android.app.Activity;
+import com.my.televip.compat.XposedHelpers;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import com.my.televip.Class.ClassLoad;
@@ -40,7 +41,7 @@ import java.util.Locale;
 public final class SaveEditsHistory {
     private static final int HISTORY_OPTION = 8353847;
     private static MessageDatabase database;
-    private static boolean cleanupHook, menuHook, clickHook, storageHook;
+    private static boolean cleanupHook, menuHook, clickHook, storageHook, localStorageHook;
     public static volatile boolean isEnable;
 
     /** Logout cleanup must remain installed even when history recording is disabled. */
@@ -100,6 +101,9 @@ public final class SaveEditsHistory {
                         Activity activity = Utils.getCurrentActivity();
                         if (activity == null) return;
                         param.setResult(null);
+                        try {
+                            XposedHelpers.callMethod(param.thisObject,Obfuscate.getMethodName("ChatActivity","closeMessageMenu"),true);
+                        } catch(Throwable error){Logger.e(error);}
                         MessageStorage.post(() -> {
                             List<MessageDatabase.Edit> edits = database.getHistory(session, dialogId, messageId);
                             StringBuilder text = new StringBuilder();
@@ -153,9 +157,25 @@ public final class SaveEditsHistory {
                         catch (Throwable error) { Logger.e(error); }
                     }
                 }));
-        isEnable = menuHook && clickHook && storageHook && cleanupHook;
+        if(!localStorageHook)localStorageHook=HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_STORAGE),
+                Obfuscate.getMethodName("MessagesStorage","putLocalMessagesStored"),ArrayList.class,boolean.class,boolean.class,int.class,boolean.class,int.class,long.class,new BaseMethodHook(){
+                    @Override protected void beforeMethod(MethodHookParam p){
+                        if(!ConfigManager.saveEditsHistory.isEnable()||(int)p.args[5]!=0||p.args[0]==null)return;
+                        MessagesStorage storage=new MessagesStorage(p.thisObject);AccountSession session=database.session(storage.getAccountUserId());
+                        List<PendingEdit> pending=new ArrayList<>();long now=System.currentTimeMillis();
+                        for(Object value:(ArrayList<?>)p.args[0]){
+                            TLRPC.Message message=new TLRPC.Message(value);
+                            int state=XposedHelpers.getIntField(value,Obfuscate.getFieldName("TLRPC$Message","send_state"));
+                            if((message.getFlags()&(1<<15))==0&&state!=3)continue;
+                            long dialog=MessageObject.getDialogId(message);
+                            if(message.getId()>0&&dialog!=0&&message.getMessage()!=null)pending.add(new PendingEdit(dialog,message.getId(),message.getMessage(),now));
+                        }
+                        try{capturePreviousVersions(storage,session,pending);}catch(Throwable error){Logger.e(error);}
+                    }
+                });
+        isEnable = menuHook && clickHook && storageHook && localStorageHook && cleanupHook;
         Logger.l("History hooks: menu=" + menuHook + ", click=" + clickHook
-                + ", storage=" + storageHook + ", logout=" + cleanupHook);
+                + ", storage=" + storageHook + ", local="+localStorageHook+", logout=" + cleanupHook);
     }
 
     private static void capturePreviousVersions(MessagesStorage storage, AccountSession session, List<PendingEdit> pending) {

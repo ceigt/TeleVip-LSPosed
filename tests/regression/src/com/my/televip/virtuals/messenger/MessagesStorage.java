@@ -37,4 +37,8 @@ public final class MessagesStorage {
             database.history.put(data.id+":"+data.dialog,data);
         }
     }
+    public void putLocalMessagesStored(java.util.ArrayList<Object> messages,boolean transaction,boolean unchanged,int mask,boolean ifMissing,int mode,long thread){
+        for(Object value:messages){com.my.televip.virtuals.tgnet.TLRPC.MessageData data=(com.my.televip.virtuals.tgnet.TLRPC.MessageData)value;database.history.put(data.id+":"+data.dialog,data);}
+    }
+
 }

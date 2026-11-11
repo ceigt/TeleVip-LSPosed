@@ -111,6 +111,15 @@ public final class Upstream15Tests {
             drain(handler);
             check(db.getHistory(session,-100,13).get(0).text.equals("grouped-offline-old"),"Grouped offline edit payload lost");
             com.my.televip.obfuscate.ArgsResolver.groupedStorage=false;
+            old(first,20,-100,"own-local-A");
+            TLRPC.MessageData local=new TLRPC.MessageData(20,-100,0,"own-local-B");local.send_state=3;
+            final TLRPC.MessageData optimistic=local;
+            java.lang.reflect.Method localWrite=MessagesStorage.class.getMethod("putLocalMessagesStored",ArrayList.class,boolean.class,boolean.class,int.class,boolean.class,int.class,long.class);
+            handler.post(()->{try{XposedBridge.invoke(localWrite,first,new ArrayList<Object>(Arrays.asList(optimistic)),false,false,0,false,0,0L);}catch(Throwable error){throw new AssertionError(error);}});
+            drain(handler);check(db.getHistory(session,-100,20).size()==1&&db.getHistory(session,-100,20).get(0).text.equals("own-local-A"),"Own optimistic edit lost prior text");
+            old(first,21,-100,"regular-A");local=new TLRPC.MessageData(21,-100,1<<15,"scheduled-B");final TLRPC.MessageData scheduled=local;
+            handler.post(()->{try{XposedBridge.invoke(localWrite,first,new ArrayList<Object>(Arrays.asList(scheduled)),false,false,0,false,1,0L);}catch(Throwable error){throw new AssertionError(error);}});
+            drain(handler);check(db.getHistory(session,-100,21).isEmpty(),"Scheduled local write mixed into regular history");
             for(com.my.televip.virtuals.SQLite.SQLiteCursor cursor:first.database.cursors) {
                 check(cursor.disposed,"History cursor leaked");
                 if(cursor.data.previous!=null)check(cursor.data.reused,"History byte buffer leaked");

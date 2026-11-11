@@ -442,6 +442,7 @@ public final class RegressionInstrumentation extends Instrumentation {
             MessageDatabase.AccountSession a = db.session(101), b = db.session(202);
             check(!db.hasHistory(a, 999, 7), "legacy history exposed");
             db.addMessage(a, -100, 7, "A", 1);
+            db.addMessage(a, -100, 7, "A", 1);
             db.addMessage(a, -100, 7, "B", 2);
             db.addMessage(a, -100, 7, "A", 3);
             db.addMessage(b, -100, 7, "other-account", 4);

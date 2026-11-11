@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 27;
+    public static final int VERSION = 28;
 
     private TelegramFingerprints() {
     }
@@ -665,6 +665,11 @@ public final class TelegramFingerprints {
                 .sig("void", "java.util.ArrayList", "boolean", "boolean", "boolean", "int", "int", "long"));
         s.add(method("MessagesStorage", "putMessagesAZZZIZIJ").named("putMessages")
                 .sig("void", "java.util.ArrayList", "boolean", "boolean", "boolean", "int", "boolean", "int", "long"));
+        s.add(method("MessagesStorage","putLocalMessagesStored").isStatic(false)
+                .sig("void","java.util.ArrayList","boolean","boolean","int","boolean","int","long")
+                .where(calledBy("MessagesStorage#putMessagesAZZZIZIJ"),string("REPLACE INTO messages_v2 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)")));
+        s.add(field("TLRPC$Message","send_state").type("int"));
+        s.add(method("ChatActivity","closeMessageMenu").isStatic(false).sig("void","boolean").where(calledBy("ChatActivity#processSelectedOption"),callsAnyNamed("dismiss"),callsNamed("android.animation.ValueAnimator","ofFloat")));
         s.add(method("MessagesStorage", "putMessagesStored").isStatic(false)
                 .sig("void", "org.telegram.tgnet.TLRPC$messages_Messages", "long", "int", "int", "boolean", "int", "long")
                 .anyOrder().where(string("REPLACE INTO messages_v2 VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)")));

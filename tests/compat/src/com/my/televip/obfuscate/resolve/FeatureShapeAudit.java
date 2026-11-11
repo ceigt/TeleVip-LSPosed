@@ -48,7 +48,7 @@ final class FeatureShapeAudit {
         List<String> errors=new ArrayList<>();
         String[][] fields={
             {"NativeByteBuffer","buffer","Ljava/nio/ByteBuffer;"},
-            {"TLRPC$Message","date","I"},{"TLRPC$Message","media",descriptor(mapping,"org.telegram.tgnet.TLRPC$MessageMedia")},
+            {"TLRPC$Message","send_state","I"},{"TLRPC$Message","date","I"},{"TLRPC$Message","media",descriptor(mapping,"org.telegram.tgnet.TLRPC$MessageMedia")},
             {"TLRPC$MessageMedia","ttl_seconds","I"},{"BaseFragment","arguments","Landroid/os/Bundle;"},
             {"BaseFragment","currentAccount","I"},{"BaseController","currentAccount","I"},{"MessageObject","currentAccount","I"},
             {"ChatActivity","threadMessageId","J"},{"PhotoViewer","imagesArr","Ljava/util/ArrayList;"},
@@ -69,6 +69,7 @@ final class FeatureShapeAudit {
         if(!exact(index,mapping,"MessagesController","getUserFull",descriptor(mapping,"org.telegram.tgnet.TLRPC$UserFull"),"J"))errors.add("Invalid owning-account user-full lookup");
         if(!exact(index,mapping,"MessagesController","getUser",descriptor(mapping,"org.telegram.tgnet.TLRPC$User"),"Ljava/lang/Long;"))errors.add("Invalid owning-account bot lookup");
         if(!exact(index,mapping,"NotificationsController","muteDialog","V","J","J","Z"))errors.add("Invalid native mute action");
+        if(!exact(index,mapping,"ChatActivity","closeMessageMenu","V","Z"))errors.add("Invalid message popup close path");
         if(!exact(index,mapping,"MessageObject","getDialogIdO","J",descriptor(mapping,"org.telegram.tgnet.TLRPC$Message")))errors.add("Invalid canonical dialog-id decoder");
         DexClass storage=cls(index,mapping,"org.telegram.messenger.MessagesStorage");int writers=0;
         String stored=mapping.resolveMethod("MessagesStorage","putMessagesStored");

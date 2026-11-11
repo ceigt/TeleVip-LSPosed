@@ -119,6 +119,9 @@ public class MessageDatabase extends SQLiteOpenHelper {
                 SQLiteDatabase db = getWritableDatabase();
                 db.beginTransaction();
                 try {
+                    try(Cursor last=db.rawQuery("SELECT message FROM messages WHERE account_id=? AND dialog_id=? AND msg_id=? ORDER BY msg_count DESC LIMIT 1",key(session,dialogId,messageId))){
+                        if(last.moveToFirst()&&text.equals(last.getString(0))){db.setTransactionSuccessful();return;}
+                    }
                     int number;
                     try (Cursor cursor = db.rawQuery("SELECT COALESCE(MAX(msg_count),0)+1 FROM messages"
                             + " WHERE account_id=? AND dialog_id=? AND msg_id=?",

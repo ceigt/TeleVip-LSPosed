@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public final class TLRPC {
     public static final class MessageData {
         public final int id,flags; public final long dialog; public final String text;
-        public int date=123,ttl;
+        public int date=123,ttl,send_state;
         public Object media;
         public MessageData(int id,long dialog,int flags,String text) { this.id=id;this.dialog=dialog;this.flags=flags;this.text=text; }
     }
