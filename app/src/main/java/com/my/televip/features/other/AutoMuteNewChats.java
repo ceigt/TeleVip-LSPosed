@@ -79,10 +79,12 @@ public final class AutoMuteNewChats {
         final long target=dialog;final boolean bot=start||send;
         Pending pending=new Pending(slot,account,target,bot);
         if(bot){
+            SharedPreferences notifications=(SharedPreferences)XposedHelpers.callStaticMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","getNotificationsSettings"),slot);
+            if(notifications.contains("notify2_"+target))return;
             MessagesStorage storage=MessagesStorage.getInstance(slot);
             storage.getStorageQueue().postRunnable(()->{
                 SQLiteCursor cursor=null;
-                try{cursor=storage.getDatabase().queryFinalized("SELECT 1 FROM messages_v2 WHERE uid="+target+" AND mid>0 LIMIT 1",new Object[0]);pending.fresh(!cursor.next());}
+                try{cursor=storage.getDatabase().queryFinalized("SELECT 1 FROM dialogs WHERE did="+target+" AND last_mid>0 UNION ALL SELECT 1 FROM messages_v2 WHERE uid="+target+" AND mid>0 LIMIT 1",new Object[0]);pending.fresh(!cursor.next());}
                 catch(Throwable error){Logger.e(error);pending.fresh(false);}finally{if(cursor!=null)cursor.dispose();}
             });
         }

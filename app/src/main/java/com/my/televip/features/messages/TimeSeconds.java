@@ -6,6 +6,19 @@ import java.util.regex.*;
 public final class TimeSeconds {
     private static final Pattern MINUTES=Pattern.compile("(?<![\\p{N}:.])(\\p{Nd}{1,2}([:.])\\p{Nd}{2})(?![:.\\p{N}])");
     private TimeSeconds(){}
+    public static boolean isClockPattern(String pattern){
+        if(pattern==null)return false;
+        boolean quoted=false,hour=false,minute=false;
+        for(int i=0;i<pattern.length();i++){
+            char c=pattern.charAt(i);
+            if(c=='\''){if(i+1<pattern.length()&&pattern.charAt(i+1)=='\''){i++;continue;}quoted=!quoted;continue;}
+            if(quoted)continue;
+            if("yMdDE".indexOf(c)>=0)return false;
+            if("HhKk".indexOf(c)>=0)hour=true;
+            if(c=='m')minute=true;
+        }
+        return hour&&minute;
+    }
     public static String add(String original,long millis){
         if(original==null||original.isEmpty())return original;
         Matcher m=MINUTES.matcher(original);if(!m.find())return original;

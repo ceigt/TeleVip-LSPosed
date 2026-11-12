@@ -33,6 +33,7 @@ final class IndependentFeatureTests {
             check(!SettingsSearch.matches("history remote","Local history"),"all words required");
             check(SettingsSearch.matches("  ",null,"anything"),"empty query");
         }finally{Locale.setDefault(old);}
+        rejects(()->{java.io.Reader input=new com.my.televip.Database.BoundedJsonInput(new StringReader("\""+String.join("",Collections.nCopies(100,"x"))+"\""),64);while(input.read()!=-1){};},"large JSON token accepted");
         BooleanFieldScope scope=new BooleanFieldScope();Flags flags=new Flags();Object outer=new Object(),inner=new Object();
         scope.enter(outer);scope.clear(flags,"blocked");scope.clear(flags,"inherited");scope.clear(flags,"already");
         check(!flags.blocked&&!flags.already,"scope clear");scope.enter(inner);scope.clear(flags,"blocked");scope.exit(inner);
@@ -55,6 +56,10 @@ final class IndependentFeatureTests {
             check(!json.contains("other account"),"backup exposed another account");
             check(restore(store,original,101)==0,"duplicate import");
             LocalStateStore initial=store; rejects(()->restore(initial,original,303),"foreign account accepted");
+            store.forgetRange(101,-88,90,110);
+            check(!store.save(row(101,-88,1,100,"range deleted")),"range tombstone missing");
+            check(store.save(row(101,-88,2,111,"outside range")),"range removed unrelated date");
+            store.forget(101,-88,Collections.singletonList(2));
             store.forget(101,-20,Collections.singletonList(7));
             check(restore(store,original,101)==0&&store.records(101).size()==1,"old backup resurrected forgotten record");
             store.clearDialog(101,-21,150);check(!store.save(row(101,-21,8,120,"old")),"clear cutoff ignored");
@@ -109,6 +114,9 @@ final class IndependentFeatureTests {
             data.previous=new TLRPC.MessageData(56,-77,0,"ephemeral");data.previous.ttl=10;
             LocalData.capture(host,-77,56,data);done=new CountDownLatch(1);CountDownLatch barrier=done;MessageStorage.post(barrier::countDown);check(done.await(10,TimeUnit.SECONDS),"ttl worker stalled");
             check(LocalData.store().records(909).size()==1,"ephemeral message archived");
+            data.previous=new TLRPC.MessageData(57,-77,0,"ordinary auto-delete");data.previous.ttl_period=60;
+            LocalData.capture(host,-77,57,data);CountDownLatch expiryDone=new CountDownLatch(1);MessageStorage.post(expiryDone::countDown);
+            check(expiryDone.await(10,TimeUnit.SECONDS)&&LocalData.store().records(909).size()==1,"ordinary expiring message archived");
             LocalData.store().revokeAccount(909);LocalData.store().finishAccountCleanup(909);
         }finally{ConfigManager.durableDeletedMessages.setEnable(false);thread.quitSafely();}
         return checks;

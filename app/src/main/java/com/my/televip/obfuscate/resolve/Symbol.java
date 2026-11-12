@@ -148,7 +148,7 @@ public abstract class Symbol {
         String[] params;
         Boolean isStatic;
         int[] readPositions;
-        boolean voidable, narrowedStrings, narrowedReturn, anyOrder, staticized;
+        boolean voidable, narrowedStrings, narrowedReturn, anyOrder, staticized, narrowedParameters;
         final List<Body> facts = new ArrayList<>();
 
         MethodSymbol(String owner, String key) {
@@ -211,6 +211,8 @@ public abstract class Symbol {
          * the lambda class implementing it. Accept a return type that is a subtype of the source
          * one, for call sites that do not depend on the declared type.
          */
+        public MethodSymbol narrowedParameters() { narrowedParameters=true; return this; }
+
         public MethodSymbol narrowedReturn() {
             this.narrowedReturn = true;
             return this;
@@ -323,7 +325,7 @@ public abstract class Symbol {
             if (actual.length == want.length) {
                 boolean inOrder = true;
                 for (int i = 0; i < want.length && inOrder; i++) {
-                    if (!paramFits(want[i], actual[i])) inOrder = false;
+                    if (!paramFits(want[i], actual[i]) && !(narrowedParameters && isSubtype(r,actual[i],want[i]))) inOrder = false;
                 }
                 return inOrder || (anyOrder && isPermutation(want, actual));
             }
@@ -395,7 +397,7 @@ public abstract class Symbol {
             mapping.methods.put(Mapping.memberKey(owner, key), m.name());
             // Deleted, reordered or prepended (staticized) parameters: the call site asks for the
             // source list, so hand it the real one.
-            if (params != null && (m.parameterTypes().length != params.length || reordered(r, m)
+            if (params != null && (narrowedParameters || m.parameterTypes().length != params.length || reordered(r, m)
                     || (staticized && m.isStatic()))) {
                 String[] actual = m.parameterTypes();
                 String[] names = new String[actual.length];

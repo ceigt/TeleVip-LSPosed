@@ -29,7 +29,7 @@ final class AutoMuteTests {
     public static class Config {public long clientUserId=3031;public static Config getInstance(int slot){return config;}}
     public static class Owner {public int currentAccount=2;public Config getUserConfig(){return config;}}
     public static class User {public boolean bot=true;}
-    public static class Controller {public static Controller getInstance(int slot){return new Controller();}public User getUser(Long id){return user;}}
+    public static class Controller {public static android.content.SharedPreferences getNotificationsSettings(int slot){return com.my.televip.application.ApplicationLoaderHook.getApplicationContext().getSharedPreferences("mute-fixture-notifications",0);}public static Controller getInstance(int slot){return new Controller();}public User getUser(Long id){return user;}}
     public static class Notifications {public static Notifications getInstance(int slot){check(slot==2,"wrong owning account");return new Notifications();}public void muteDialog(long dialog,long topic,boolean mute){check(topic==0&&mute,"wrong native mute args");muted.add(dialog);}}
     private static final Config config=new Config();private static final User user=new User();
     private static final List<Long> muted=new ArrayList<>();private static int checks;

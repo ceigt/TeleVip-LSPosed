@@ -1,5 +1,6 @@
 package com.my.televip.Configs;
 public final class ConfigManager {
+    public static ConfigItem showReadTime=new ConfigItem(ConfigItem.SWITCH,"ShowReadTime",false,null);
     public static ConfigItem showSeconds=new ConfigItem(ConfigItem.SWITCH,"ShowSeconds",false,null);
     public static ConfigItem showDeletedMessages = new ConfigItem(ConfigItem.SWITCH, "ShowDeletedMessages", true, null);
     public static ConfigItem customCalendar;

@@ -65,8 +65,11 @@ public final class RegressionInstrumentation extends Instrumentation {
             checks.addAndGet(AutoMuteTests.run(this));
             checks.addAndGet(ServerPushTests.run());
             checks.addAndGet(TimeFeatureTests.run());
+            checks.addAndGet(LocalStateRaceTests.run(getTargetContext()));
+            checks.addAndGet(ReadTimeMenuTests.run(this));
+            checks.addAndGet(LegacyMessageTests.run());
             result.putString("regression", "PASS");
-            result.putString("stream", "TELEVIP_REGRESSION_PASS: 18 regression groups passed; " + checks.get() + " assertions\n");
+            result.putString("stream", "TELEVIP_REGRESSION_PASS: 21 regression groups passed; " + checks.get() + " assertions\n");
             finish(Activity.RESULT_OK, result);
         } catch (Throwable error) {
             result.putString("regression", "FAIL");

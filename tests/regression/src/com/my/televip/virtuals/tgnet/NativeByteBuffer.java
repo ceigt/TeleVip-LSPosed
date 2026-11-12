@@ -1,5 +1,8 @@
 package com.my.televip.virtuals.tgnet;
 public final class NativeByteBuffer {
+    public NativeByteBuffer(){}
+    public NativeByteBuffer(int size){}
+    public NativeByteBuffer(Object object){}
     public final Object nativeByteBuffer = this;
     public final java.nio.ByteBuffer buffer=java.nio.ByteBuffer.allocate(16);
     public boolean reused;

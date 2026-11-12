@@ -47,7 +47,7 @@ public final class ReadTimeMenu {
         long dialog=selected.getDialogId();int slot=((Number)field(fragment,"BaseFragment","currentAccount")).intValue();
         long account=UserConfig.getInstance(slot).getClientUserId();
         if(account==0||UserConfig.getSelectedAccount()!=slot)return null;
-        if(args==null||args.getInt("enc_id",0)!=0||args.getInt("chatMode",0)!=0||dialog<=0||dialog==account||owner.getId()<=0||owner.getTtl()!=0)return null;
+        if(args==null||args.getInt("enc_id",0)!=0||args.getInt("chatMode",0)!=0||dialog<=0||dialog==account||owner.getId()<=0||owner.getTtl()!=0||XposedHelpers.getIntField(owner.get_Message(),Obfuscate.getFieldName("TLRPC$Message","ttl_period"))!=0)return null;
         if(!Boolean.TRUE.equals(field(raw,"TLRPC$Message","out"))||Boolean.TRUE.equals(field(raw,"TLRPC$Message","unread"))||Boolean.TRUE.equals(field(raw,"TLRPC$Message","media_unread"))
                 ||((Number)field(raw,"TLRPC$Message","send_state")).intValue()!=0||field(raw,"TLRPC$Message","action")!=null)return null;
         Object media=field(raw,"TLRPC$Message","media");if(media!=null&&((Number)field(media,"TLRPC$MessageMedia","ttl_seconds")).intValue()!=0)return null;
@@ -89,14 +89,15 @@ public final class ReadTimeMenu {
         ReadTimeCache.Result cached=cache.get(account,dialog,id,now);
         TextView label=new TextView(activity);label.setTextIsSelectable(true);label.setPadding(32,24,32,24);
         AlertDialog box=new AlertDialog.Builder(activity).setTitle(Translator.get("QueryReadTime")).setView(label).setPositiveButton(android.R.string.ok,null).create();
-        if(cached!=null){label.setText(result(cached.date));box.show();return;}
+        if(cached!=null){label.setText(result(cached.date));ArchiveUi.showBound(box,activity,account,()->{});return;}
         ReadTimeCache.Token token=cache.begin(account,dialog,id,now);
         if(token==null){Toast.makeText(activity,Translator.get("ReadTimeRateLimited"),Toast.LENGTH_SHORT).show();return;}
-        label.setText(Translator.get("ReadTimeLoading"));box.show();
+        label.setText(Translator.get("ReadTimeLoading"));
         WeakReference<AlertDialog> window=new WeakReference<>(box);WeakReference<TextView> output=new WeakReference<>(label);WeakReference<Object> owner=new WeakReference<>(fragment);
         ConnectionsManager connection=ConnectionsManager.getInstance(slot);AtomicInteger requestId=new AtomicInteger();
         Runnable cancel=()->{cache.cancel(token);int rid=requestId.getAndSet(0);if(rid!=0)try{connection.cancelRequest(rid);}catch(Throwable error){Logger.e(error);}};
-        box.setOnDismissListener(d->cancel.run());
+        ArchiveUi.showBound(box,activity,account,cancel);
+        if(!box.isShowing()){cancel.run();return;}
         try{
             Object request=XposedHelpers.newInstance(ClassLoad.getClass("org.telegram.tgnet.TLRPC$TL_messages_getOutboxReadDate"));
             Object peer=XposedHelpers.callMethod(MessagesController.getInstance(slot).getInstanceObject(),Obfuscate.getMethodName("MessagesController","getInputPeerJ"),dialog);

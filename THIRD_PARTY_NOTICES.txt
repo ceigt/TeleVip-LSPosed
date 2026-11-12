@@ -100,3 +100,9 @@ Additional official structural references at the same Telegram commit: PushListe
 MESSAGE_DELETED routing and messages.getOutboxReadDate / outboxReadDate protocol.
 Local implementations retain native notification cleanup, account privacy and expiry semantics;
 no upstream closed-source implementation, dependency or telemetry is included.
+
+2026-11-12 independent review fixes:
+No additional upstream or closed-source implementation is imported. Legacy-message
+normalization uses the host serializers, with protocol layouts checked against the
+same official Telegram structural reference above and the authenticated Play APK.
+No new dependency, telemetry or signing material is included.

@@ -15,6 +15,11 @@ import com.my.televip.virtuals.messenger.MessagesStorage;
 import com.my.televip.virtuals.tgnet.NativeByteBuffer;
 import java.io.File;
 import java.util.ArrayList;
+import com.my.televip.Class.ClassLoad;
+import com.my.televip.Class.ClassNames;
+import com.my.televip.compat.XposedHelpers;
+import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.virtuals.tgnet.TLRPC;
 
 public final class MessageStorage {
     private static final Handler storage = createHandler();
@@ -42,6 +47,7 @@ public final class MessageStorage {
         if (ids == null || ids.isEmpty()) return;
         ArrayList<Integer> snapshot = new ArrayList<>(ids);
         try {
+            com.my.televip.Database.LocalStateStore.Session session=com.my.televip.features.messages.LocalData.captureSession(messagesStorage);
             long accountId = messagesStorage.getAccountUserId();
             if (accountId == 0) return;
             // Telegram owns this connection; use its account storage queue.
@@ -49,8 +55,8 @@ public final class MessageStorage {
                 try {
                     if (!ConfigManager.showDeletedMessages.isEnable() || messagesStorage.getAccountUserId() != accountId) return;
                     SQLiteDatabase db = messagesStorage.getDatabase();
-                    markTable(messagesStorage, db, "messages_v2", dialogId, snapshot);
-                    markTable(messagesStorage, db, "messages_topics", dialogId, snapshot);
+                    markTable(messagesStorage, db, "messages_v2", dialogId, snapshot,session);
+                    markTable(messagesStorage, db, "messages_topics", dialogId, snapshot,session);
                 } catch (Throwable error) { Logger.e(error); }
             });
         } catch (Throwable error) { Logger.e(error); }
@@ -71,6 +77,9 @@ public final class MessageStorage {
                     NativeByteBuffer data = cursor.byteBufferValue(0);
                     if (data == null || data.nativeByteBuffer == null) continue;
                     try {
+                        data.position(0);
+                        int constructor=data.readInt32(true);
+                        if(constructor==0x22eb6aba||constructor==0x9f8d60bb||constructor==0x05f46804||constructor==0x83e5de54)continue;
                         data.position(4);
                         if ((data.readInt32(true) & ShowDeletedMessages.FLAG_DELETED) != 0) ids.add(cursor.intValue(1));
                     } finally { data.reuse(); }
@@ -81,7 +90,24 @@ public final class MessageStorage {
         });
     }
 
-    private static void markTable(MessagesStorage storage, SQLiteDatabase db, String table, long dialogId, ArrayList<Integer> ids) {
+    private static NativeByteBuffer normalizeLegacy(NativeByteBuffer data,int constructor,long account,int id) throws Exception {
+        Object old=TLRPC.Message.TLdeserialize(data,constructor,true).get_Message();
+        XposedHelpers.setIntField(old,Obfuscate.getFieldName("TLRPC$Message","id"),id);
+        boolean service=constructor==0x9f8d60bb,empty=constructor==0x83e5de54;
+        String target=empty?"TLRPC$TL_messageEmpty":service?"TLRPC$TL_messageService":"TLRPC$TL_message";
+        if(!service&&!empty)XposedHelpers.callMethod(old,Obfuscate.getMethodName("TLRPC$Message","readAttachPath"),data.nativeByteBuffer,account);
+        Object replacement=XposedHelpers.newInstance(ClassLoad.getClass("org.telegram.tgnet."+target));
+        for(Class<?> type=old.getClass();type!=null&&type!=Object.class;type=type.getSuperclass())
+            for(java.lang.reflect.Field field:type.getDeclaredFields())
+                if(!java.lang.reflect.Modifier.isStatic(field.getModifiers())&&field.getDeclaringClass().isInstance(replacement)){
+                    field.setAccessible(true);field.set(replacement,field.get(old));
+                }
+        int size=((Number)XposedHelpers.callMethod(replacement,Obfuscate.getMethodName("TLObject","getObjectSize"))).intValue();
+        NativeByteBuffer result=new NativeByteBuffer(XposedHelpers.newInstance(ClassLoad.getClass(ClassNames.NATIVE_BYTE_BUFFER),size));
+        try{XposedHelpers.callMethod(replacement,Obfuscate.getMethodName(target,"serializeToStream"),result.nativeByteBuffer);result.position(0);return result;}
+        catch(Throwable error){result.reuse();throw new IllegalStateException("Cannot normalize legacy message",error);}
+    }
+    private static void markTable(MessagesStorage storage, SQLiteDatabase db, String table, long dialogId, ArrayList<Integer> ids,com.my.televip.Database.LocalStateStore.Session session) throws Exception {
         SQLiteCursor cursor = null;
         SQLitePreparedStatement statement = null;
         java.util.Map<Long,ArrayList<Integer>> pins = new java.util.HashMap<>();
@@ -95,6 +121,12 @@ public final class MessageStorage {
                 NativeByteBuffer data = cursor.byteBufferValue(0);
                 if (data == null || data.nativeByteBuffer == null) continue;
                 try {
+                    data.position(0);
+                    int constructor=data.readInt32(true);
+                    if(constructor==0x22eb6aba||constructor==0x9f8d60bb||constructor==0x05f46804||constructor==0x83e5de54){
+                        NativeByteBuffer normalized=normalizeLegacy(data,constructor,storage.getAccountUserId(),cursor.intValue(1));
+                        data.reuse();data=normalized;
+                    }
                     data.position(4);
                     int flags = data.readInt32(true);
                     data.position(4);
@@ -109,7 +141,7 @@ public final class MessageStorage {
                         ArrayList<Integer> group = pins.computeIfAbsent(cursor.longValue(2), key -> new ArrayList<>());
                         if (!group.contains(cursor.intValue(1))) group.add(cursor.intValue(1));
                     }
-                    com.my.televip.features.messages.LocalData.capture(storage, cursor.longValue(2), cursor.intValue(1), data);
+                    com.my.televip.features.messages.LocalData.capture(storage, cursor.longValue(2), cursor.intValue(1), data,session);
                 } finally { data.reuse(); }
             }
         } finally {

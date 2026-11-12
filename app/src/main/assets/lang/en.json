@@ -167,5 +167,6 @@
   "QueryReadTime": "Query read time",
   "ReadTimeRateLimited": "A query is already running, or you are querying too quickly. Try again shortly.",
   "ReadTimeLoading": "Querying Telegram…",
-  "ReadTimeUnavailable": "Telegram did not provide a read time for this message. It may be unavailable because of privacy, account rules or expiry."
+  "ReadTimeUnavailable": "Telegram did not provide a read time for this message. It may be unavailable because of privacy, account rules or expiry.",
+  "PreviousArchive": "Previous page"
 }

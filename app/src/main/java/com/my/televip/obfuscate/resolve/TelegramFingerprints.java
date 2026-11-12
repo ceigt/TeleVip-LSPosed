@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 31;
+    public static final int VERSION = 32;
 
     private TelegramFingerprints() {
     }
@@ -96,6 +96,7 @@ public final class TelegramFingerprints {
         o.put("TLRPC$TL_outboxReadDate", "org.telegram.tgnet.TLRPC$TL_outboxReadDate");
         o.put("TLRPC$UserFull", "org.telegram.tgnet.TLRPC$UserFull");
         o.put("TLRPC$MessageMedia", "org.telegram.tgnet.TLRPC$MessageMedia");
+        o.put("ForumUtilities", "org.telegram.ui.Components.Forum.ForumUtilities");
         o.put("ChatMessagePoll", "org.telegram.ui.Cells.ChatMessagePoll");
         o.put("ChatActivity", "org.telegram.ui.ChatActivity");
         o.put("ChatActivity$ChatMessageCellDelegate", "org.telegram.ui.ChatActivity$ChatMessageCellDelegate");
@@ -1261,11 +1262,22 @@ public final class TelegramFingerprints {
         s.add(field("BaseFragment", "arguments").type("android.os.Bundle").onlyOneOfType());
         s.add(method("ChatActivity", "setThreadMessages").named("setThreadMessages").isStatic(false)
                 .sig("void", "java.util.ArrayList", "org.telegram.tgnet.TLRPC$Chat", "int", "int", "int", "org.telegram.tgnet.TLRPC$TL_forumTopic"));
+        s.add(cls("org.telegram.ui.Components.Forum.ForumUtilities").from(declaringStrings("historyPreloaded"))
+                .where(hasMethod(true,"org.telegram.ui.ChatActivity","org.telegram.ui.ActionBar.BaseFragment","long","org.telegram.tgnet.TLRPC$TL_forumTopic","int","android.os.Bundle")));
+        s.add(method("ForumUtilities","getChatActivityForTopic").isStatic(true).sig("org.telegram.ui.ChatActivity","org.telegram.ui.ActionBar.BaseFragment","long","org.telegram.tgnet.TLRPC$TL_forumTopic","int","android.os.Bundle"));
+        s.add(field("ChatActivity","highlightMessageId").type("int").writtenBy("ForumUtilities#getChatActivityForTopic",0));
         s.add(field("ChatActivity", "threadMessageId").type("long").writtenBy("ChatActivity#setThreadMessages", 0));
         s.add(method("ChatActivity", "onFragmentCreate").named("onFragmentCreate").isStatic(false).sig("boolean")
                 .where(string("chat_id"), string("user_id")));
         s.add(method("ChatActivity", "onPause").named("onPause").isStatic(false).sig("void")
                 .where(string("diditem")));
+        s.add(method("FastDateFormat","getPattern").named("getPattern").isStatic(false).sig("java.lang.String"));
+        s.add(method("TLObject","getObjectSize").named("getObjectSize").isStatic(false).sig("int"));
+        s.add(method("TLRPC$Message","readAttachPath").named("readAttachPath").isStatic(false).sig("void","org.telegram.tgnet.InputSerializedData","long"));
+        s.add(method("TLRPC$TL_messageEmpty","serializeToStream").sig("void","org.telegram.tgnet.OutputSerializedData"));
+        s.add(method("TLRPC$TL_messageService","serializeToStream").sig("void","org.telegram.tgnet.OutputSerializedData"));
+        s.add(method("MessagesController", "deleteMessagesRange").named("deleteMessagesRange").narrowedParameters().isStatic(false).sig("void","long","long","int","int","boolean","java.lang.Runnable"));
+        s.add(field("TLRPC$Message","ttl_period").type("int"));
         s.add(method("MessagesController", "deleteDialogLocal").named("deleteDialog").isStatic(false).sig("void", "long", "int", "int", "int", "boolean", "org.telegram.tgnet.TLRPC$InputPeer", "long"));
         s.add(field("BaseFragment", "currentAccount").type("int").handedTo("BaseFragment#getUserConfig", "UserConfig#getInstance"));
         s.add(method("MessageObject", "isOutOwner").named("isOutOwner").isStatic(false).sig("boolean")

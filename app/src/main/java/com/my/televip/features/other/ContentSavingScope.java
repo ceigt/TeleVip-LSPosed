@@ -28,7 +28,7 @@ public final class ContentSavingScope {
         if(value==null||!ClassLoad.getClass(ClassNames.MESSAGE_OBJECT).isInstance(value))return;
         MessageObject wrapper=new MessageObject(value);TLRPC.Message owner=wrapper.getMessageOwner();
         // Existing secret/expiring-media policy remains in charge of these messages.
-        if(owner==null||owner.getTtl()!=0||owner.getId()<=0)return;
+        if(owner==null||owner.getTtl()!=0||XposedHelpers.getIntField(owner.get_Message(),Obfuscate.getFieldName("TLRPC$Message","ttl_period"))!=0||owner.getId()<=0)return;
         long dialog=wrapper.getDialogId();if(dialog==0||(dialog&0xffffffffL)==0)return;
         Object media=XposedHelpers.getObjectField(owner.get_Message(),Obfuscate.getFieldName("TLRPC$Message","media"));
         if(media!=null&&XposedHelpers.getIntField(media,Obfuscate.getFieldName("TLRPC$MessageMedia","ttl_seconds"))!=0)return;

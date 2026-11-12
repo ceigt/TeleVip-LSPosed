@@ -5,6 +5,7 @@ import com.my.televip.Configs.ConfigManager;
 import com.my.televip.base.BaseMethodHook;
 import com.my.televip.hooks.*;
 import com.my.televip.obfuscate.Obfuscate;
+import com.my.televip.compat.XposedHelpers;
 
 /** Formatter changes exist only while Telegram builds a message time, before native measurement. */
 public final class SecondsDisplay {
@@ -22,6 +23,8 @@ public final class SecondsDisplay {
                 @Override protected void afterMethod(MethodHookParam p){
                     ArrayDeque<Boolean> stack=scope.get();if(stack==null||stack.isEmpty())return;
                     if(!stack.peek()||p.hasThrowable()||!(p.getResult() instanceof String))return;
+                    String pattern=(String)XposedHelpers.callMethod(p.thisObject,Obfuscate.getMethodName("FastDateFormat","getPattern"));
+                    if(!TimeSeconds.isClockPattern(pattern))return;
                     long millis=p.args[0] instanceof Date?((Date)p.args[0]).getTime():((Number)p.args[0]).longValue();
                     p.setResult(TimeSeconds.add((String)p.getResult(),millis));
                 }

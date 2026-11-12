@@ -10,6 +10,10 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 This fork maintains Telegram compatibility independently. Public upstream feature descriptions may inform new local designs; repairs do not depend on upstream patches. See the [independent maintenance direction and feature shortlist](docs/maintenance/independent-maintenance-roadmap.md). Existing user choices and the actual-APK verification/signing/device gates remain the basis for changes.
 
+## v26.11.12 review fixes
+
+Versions now use `vYY.MM.DD` release tags and `YY.MM.DD` Android version names; Android versionCode remains increasing for in-place upgrades. This revision addresses archive deletion/account/expiry correctness, safe legacy-message serialization, bounded asynchronous capture and import, paged archive previews, document-picker recovery, read-time completion, forum resume, formatter scoping and existing bot notification choices. New feature defaults remain unchanged. See [validation and review-item mapping](docs/releases/26.11.12.md).
+
 ## 3.6.20 independent feature candidate
 
 Adds searchable settings, a local compatibility page, optional persistent reading positions, independent deleted-message copies with archive export/import, local save/viewer protection scopes, profile/poll layout fixes and an optional mute default for new joins/bot starts. The TeleVip entry precedes Account. New switches default off; existing preferences and edit-history data remain intact. The candidate is undergoing signed-build/device validation; see [scope and verification](docs/releases/3.6.20.md).

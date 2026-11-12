@@ -29,7 +29,7 @@ public final class ReadTimeCache {
     }
     public synchronized boolean finish(Token t,int date,long now){
         if(t==null||pending.get(t.key)!=t)return false;
-        pending.remove(t.key);if(now>=t.deadline)return false;
+        if(now>=t.deadline)return false;pending.remove(t.key);
         values.put(t.key,new Result(Math.max(0,date),now+(date>0?300000:30000)));
         while(values.size()>MAX_ENTRIES)values.remove(values.keySet().iterator().next());return true;
     }

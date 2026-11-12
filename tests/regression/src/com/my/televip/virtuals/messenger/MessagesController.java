@@ -4,6 +4,9 @@ import java.util.ArrayList;
 public final class MessagesController {
  public final Native owner;
  public MessagesController(Object value){owner=(Native)value;}
+ public static MessagesController getInstance(int slot){return new MessagesController(com.my.televip.compat.XposedHelpers.callStaticMethod(com.my.televip.Class.ClassLoad.getClass(com.my.televip.Class.ClassNames.MESSAGES_CONTROLLER),"getInstance",slot));}
+ public Object getInstanceObject(){return owner;}
+ public Object getUserFull(long dialog){return com.my.televip.compat.XposedHelpers.callMethod(owner,"getUserFull",dialog);}
  public MessagesStorage getMessagesStorage(){return owner.storage;}
  public SparseArray<Object> getDialogMessagesByIds(){return owner.messages;}
  public Dialogs getDialogMessage(){return owner.dialogs;}

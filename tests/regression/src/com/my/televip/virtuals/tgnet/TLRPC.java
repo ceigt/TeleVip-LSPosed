@@ -2,10 +2,11 @@ package com.my.televip.virtuals.tgnet;
 
 import java.util.ArrayList;
 public final class TLRPC {
-    public static final class MessageData {
-        public final int id; public int flags; public final long dialog; public final String text;
-        public int date=123,ttl,send_state;
+    public static class MessageData {
+        public int id; public int flags; public long dialog; public String text;
+        public int date=123,ttl,ttl_period,send_state;
         public Object media;
+        public void readAttachPath(NativeByteBuffer buffer,long account){}
         public MessageData(int id,long dialog,int flags,String text) { this.id=id;this.dialog=dialog;this.flags=flags;this.text=text; }
     }
     public static final class Message {

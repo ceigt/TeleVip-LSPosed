@@ -5,6 +5,7 @@ public final class TimeFeatureTests {
  private static int checks;
  private static void check(boolean value,String why){checks++;if(!value)throw new AssertionError(why);}
  public static class NativeFormatter {
+  public String getPattern(){return "h:mm a";}
   public String formatJ(long millis)throws Throwable{return (String)com.my.televip.compat.XposedBridge.invoke(NativeFormatter.class.getMethod("formatD",java.util.Date.class),this,new java.util.Date(millis));}
   public String formatD(java.util.Date date){return "3:04 PM";}
  }
@@ -38,7 +39,8 @@ public final class TimeFeatureTests {
   check(c.get(101,200,9,302101).date==0&&c.get(101,200,9,332100)==null,"negative result expiry wrong");
   ReadTimeCache.Token old=c.begin(101,200,10,333000);c.clearAccount(101);ReadTimeCache.Token newer=c.begin(101,200,10,334000);
   check(!c.finish(old,777,334100)&&c.finish(newer,888,334200),"old session replaced newer query");
-  ReadTimeCache.Token timeout=c.begin(101,200,11,335000);check(!c.finish(timeout,123,365000),"expired network response accepted");
+  ReadTimeCache.Token timeout=c.begin(101,200,11,335000);check(!c.finish(timeout,123,365000)&&c.cancel(timeout),"expired response stole timeout completion");
+   check(!TimeSeconds.isClockPattern("dd.MM")&&TimeSeconds.isClockPattern("HH.mm")&&!TimeSeconds.isClockPattern("dd.MM HH:mm"),"date formatter scope accepted");
   ReadTimeCache.Token canceled=c.begin(101,200,12,366000);check(c.cancel(canceled)&&!c.cancel(canceled)&&!c.finish(canceled,123,366100),"dismissed query completed");
   long clock=400000;for(int i=1;i<=150;i++){ReadTimeCache.Token t=c.begin(101,200,i,clock);check(t!=null&&c.finish(t,1000+i,clock+10),"bounded-cache fixture failed");clock+=1000;}
   check(c.size()==ReadTimeCache.MAX_ENTRIES&&c.get(101,200,1,clock)==null&&c.get(101,200,150,clock)!=null,"LRU retention bound wrong");

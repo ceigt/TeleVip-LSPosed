@@ -18,6 +18,7 @@ import com.my.televip.messages.MessageStorage;
 import com.my.televip.virtuals.messenger.*;
 import com.my.televip.virtuals.ui.BaseFragment;
 import com.my.televip.virtuals.tgnet.NativeByteBuffer;
+import com.my.televip.virtuals.tgnet.ConnectionsManager;
 import com.my.televip.virtuals.tgnet.TLRPC;
 import com.my.televip.logging.Logger;
 import java.io.File;
@@ -28,7 +29,9 @@ import java.util.ArrayList;
 
 public final class LocalData {
     private static LocalStateStore database;
-    private static boolean cleanup, deletes, clears, views, pause, restore;
+    private static final java.util.concurrent.Semaphore captureBytes=new java.util.concurrent.Semaphore((int)LocalStateStore.MAX_BYTES);
+    private static boolean cleanup, deletes, clears, views, pause, restore, ranges;
+    private static final ThreadLocal<ArrayDeque<Long>> clearing=ThreadLocal.withInitial(ArrayDeque::new);
     private static final Map<Object,WeakReference<View>> roots=Collections.synchronizedMap(new WeakHashMap<>());
     public static volatile String lastIssue;
     private LocalData() {}
@@ -44,12 +47,20 @@ public final class LocalData {
             MessageStorage.post(()->{try{store().loadPositions();}catch(Throwable error){issue(error);}});
             cleanup=HMethod.hookMethod(ClassLoad.getClass(ClassNames.USER_CONFIG),Obfuscate.getMethodName("UserConfig","clearConfig"),new BaseMethodHook(){
             @Override protected void beforeMethod(MethodHookParam p){
-                long account=new UserConfig(p.thisObject).getClientUserId();store().revokeAccount(account);
-                MessageStorage.post(()->{try{store().finishAccountCleanup(account);}catch(Throwable error){issue(error);}});
+                long account=new UserConfig(p.thisObject).getClientUserId();clearing.get().push(account);
+                ArchiveUi.dismissAccount(account);
+                try{store().revokeAccount(account);}catch(Throwable error){issue(error);}
+            }
+            @Override protected void afterMethod(MethodHookParam p){
+                ArrayDeque<Long> stack=clearing.get();if(stack.isEmpty())return;long account=stack.pop();if(stack.isEmpty())clearing.remove();
+                boolean unblock=!p.hasThrowable()&&new UserConfig(p.thisObject).getClientUserId()!=account;
+                MessageStorage.post(()->{try{store().finishAccountCleanup(account,unblock);}catch(Throwable error){issue(error);}});
             }
             });
         }
+        ArchiveUi.init();
         installDeletionCleanup();
+        installRangeCleanup();
     }
     public static synchronized void initArchive() {
         initCleanup();ShowDeletedMessages.init();ArchiveUi.init();
@@ -61,36 +72,51 @@ public final class LocalData {
                         // Native user deletion must never be undone by capture or an old backup.
                         long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();long dialog=(long)p.args[3];
                         List<Integer> ids=p.args[0]==null?Collections.emptyList():new ArrayList<>((ArrayList<Integer>)p.args[0]);
-                        if(Boolean.TRUE.equals(p.args[6]))return;
+                        if(Boolean.TRUE.equals(p.args[6])||((Number)p.args[5]).intValue()!=0)return;
                         MessageStorage.post(()->{try{if(archiving()||store().hasLocalData())store().forget(account,dialog,ids);}catch(Throwable error){issue(error);}});
                     }
                 }));
         if(!clears)clears=HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","deleteDialogLocal"),long.class,int.class,int.class,int.class,boolean.class,ClassLoad.getClass("org.telegram.tgnet.TLRPC$InputPeer"),long.class,new BaseMethodHook(){
             @Override protected void beforeMethod(MethodHookParam p){
                 int mode=(int)p.args[2];if(mode!=0&&mode!=1)return; // 2 is cache cleanup; 3 is internal empty-dialog cleanup.
-                long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();long dialog=(long)p.args[0];int cutoff=(int)(System.currentTimeMillis()/1000);
+                long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();long dialog=(long)p.args[0];int cutoff=ConnectionsManager.getInstance(new BaseController(p.thisObject).getCurrentAccount()).getCurrentTime();
                 MessageStorage.post(()->{try{if(remembering()||archiving()||store().hasLocalData())store().clearDialog(account,dialog,cutoff);}catch(Throwable error){issue(error);}});
             }
         });
     }
+    private static void installRangeCleanup() {
+        if(!ranges)ranges=HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","deleteMessagesRange"),ArgsResolver.merge("deleteMessagesRange",new Class[]{long.class,long.class,int.class,int.class,boolean.class,Runnable.class},new BaseMethodHook(){
+            @Override protected void beforeMethod(MethodHookParam p){
+                long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();
+                long dialog=(long)p.args[0];int min=(int)p.args[2],max=(int)p.args[3];
+                MessageStorage.post(()->{try{if(archiving()||store().hasLocalData())store().forgetRange(account,dialog,min,max);}catch(Throwable error){issue(error);}});
+            }
+        }));
+    }
     /** Called on the owning host storage queue while its original serialized row is available. */
-    public static void capture(MessagesStorage storage,long dialog,int id,NativeByteBuffer data) {
+    public static LocalStateStore.Session captureSession(MessagesStorage storage){return store().session(storage::getAccountUserId);}
+    public static void capture(MessagesStorage storage,long dialog,int id,NativeByteBuffer data) {capture(storage,dialog,id,data,captureSession(storage));}
+    public static void capture(MessagesStorage storage,long dialog,int id,NativeByteBuffer data,LocalStateStore.Session session) {
         if(!archiving()||ConfigManager.showDeletedMessages==null||!ConfigManager.showDeletedMessages.isEnable())return;
+        int reserved=0;boolean queued=false;
         try {
-            long account=storage.getAccountUserId();
-            LocalStateStore.Session session=store().session(account);
+            if(!store().isCurrent(session)||storage.getAccountUserId()!=session.account)return;
+            long account=session.account;
             ByteBuffer buffer=((ByteBuffer)XposedHelpers.getObjectField(data.nativeByteBuffer,Obfuscate.getFieldName("NativeByteBuffer","buffer"))).duplicate();
             buffer.position(0);if(buffer.remaining()<8||buffer.remaining()>LocalStateStore.MAX_PAYLOAD)throw new IllegalArgumentException("Unsupported message size");
+            reserved=buffer.remaining()*2+LocalStateStore.MAX_TEXT*2;
+            if(!captureBytes.tryAcquire(reserved)){reserved=0;throw new IllegalStateException("Archive capture queue full");}
             byte[] payload=new byte[buffer.remaining()];buffer.get(payload);
             data.position(0);TLRPC.Message message=TLRPC.Message.TLdeserialize(data,data.readInt32(false),false);data.position(0);
             if(message==null||message.get_Message()==null)return;
-            if((dialog&0xffffffffL)==0||message.getTtl()!=0)return;
+            if((dialog&0xffffffffL)==0||message.getTtl()!=0||XposedHelpers.getIntField(message.get_Message(),Obfuscate.getFieldName("TLRPC$Message","ttl_period"))!=0)return;
             Object media=XposedHelpers.getObjectField(message.get_Message(),Obfuscate.getFieldName("TLRPC$Message","media"));
             if(media!=null&&XposedHelpers.getIntField(media,Obfuscate.getFieldName("TLRPC$MessageMedia","ttl_seconds"))!=0)return;
             String text=message.getMessage();int date=XposedHelpers.getIntField(message.get_Message(),Obfuscate.getFieldName("TLRPC$Message","date"));
             LocalStateStore.Record row=new LocalStateStore.Record(account,dialog,id,date,System.currentTimeMillis(),text==null?"":text,payload);
-            MessageStorage.post(()->{try{store().save(session,row);}catch(Throwable error){issue(error);}});
-        }catch(Throwable error){issue(error);}
+            int charge=reserved;
+            MessageStorage.post(()->{try{store().save(session,row);}catch(Throwable error){issue(error);}finally{captureBytes.release(charge);}});queued=true;
+        }catch(Throwable error){issue(error);}finally{if(!queued&&reserved>0)captureBytes.release(reserved);}
     }
     private static final class ChatKey {
         final long account,dialog,topic;
@@ -112,7 +138,7 @@ public final class LocalData {
             @Override protected void beforeMethod(MethodHookParam p){
                 if(!remembering())return;ChatKey key=chat(p.thisObject);if(key==null)return;
                 Bundle args=(Bundle)XposedHelpers.getObjectField(p.thisObject,Obfuscate.getFieldName("BaseFragment","arguments"));
-                if(args.containsKey("message_id")||args.containsKey("start_from_date")||args.containsKey("reply_to")||args.containsKey("poll_option_id"))return;
+                if((args.containsKey("message_id")&&!(key.topic>0&&args.getInt("message_id")==key.topic&&XposedHelpers.getIntField(p.thisObject,Obfuscate.getFieldName("ChatActivity","highlightMessageId"))==0))||args.containsKey("start_from_date")||args.containsKey("reply_to")||args.containsKey("poll_option_id"))return;
                 LocalStateStore.Position pos=store().position(key.account,key.dialog,key.topic);
                 if(pos!=null)args.putInt("message_id",pos.scroll);
             }

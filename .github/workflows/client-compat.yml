@@ -1,45 +1,20 @@
-name: Client APK compatibility
+name: Verified Play compatibility
 on:
   push:
-    paths: ['app/src/main/**', 'tests/compat/**', '.github/workflows/client-compat.yml']
+    paths: ['app/**', 'tests/compat/**', 'tests/regression/**', '.github/workflows/**']
   pull_request:
-    paths: ['app/src/main/**', 'tests/compat/**', '.github/workflows/client-compat.yml']
-  schedule:
-    - cron: '23 5 * * 1'
+    paths: ['app/**', 'tests/compat/**', 'tests/regression/**', '.github/workflows/**']
   workflow_dispatch:
-    inputs:
-      apk_url:
-        description: 'Optional direct client APK URL; default checks telegram.org'
-        required: false
 permissions:
   contents: read
 jobs:
-  check:
+  play-evidence:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          distribution: temurin
-          java-version: '17'
-      - name: Download the current Telegram APK
-        env:
-          INPUT_URL: ${{ inputs.apk_url }}
-        run: |
-          url="${INPUT_URL:-https://telegram.org/dl/android/apk}"
-          curl --fail --location --retry 3 --proto '=https' --proto-redir '=https' --output client.apk "$url"
-      - name: Audit the actual APK
-        run: python3 tests/compat/run.py --apk client.apk --output app/build/client-watch
-      - name: Save compatibility report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-compatibility
-          path: |
-            app/build/client-watch/*.tsv
-            app/build/client-watch/mapping.txt
-            app/build/client-watch/*.md
-            app/build/client-watch/*.txt
-          if-no-files-found: warn
-      # Static compatibility alone never authorizes publishing a release.
+          persist-credentials: false
+      - name: Require real Play audit for these exact source inputs
+        run: python3 tests/compat/evidence.py --verify
+      # Telegram APKs are not redistributed. This checks a source-bound local APK audit,
+      # not a new cloud APK run, server behavior, or authorization to publish a release.

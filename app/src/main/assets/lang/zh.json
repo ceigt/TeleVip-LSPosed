@@ -166,5 +166,6 @@
   "QueryReadTime": "查询已读时间",
   "ReadTimeRateLimited": "已有查询正在运行，或查询过于频繁，请稍后重试。",
   "ReadTimeLoading": "正在向 Telegram 查询…",
-  "ReadTimeUnavailable": "Telegram 未提供此消息的已读时间，可能受隐私、账号规则或有效期限限制。"
+  "ReadTimeUnavailable": "Telegram 未提供此消息的已读时间，可能受隐私、账号规则或有效期限限制。",
+  "PreviousArchive": "上一页"
 }
