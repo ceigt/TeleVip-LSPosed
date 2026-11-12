@@ -37,6 +37,7 @@ subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.Maintenan
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.StoryListsTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.ProfileRenderTest'], check=True)
 subprocess.run([sys.executable, str(root / 'tests/compat/test_audit.py')], check=True)
+subprocess.run([sys.executable, str(root / 'tests/compat/test_evidence.py')], check=True)
 inventory = output / 'inventory.tsv'
 subprocess.run([sys.executable, str(root / 'tests/compat/inventory.py'), str(inventory)], check=True)
 subprocess.run([str(java), '-Xmx2g', '-cp', str(classes), 'com.my.televip.obfuscate.resolve.CompatAudit', str(Path(args.apk).resolve()), str(output), str(inventory)], check=True)

@@ -16,7 +16,7 @@ def inputs_digest():
     digest = hashlib.sha256()
     for p in sorted(files,key=lambda p:p.relative_to(ROOT).as_posix()):
         data = p.read_bytes()
-        if p.suffix in {'.java', '.py', '.json', '.xml', '.txt', '.ps1', '.gradle', '.md', '.yml', '.properties', '.pro', '.sh', '.bat', '.cfg'} or p.name in {'gradlew', '.gitignore', '.gitattributes'}:
+        if p.suffix in {'.java', '.py', '.json', '.xml', '.txt', '.ps1', '.gradle', '.md', '.yml', '.properties', '.pro', '.sh', '.bat', '.cfg', '.list', '.prop', '.toml'} or p.name in {'gradlew', '.gitignore', '.gitattributes'}:
             data = data.replace(b'\r\n', b'\n')
         digest.update(p.relative_to(ROOT).as_posix().encode() + b'\0' + hashlib.sha256(data).digest())
     return digest.hexdigest()
