@@ -101,3 +101,11 @@ After selected device UI/log checks, [stable release 3.6.19](https://github.com/
 On 2026-11-11 (Asia/Singapore), [run 42951770095](https://github.com/ceigt/TeleVip-LSPosed/actions/runs/42951770095) completes build and original-certificate signing for source `8086f97af4ff10710df80507998fb315f349854b`. Signed APK SHA256: `f2c8d3ce4ef6b80ec64a48c35815346c8fa4b168003f5c1b4e2791603bfa4c68`. Independent certificate/package/version 362/alignment/API 102 verification passes; artifact digests and signing provenance agree, and all 918 unsigned ZIP entries are preserved.
 
 This is a verified signed candidate, not a stable release. Latest phone installation/testing is paused at the user's request; see [candidate evidence and pending gates](releases/3.6.20.md).
+
+## Date versions and Play evidence (26.11.12 onward)
+
+Release tags use `vYY.MM.DD`; Android versionName uses `YY.MM.DD`. Android versionCode continues increasing, including corrected test builds on the same day, so in-place updates remain possible. Published tags and signing identity are not replaced.
+
+Build APK now requires its `play-evidence` job before build/sign. It checks the exact production/test/workflow input digest against the locally recorded, authenticated real-Play APK audit. Missing or stale evidence blocks the build. See tests/compat/README.md; this gate does not redistribute Telegram or claim that the cloud downloaded/tested the APK.
+
+Version 26.11.12 (364), source c68f96ba55bfb9a8325ff91dfd7becb93e082dff, is built/signed in run 43176106443, independently verified, installed with data preserved, and published as v26.11.12. The release asset and pulled installed APK share SHA256 8532b61c1fbd5c61a5ca36a528a79f05f73192546ed1eebd74bd07c8dc25b1a3. See releases/26.11.12.md for final verification and limits.
