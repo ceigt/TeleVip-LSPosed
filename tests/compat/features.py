@@ -36,7 +36,7 @@ DYNAMIC = {
     'features/media/SecretMediaSave.java: reflected Method hook': 'Optional exact zero-argument boolean isSecret convenience method; required preview predicate, canonical file path, media click and ttl scope remain audited',
     'features/otherFeatures/EditOnlineTextView.java: dynamic hook owner/signature': 'Legacy status array or 13.2 animated status field/setter/update scope required by FeatureShapeAudit; actual text layout checked on device',
 }
-PLATFORM = {('android.app.Activity', 'onCreate'), ('android.app.Activity', 'onResume'), ('android.app.Application', 'attach')}
+PLATFORM = {('android.app.Activity', 'onActivityResult'), ('android.app.Activity', 'onCreate'), ('android.app.Activity', 'onResume'), ('android.app.Application', 'attach')}
 
 def classify(row, package):
     status, kind, owner, member, source, *_ = row

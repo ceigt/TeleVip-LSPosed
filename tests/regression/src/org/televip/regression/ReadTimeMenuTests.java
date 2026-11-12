@@ -57,6 +57,14 @@ final class ReadTimeMenuTests {
         Runnable ask=()->{try{cache().clearAccount(8101);query.invoke(null,activity,fragment,message);}catch(Exception error){throw new IllegalStateException(error);}};
         ConfigManager.showReadTime.setEnable(true);
         try{
+            android.content.SharedPreferences picker=activity.getSharedPreferences("TeleVipArchivePicker",0);
+            picker.edit().putInt("request",32001).putLong("account",8101).putBoolean("export",false).commit();
+            Field installed=ArchiveUi.class.getDeclaredField("installed");installed.setAccessible(true);boolean wasInstalled=installed.getBoolean(null);installed.setBoolean(null,false);
+            check(!ArchiveUi.captureEarlyResult(activity,32002,Activity.RESULT_CANCELED,null),"unowned framework result consumed");
+            check(ArchiveUi.captureEarlyResult(activity,32001,Activity.RESULT_CANCELED,null),"pre-init owned result lost");
+            check(picker.contains("request"),"pre-init result handled before readiness");
+            installed.setBoolean(null,true);Method drain=ArchiveUi.class.getDeclaredMethod("drainEarlyResult");drain.setAccessible(true);drain.invoke(null);instrument.waitForIdleSync();
+            check(!picker.contains("request"),"deferred result not replayed after readiness");installed.setBoolean(null,wasInstalled);
             instrument.runOnMainSync(ask);check(sent==1,"production coordinator did not dispatch");
             instrument.runOnMainSync(()->{try{box().dismiss();}catch(Exception e){throw new IllegalStateException(e);}});instrument.waitForIdleSync();
             check(cancelled==1,"dismiss did not cancel native request");

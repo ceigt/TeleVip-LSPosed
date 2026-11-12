@@ -38,15 +38,7 @@ public final class ArchiveUi {
         try(HookInstallation attempt=HookInstallation.begin()){
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.LAUNCH_ACTIVITY),"onActivityResult",int.class,int.class,Intent.class,new BaseMethodHook(){
                 @Override protected void beforeMethod(MethodHookParam p){
-                    SharedPreferences prefs=picker();int request=prefs.getInt("request",0);
-                    if(request==0||request!=(int)p.args[0])return;
-                    long account=prefs.getLong("account",0);boolean export=prefs.getBoolean("export",false);
-                    prefs.edit().remove("request").remove("account").remove("export").commit();liveRequest=0;p.setResult(null);
-                    if((int)p.args[1]!=Activity.RESULT_OK)return;
-                    Activity activity=(Activity)p.thisObject;Intent result=(Intent)p.args[2];Uri uri=result==null?null:result.getData();
-                    if(uri==null)return;
-                    if(account!=selected()){toast(activity,"ArchiveAccountChanged");return;}
-                    transfer(activity,uri,account,export);
+                    if(handleResult((Activity)p.thisObject,(int)p.args[0],(int)p.args[1],(Intent)p.args[2]))p.setResult(null);
                 }
             });
             // External notifications/deep links can switch accounts without replacing the Activity.
@@ -54,7 +46,37 @@ public final class ArchiveUi {
                 @Override protected void beforeMethod(MethodHookParam p){dismissAccount(0);}
             });
             installed=attempt.isComplete();
+            if(installed)drainEarlyResult();
         }
+    }
+    private static final class EarlyResult {
+        final WeakReference<Activity> activity;final int request,result;final Intent data;
+        EarlyResult(Activity a,int q,int r,Intent d){activity=new WeakReference<>(a);request=q;result=r;data=d==null?null:new Intent(d);}
+    }
+    private static EarlyResult earlyResult;
+    /** Framework entry is available before asynchronous host mapping/config initialization. */
+    public static synchronized boolean captureEarlyResult(Activity activity,int request,int result,Intent data){
+        if(activity.getSharedPreferences("TeleVipArchivePicker",0).getInt("request",0)!=request||request==0)return false;
+        earlyResult=new EarlyResult(activity,request,result,data);
+        if(installed)drainEarlyResult();
+        return true;
+    }
+    private static void drainEarlyResult(){
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(()->{
+            EarlyResult task;
+            synchronized(ArchiveUi.class){if(!installed)return;task=earlyResult;earlyResult=null;}
+            Activity a=task==null?null:task.activity.get();
+            if(a!=null&&alive(a))handleResult(a,task.request,task.result,task.data);
+        });
+    }
+    private static boolean handleResult(Activity activity,int request,int result,Intent data){
+        SharedPreferences prefs=picker();if(request==0||prefs.getInt("request",0)!=request)return false;
+        long account=prefs.getLong("account",0);boolean export=prefs.getBoolean("export",false);
+        prefs.edit().remove("request").remove("account").remove("export").commit();liveRequest=0;
+        if(result!=Activity.RESULT_OK)return true;
+        Uri uri=data==null?null:data.getData();if(uri==null)return true;
+        if(account!=selected()){toast(activity,"ArchiveAccountChanged");return true;}
+        transfer(activity,uri,account,export);return true;
     }
     public static void dismissAccount(long account){
         AndroidUtilities.runOnUIThread(()->{

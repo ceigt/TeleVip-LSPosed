@@ -42,6 +42,12 @@ public final class MainHook {
                 new Handler(Looper.getMainLooper()).post(() -> queue(context));
             }
         });
+        HMethod.hookMethod(Activity.class,"onActivityResult",int.class,int.class,android.content.Intent.class,new BaseMethodHook(){
+            @Override protected void beforeMethod(MethodHookParam p){
+                Activity activity=(Activity)p.thisObject;
+                if(packageName.equals(activity.getPackageName())&&com.my.televip.features.messages.ArchiveUi.captureEarlyResult(activity,(int)p.args[0],(int)p.args[1],(android.content.Intent)p.args[2]))p.setResult(null);
+            }
+        });
         HMethod.hookMethod(Activity.class,"onCreate",Bundle.class,new BaseMethodHook() {
             @Override protected void beforeMethod(MethodHookParam param) {
                 Activity activity=(Activity)param.thisObject;

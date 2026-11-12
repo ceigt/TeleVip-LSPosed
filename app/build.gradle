@@ -9,7 +9,7 @@ android {
         applicationId "org.televip"
         minSdk 27
         targetSdk 36
-        versionCode 363
+        versionCode 364
         versionName "26.11.12"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
