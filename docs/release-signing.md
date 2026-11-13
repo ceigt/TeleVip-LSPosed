@@ -4,7 +4,7 @@ The Build APK workflow produces an installable APK signed with the existing Tele
 
 ## Download a signed build
 
-1. Open GitHub Actions, choose Build APK and select Run workflow on branch `telegram-12.10.5`. Changes to app/build/signing inputs on that branch also trigger it automatically.
+1. Open GitHub Actions, choose Build APK and select Run workflow on branch `main` (the historical `telegram-12.10.5` branch is also permitted). Changes to app/build/signing inputs on that branch also trigger it automatically.
 2. Wait for both `build` and `sign` to succeed.
 3. Download the artifact named `TeleVip-<source commit>-signed`.
 4. Extract `TeleVip-<version>.apk`, `SHA256SUMS.txt` and `SIGNING-INFO.json`. The latter records the exact source commit, workflow run, version, unsigned/signed APK hashes and certificate fingerprint.
@@ -15,7 +15,7 @@ The `-unsigned` artifact remains available for inspection. Pull requests, forks 
 
 Environment: `release-signing` in `ceigt/TeleVip-LSPosed`.
 
-Deployment policy permits only the branch named `telegram-12.10.5` (type `branch`, not a similarly named tag). Signing is automatic on trusted branch pushes and manual runs; no required-reviewer gate is configured. Repository owners can add environment reviewers if they want approval before each signing job.
+Deployment policy permits the branches named `main` and `telegram-12.10.5` (type `branch`, not similarly named tags). Signing is automatic on trusted branch pushes and manual runs; no required-reviewer gate is configured. Repository owners can add environment reviewers if they want approval before each signing job.
 
 Environment secrets:
 
@@ -109,3 +109,11 @@ Release tags use `vYY.MM.DD`; Android versionName uses `YY.MM.DD`. Android versi
 Build APK now requires its `play-evidence` job before build/sign. It checks the exact production/test/workflow input digest against the locally recorded, authenticated real-Play APK audit. Missing or stale evidence blocks the build. See tests/compat/README.md; this gate does not redistribute Telegram or claim that the cloud downloaded/tested the APK.
 
 Version 26.11.12 (364), source c68f96ba55bfb9a8325ff91dfd7becb93e082dff, is built/signed in run 43176106443, independently verified, installed with data preserved, and published as v26.11.12. The release asset and pulled installed APK share SHA256 8532b61c1fbd5c61a5ca36a528a79f05f73192546ed1eebd74bd07c8dc25b1a3. See releases/26.11.12.md for final verification and limits.
+
+## TeleVip Next automatic delivery
+
+Public channel: https://t.me/televip_next. Stable release.published events queue telegram-channel.yml on main; drafts and prereleases are skipped. This separates tag events from credentials restricted to exact main in the telegram-publishing environment. Secret: TELEGRAM_BOT_TOKEN; environment variables: TELEGRAM_CHAT_ID and TELEGRAM_CHANNEL_USERNAME. The dedicated bot has only channel posting rights. Signing and posting use separate environments and credentials.
+
+For a non-posting check, dispatch telegram-channel.yml with an existing stable tag and dry_run=true. The publisher checks source, artifacts, actual APK signature and destination permissions. Normal publishing additionally downloads the uploaded Telegram document to compare SHA256 and adds TELEGRAM-POST.json to the GitHub Release. Repeating a successfully receipted tag skips sending.
+
+If delivery fails after sending, inspect the preserved telegram-publication artifact and channel before retrying. A network timeout before acknowledgement cannot guarantee exactly-once delivery; do not blindly rerun an ambiguous send. Rotate a compromised bot credential with BotFather, then replace the encrypted environment secret. Never put credentials into repository files or workflow arguments.

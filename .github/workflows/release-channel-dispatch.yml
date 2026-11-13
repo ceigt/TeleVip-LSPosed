@@ -1,0 +1,20 @@
+name: Queue Telegram release
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+  actions: write
+jobs:
+  queue:
+    if: github.repository == 'ceigt/TeleVip-LSPosed' && !github.event.release.draft && !github.event.release.prerelease
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch the publisher on trusted main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]{2}\.[0-9]{2}\.[0-9]{2}(\.[0-9]+)?$ ]] || exit 1
+          gh workflow run telegram-channel.yml --ref main -f tag="$RELEASE_TAG"

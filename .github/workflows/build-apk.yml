@@ -3,9 +3,9 @@ name: Build APK
 on:
   push:
     branches: ['main', 'telegram-12.10.5']
-    paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/build-apk.yml']
+    paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/**', '.github/scripts/**']
   pull_request:
-    paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/build-apk.yml']
+    paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/**', '.github/scripts/**']
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,8 @@ jobs:
           persist-credentials: false
       - name: Require current authenticated Play evidence
         run: python3 tests/compat/evidence.py --verify
+      - name: Test release publication guards
+        run: python3 -m unittest discover -s tests/release -p 'test_*.py'
   build:
     needs: play-evidence
     runs-on: ubuntu-latest

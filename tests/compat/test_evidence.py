@@ -29,7 +29,7 @@ class EvidenceInputsTest(unittest.TestCase):
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             evidence.ROOT, evidence.RECORD = root, root / 'tests/compat/verified-play.json'
             try:
-                paths = [root / 'app/src/main/resources/META-INF/xposed/module.prop', root / 'app/src/main/resources/META-INF/xposed/scope.list', root / 'gradle/libs.versions.toml']
+                paths = [root / 'app/src/main/resources/META-INF/xposed/module.prop', root / 'app/src/main/resources/META-INF/xposed/scope.list', root / 'gradle/libs.versions.toml', root / '.github/scripts/publish_telegram.py', root / 'tests/release/test_publish_telegram.py']
                 for p in paths:
                     p.parent.mkdir(parents=True, exist_ok=True)
                     p.write_bytes(b'first\nsecond\n')
@@ -37,8 +37,10 @@ class EvidenceInputsTest(unittest.TestCase):
                 for p in paths:
                     p.write_bytes(b'first\r\nsecond\r\n')
                 self.assertEqual(original, evidence.inputs_digest())
-                paths[0].write_bytes(b'changed\nsecond\n')
-                self.assertNotEqual(original, evidence.inputs_digest())
+                for p in paths:
+                    p.write_bytes(b'changed\nsecond\n')
+                    self.assertNotEqual(original, evidence.inputs_digest())
+                    p.write_bytes(b'first\nsecond\n')
             finally:
                 evidence.ROOT, evidence.RECORD = previous_root, previous_record
 

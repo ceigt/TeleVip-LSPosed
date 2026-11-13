@@ -195,7 +195,7 @@ public final class SettingsFallback {
                             dialog.dismiss();
                         }).show();
             } else if (Keys.DeveloperChannel.equals(item.getKey())) {
-                activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/t_l0_e")));
+                activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(com.my.televip.ProjectLinks.TELEGRAM_CHANNEL_URL)));
             } else if (Keys.RestartApp.equals(item.getKey())) {
                 Intent launch = activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName());
                 if (launch != null) {

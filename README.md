@@ -1,185 +1,151 @@
+<div align="center">
+
 # TeleVip LSPosed
 
-<p>
-  <img src="https://img.shields.io/badge/Platform-Android-green">
-  <img src="https://img.shields.io/badge/Framework-LSPosed-blue">
-  <img src="https://img.shields.io/badge/License-GPL--3.0-orange">
-</p>
+为 Telegram 添加隐私控制、消息记录和界面增强的 Xposed 模块。
+本分支独立维护 Google Play 版 Telegram 的兼容性。
 
-A powerful LSPosed module that adds advanced customization features to Telegram clients.
+[![Release](https://img.shields.io/github/v/release/ceigt/TeleVip-LSPosed?label=Release)](https://github.com/ceigt/TeleVip-LSPosed/releases/latest)
+[![Build](https://github.com/ceigt/TeleVip-LSPosed/actions/workflows/build-apk.yml/badge.svg?branch=main)](https://github.com/ceigt/TeleVip-LSPosed/actions/workflows/build-apk.yml)
+[![Xposed API](https://img.shields.io/badge/libxposed-API%20102-blue)](#安装)
+[![License](https://img.shields.io/badge/License-GPL--3.0-orange)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-TeleVip%20Next-2AABEE?logo=telegram)](https://t.me/televip_next)
 
-This fork maintains Telegram compatibility independently. Public upstream feature descriptions may inform new local designs; repairs do not depend on upstream patches. See the [independent maintenance direction and feature shortlist](docs/maintenance/independent-maintenance-roadmap.md). Existing user choices and the actual-APK verification/signing/device gates remain the basis for changes.
+**[下载最新版 APK](https://github.com/ceigt/TeleVip-LSPosed/releases/latest) · [TeleVip Next 频道](https://t.me/televip_next) · [更新记录](https://github.com/ceigt/TeleVip-LSPosed/releases) · [反馈问题](https://github.com/ceigt/TeleVip-LSPosed/issues)**
 
-## v26.11.13 — Play 13.2.2
+</div>
 
-Repairs the follow-up review gaps: ordinary-message deletion from pinned/saved views, success-bound date deletion cleanup, account-bound encrypted archive staging with cancellation/recovery, first-open logout isolation, and native forum navigation state. `main` is the maintained release branch; the historical development branch remains available. New switches retain their existing defaults. See [scope and validation](docs/releases/26.11.13.md).
+## 功能
 
-## v26.11.12 review fixes
+| 隐私与广告 | 消息与记录 | 媒体与界面 |
+| --- | --- | --- |
+| 私聊、频道与群组分别控制已读上报 | 保留已缓存的删除消息 | 故事、语音及受限媒体的本地保存选项 |
+| 隐藏输入状态与故事浏览记录 | 保存消息编辑历史 | 扩展本地保存、复制和查看范围 |
+| 本机手机号显示为圆点 | 独立删除副本、搜索与导入导出 | 隐藏故事栏和固定消息栏 |
+| 在线状态上报控制 | 按账号、会话、话题记住阅读位置 | 本人和其他资料页分别显示 ID |
+| 过滤赞助消息、搜索及代理推广 | 显示消息 ID、时间秒数 | 始终显示下载入口、关闭数字缩写 |
+| 本机兼容状态与异常提示 | 显式查询符合条件的私聊已读时间 | 日历、本地 Premium 与下载参数优化 |
 
-Versions now use `vYY.MM.DD` release tags and `YY.MM.DD` Android version names; Android versionCode remains increasing for in-place upgrades. This revision addresses archive deletion/account/expiry correctness, safe legacy-message serialization, bounded asynchronous capture and import, paged archive previews, document-picker recovery, read-time completion, forum resume, formatter scoping and existing bot notification choices. New feature defaults remain unchanged. See [validation and review-item mapping](docs/releases/26.11.12.md).
+另提供新加入频道／群组与首次机器人会话的默认静音、频道和资料页滑动返回控制，以及更新提示控制等选项。
 
-## 3.6.20 independent feature candidate
+设置入口集成在 **Telegram → Settings（设置）→ TeleVip**，位于 **Account** 上方。设置页提供搜索、分类、功能说明和紧凑的 Android 16 风格开关；语言跟随 Telegram，缺失译文回退为英文。
 
-Adds searchable settings, a local compatibility page, optional persistent reading positions, independent deleted-message copies with archive export/import, local save/viewer protection scopes, profile/poll layout fixes and an optional mute default for new joins/bot starts. The TeleVip entry precedes Account. New switches default off; existing preferences and edit-history data remain intact. The candidate is undergoing signed-build/device validation; see [scope and verification](docs/releases/3.6.20.md).
+## 安装
 
-## 3.6.19 Telegram 13.2.0 compatibility
+### 需要准备
 
-Adapts the Play 13.2.0 settings entry, animated profile status/name layout, renamed message callbacks, download account scope and reordered count/history parameters. Promo preferences use the owning account directly, and media paths use the canonical host overload. Keeps the existing channel/group normal-read and private-chat hidden-read choices. See [3.6.19 verification](docs/releases/3.6.19.md) for tested paths and limits.
+- 已正常运行、支持 **libxposed API 102** 的 Xposed 框架。
+- 下表中经过验证的 Google Play 版 Telegram。
+- 模块最低安装版本为 Android 8.1（API 27）；框架自身的系统要求另行适用。本分支当前实机验证环境为 Android 16。
 
-The unchanged 3.6.19 module also passes the connected phone's Play 13.2.1 (72911) compatibility and selected UI checks. No new failing active feature was found, so no new APK or Release is issued. The audit now attributes the unused legacy Browser link wrapper to its actual non-Play branch, with caller/branch guards and negative tests. See [13.2.1 verification](docs/maintenance/2026-11-09-play-13.2.1.md).
+### 操作步骤
 
-## 3.6.18 upstream UI improvements
+1. 从 [GitHub Releases](https://github.com/ceigt/TeleVip-LSPosed/releases/latest) 下载并安装 APK。
+2. 在模块管理器中启用 **TeleVip**，勾选 Telegram 的作用域 `org.telegram.messenger`。
+3. **强制停止 Telegram，再重新打开**。
+4. 进入 Telegram 设置页，打开 **TeleVip**，按需启用功能。
+5. 标有“修改后重启”的选项，需要再次重启 Telegram 才能完整生效。
 
-Adapts Re-TeleVIP 1.5.1/1.5.2: an optional always-visible Downloads shortcut, independent own/other-profile ID switches, profile status/ID centring fixes and Indonesian translations. Old ID preferences are inherited by both child switches; the new Downloads option defaults off. Runtime rendering scopes are nested and thread-local, and only module-owned ID labels receive width corrections. See [3.6.18 review and verification](docs/releases/3.6.18.md).
+本项目沿用 `org.televip` 包名和原发布证书，可直接覆盖升级。新增可选功能默认关闭，已有开关选择保留。
 
-## Hidden receipts and unread counts
+## 兼容情况
 
-Hiding read receipts also prevents Telegram's server read position from advancing. The optional 3.6.20 local reading-position store keeps an independent resume position and visible-message watermark. Server/global unread counts are still server-owned, so refreshing server dialog state can restore older unread counts. To keep normal channel/group read synchronization while hiding private-chat receipts, turn off **Hide Seen > Channels and Groups** and leave **Private Chats** on. Existing unread backlogs are cleared by normal reading or an explicit mark-as-read action; changing this switch does not mark every chat read.
+当前发行的核验目标：
 
-## 3.6.17 phone display coverage
+| 项目 | 已验证范围 |
+| --- | --- |
+| Telegram 来源 | Google Play 官方版 |
+| Telegram 包名 | `org.telegram.messenger` |
+| Telegram 版本 | **13.2.2（73031）** |
+| 模块接口 | **libxposed API 102** |
+| 实机系统 | Android 16 |
 
-Version 3.6.17 fixes own-phone visibility in the Profile tab and the account change-number introduction on Play Telegram 13.1.1. The formatter mask now also runs inside the profile row binder (using that profile's owning account) and the change-number view builder. Telegram's account data and number-change business logic retain the real number. The original-certificate cloud build is installed and four-page on/off checks pass with original preferences restored. See [3.6.17 verification](docs/releases/3.6.17.md) for evidence and limits.
+历史客户端适配代码仍保留。网站版 `org.telegram.messenger.web`、Beta 及其他第三方客户端未在本版完成认证；上游的支持列表不代表本分支的验证结果。Telegram 升级后，也需要重新核对对应版本。
 
-## 3.6.16 upstream maintenance
+本次兼容审查覆盖 **539 个必需调用点**；Android 隔离回归通过 **22 组／3140 项断言**。实机检查覆盖设置入口、归档搜索、进程重建后的导入、加密暂存与导出等指定流程。真实账号退出和破坏性日期删除由隔离测试覆盖，不代表所有服务端行为均已实测。
 
-Version 3.6.16 adapts the TeleVIP 1.5 story-row and edit-history fixes for the unchanged Google Play Telegram 13.1.1 (72371). Edited messages received in normal history loads can preserve the previously cached text, including when the chat was closed or offline. Story hiding filters only the two mapped presentation lists, including cached entries, and retains the existing restart requirement. Other story-controller collections and stored history are preserved. See [3.6.16 verification](docs/releases/3.6.16.md) for evidence and test limits.
+[详细验证记录](docs/releases/26.11.13.md) · [历史适配记录](docs/releases) · [兼容检查说明](tests/compat/README.md)
 
-## Telegram Play 13.1.1 adaptation
+## 数据与备份
 
-Version 3.6.15 targets the installed Google Play Telegram 13.1.1 (72371). Telegram moved its real-Premium download decision into `updateDownloadByteBudget`, also called outside download startup. The module now protects that exact budget helper, with the previous typed start route retained for 13.1.0. The APK audit requires every direct download Premium query to be inside the selected scope; it does not waive the new call path. Fingerprint cache version 20 refreshes mappings. See [3.6.15 verification](docs/releases/3.6.15.md) for build and device status.
+编辑历史、独立删除副本和阅读位置按账号隔离，保存在 Telegram 的应用私有空间。
 
-The original-certificate GitHub build is installed in place and its pulled-back APK matches the signed artifact. Actual Play 13.1.1 and the 13.1.0 control pass 444 inventoried sites, 58 exact hook signatures and ten reviewed selector groups. Twelve isolated Android groups pass 2647 assertions. Device checks cover startup (58 resolved / 0 missing), settings, restored typing/download/media/Premium/ad switches, public-channel menus and full profile ID rendering without duplicate lines. Preferences and temporary system settings are restored; real download throughput and server-side privacy are not established by these checks.
+- **显示删除消息**依赖 Telegram 已缓存的内容，不能找回此前已经丢失、从未缓存的消息。
+- **独立删除副本**保存启用后的有效捕获记录，支持搜索、单条移除和系统文件选择器导入导出；秘密或限时消息不进入这个独立归档。
+- 导出的 **JSON 备份是明文**，应妥善保存。模块内部中间文件使用加密暂存，操作结束或账号变化时清理。
+- 主动删除副本后，导入旧备份不会恢复已明确移除的记录。卸载 Telegram 或清除其数据前，请先导出需要保留的副本。
 
-## 3.6.14 upstream maintenance update
+## 常见问题
 
-Version 3.6.14 adapts two fixes from TeleVIP 1.4 for the verified Play Telegram 13.1.0 APK. Download connection selection uses the account's real Premium subscription, and the speed switch changes parameters only for the account owning that download when it actually has Premium. Profile IDs use the populated status line or the current primary line and are not appended repeatedly. Existing preferences and privacy policy are retained.
+<details>
+<summary><b>开启隐藏已读后，为什么旧消息又变成未读？</b></summary>
 
-The actual Play 13.1.0 APK passes 443 inventoried sites, 58 exact hook signatures, ten reviewed dynamic selector groups and 387 required active sites. This update has no new device verification; Telegram 13.1.1 remains an unverified candidate until its binary is obtained and authenticated. See [3.6.14 verification and upstream review](docs/releases/3.6.14.md).
+隐藏已读会阻止服务器阅读进度正常推进。服务器刷新会话状态时，旧未读可能再次出现；本地阅读位置只能帮助恢复浏览位置，不能重建服务器的全局未读计数。
 
-## Telegram 13.1.0 compatibility update
+若希望频道和群组正常同步、仅隐藏私聊已读，请关闭 **隐藏已读 → 频道和群组**，保留 **私聊** 开启。已有未读需要正常阅读或手动标记已读。
 
-Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It adapts the channel protocol fingerprint to select the current concrete type instead of its old layer-232 subclass, and raises the mapping cache version to 18. Existing privacy, media, settings and advertisement protections are retained.
+</details>
 
-The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. The GitHub-built artifact has now been signed on the original signing computer with the existing release certificate and installed in place. Startup, native settings entry, typing/media/ad switches, public-channel swipe, message jump and edit-history menu checks pass; original preferences and temporary screen settings are restored. These checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
+<details>
+<summary><b>“禁用频道滑动返回”会阻止系统返回手势吗？</b></summary>
 
-GitHub Actions builds the APK without signing secrets, then signs it on a separate hosted runner for trusted pushes or manual runs on `main` (or the historical `telegram-12.10.5` development branch). The original PKCS12 key and password are stored as encrypted secrets in the branch-restricted `release-signing` environment. Pull requests and forks receive unsigned build artifacts only. The signed artifact includes the APK, checksum and source/signing metadata; its certificate, package, version and API 102 declaration are verified before upload. See [cloud signing](docs/release-signing.md) for use and maintenance.
+它控制 Telegram 聊天内容区域的页面滑动。Android 屏幕边缘返回手势和顶部返回按钮仍可使用；资料页的滑动控制另有独立开关。
 
-## Telegram 13.0.3 / API 102 release
+</details>
 
-Version 3.6.12 uses module package `org.televip` and requires LSPosed API 102 support. Enable the module for `org.telegram.messenger`, restart Telegram, then open TeleVip from Telegram's settings page. The original release certificate is retained for in-place upgrades and existing settings are preserved.
+<details>
+<summary><b>本地 Premium、下载优化和已读时间有哪些限制？</b></summary>
 
-This release adds runtime APK fingerprints and validated mapping caches, settings entry fallback routes, chat/profile menu handling for merged listener classes, and sponsored-message/search/proxy advertisement filtering with completed callbacks. A startup request gate holds requests until privacy hooks are ready, including service-only startup. Android 16 style switches now have compact tracks while keeping the full row touch target.
+本地 Premium 改变客户端的部分本地表现，不会授予服务端订阅权益。下载参数优化只在下载所属账号具备真实 Premium 时应用，也不保证突破服务端或网络限制。
 
-Reflection lookups use bounded caches, inherited members and deterministic overload selection; ambiguous overloads are rejected. Dialog button callbacks log failures without crashing the host UI. Source compatibility checks fail on missing required feature symbols or hook signatures and record inactive client branches separately.
+已读时间需要手动查询，受消息类型、时间范围、对方隐私及账号规则约束。服务器不提供时显示不可用，不推算或绕过权限。
 
-Edit history is isolated by account and conversation. Older records without reliable identifiers are retained as an isolated backup and are not displayed. Account logout cleans up only its attributed history. The channel swipe setting blocks Telegram's own gesture in broadcast channels; the back button and Android system back gesture remain available.
+隐藏在线选项会减少状态上报；发送消息、互动等场景下仍可能显示在线。
 
-Version 3.6.8 adapts secret-media read/deletion schedulers to runtime-resolved signatures, including R8 static receiver arguments, and resolves the actual close callback without disabling animation cleanup. Ad blocking also replaces in-flight sponsored responses after deserialization and hides the host's cached sponsored messages. Media path overrides cover all three FileLoader signatures and bind to the actual host message rather than a reused message ID.
+</details>
 
-Version 3.6.9 verifies Telegram 13.0.1 (71671). The existing runtime resolver handles the new obfuscated class/method names; no newly failed active feature hook was found. Both original and TeleVIP upstream heads are unchanged since the previous review, so this release imports no additional upstream code. The compatibility inventory now records reflected Method hook registrations, rejects unreviewed selector paths, and validates the required phone display scopes even when a settings callback fallback exists.
+<details>
+<summary><b>Telegram 更新后找不到 TeleVip，或某个功能失效怎么办？</b></summary>
 
-Version 3.6.10 fixes startup recovery and privacy degradation reporting. Startup/settings failures retry up to three times; a permanent selective privacy interceptor releases ordinary traffic after initialization, a 20-second timeout or a full startup queue. Known privacy requests remain suppressed if local completion fails. Hidden typing requests now complete normal/timestamp callbacks, temporary secret-media TTL changes are restored after each opening, save-button overrides follow the saving switches, and edit-history menu construction no longer queries SQLite on the UI thread. The history action is available while recording is enabled and gives a message when no history has been recorded.
+先检查模块是否启用、作用域是否正确，并完整重启 Telegram。能打开设置时，可在 **本机兼容状态** 查看宿主版本和模块状态。
 
-Version 3.6.11 verifies the installed Telegram Play 13.0.2 (71751). Only the ActionBar and its click-listener class mappings changed from 13.0.1; the existing runtime resolver handles both. No new failing active hook was found. The original upstream remains at `a879b702`; Re:TeleVIP updated to 1.1.7 (`2ec19bf`) with build-wrapper/version changes only, so no new feature code is imported. Runtime feature code remains the verified 3.6.10 implementation.
+反馈时请提供 Telegram 来源与版本、模块版本、Android 和框架版本、具体开关及复现步骤。截图和日志请先遮盖手机号、账号信息与私人消息。
 
-Version 3.6.12 verifies Telegram Play 13.0.3 (71831). The existing resolver handles its changed class/method names and message-jump arguments. Adaptations from Re:TeleVIP 1.1.8/1.1.9 exclude protocol-registry constructors from TL fingerprints and disambiguate Theme using its static TextPaint. Empty advertisement responses now share a prepared factory for request completion and in-flight response replacement; when R8 removes a no-argument constructor, it validates constructor-free allocation and initializes inherited compatible collections. Existing constructors remain preferred and their failures are never bypassed. Fingerprint cache version 17 forces a fresh scan.
+</details>
 
-Verification: twelve Android regression groups with 2647 assertions, 131 JVM reflection assertions, 39 feature-selector assertions and eight compatibility-tool tests passed. Telegram 13.0.3 and a 13.0.2 control APK pass checks for 438 source sites, 58 exact hook signatures and nine reviewed dynamic selector groups. Protocol checks cover eleven privacy request decoders, four response constructors, eight fields and both callback interfaces, with negative controls. Real-device checks cover startup, settings entry, three switches, public-channel message jump, edit-history menu and channel swipe. Original preferences and temporary screen settings are restored. Two-account receipts, newly received one-time media and remote deletion were not retested end to end. See [device test coverage](tests/regression/README.md), [compatibility audit limits](tests/compat/README.md) and [3.6.12 verification](docs/releases/3.6.12.md).
+## 更新与频道
 
-Adaptations from [TeleVIP](https://github.com/2B-4G10/TeleVIP) are documented in [third-party notices](THIRD_PARTY_NOTICES.txt).
+项目更新频道：**[TeleVip Next · @televip_next](https://t.me/televip_next)**。
 
-## ✨ Features
+正式版本在 GitHub Releases 发布后，同步推送签名 APK 和简短更新说明到频道。普通代码提交和未正式发布的构建不会重复推送。下载文件与 GitHub Release 保持一致，发布页同时提供校验和及签名来源信息。
 
-### Privacy
-- Hide "Seen" status in:
-    - Private chats
-    - Channels and Groups
-- Hide "Typing..." indicator
-- Hide online status
-- Hide phone number
-- Hide story view status
-- Show deleted messages
-- Prevent deletion of secret media
+本项目使用年月日版本号 `YY.MM.DD`；同日修订追加序号，Android versionCode 持续递增。
 
-### Media & Stories
-- Save protected stories to gallery
-- Save voice messages
-- Enable secret media
-- Save message edit history
+## 开发与构建
 
-### Telegram Modifications
-- Remove content saving restrictions
-- Disable stories
-- Hide pinned messages
-- Disable channel swipe
-- Disable profile swipe
-- Disable update notifications
-- Disable number rounding
+维护分支为 **`main`**，原 `telegram-12.10.5` 分支保留历史记录。本分支独立维护当前适配，历史借鉴代码的出处见第三方说明。
 
-### Performance
-- Boost Telegram download speed
+<details>
+<summary><b>本地编译与正式签名</b></summary>
 
-### Premium
-- Enable Local Premium
+需要 JDK 17、Android SDK 36 和 Build Tools 36.0.0：
 
+```sh
+git clone --branch main https://github.com/ceigt/TeleVip-LSPosed.git
+cd TeleVip-LSPosed
+./gradlew :app:assembleRelease
+```
 
-> More features are available but not listed here.
+Windows 使用 `gradlew.bat`。本地默认产出未签名 APK；正式版由 GitHub Actions 在受限环境中使用原证书签名，PR 和其他分支无法读取发布证书。
 
+[云端签名与发布维护](docs/release-signing.md) · [设备隔离回归](tests/regression/README.md)
 
-# 📱 Supported Clients
+</details>
 
-Other client versions below are historical targets; they were not revalidated in the Telegram 13.1.0 release.
+## 致谢与许可证
 
-| Client | Version |
-|---|---|
-| Telegram (Google Play) | 13.1.0 (72291; selected UI flows verified on device); earlier verification records are in docs/releases |
-| Telegram Beta | 12.9.0 (69579) |
-| Telegram Web | 12.8.3 (69229) |
-| TG Connect | 11.13.1 (11130109) |
-| Plus Messenger | 12.8.1.0 (22350) |
-| Nagram | 12.8.1 (1239) |
-| NagramX | 12.8.1-2bcd1bd (1253) |
-| Nagram XF | 12.7.3 (1245) |
-| Nekogram | 12.8.1 (69160) |
-| Cherrygram | 12.8.1 (69160) |
-| Nicegram | 1.55.0 (2139) |
-| iMe | 12.8.1 (12080102) |
-| iMe Direct | 12.8.1 (12080109) |
-| X Plus | 12.0.1 (61669) |
-| ForkClient | 12.8.4.0 (691908) |
-| ForkClient Beta | 12.8.4.0 (691909) |
-| Skygram | 10.20.6 (40639) |
-| Teegra | 10.3.2 (41469) |
-| Telegraph | 12.8.1.1 (69172) |
-| Telega | 2.4.3 (107) |
-| Momogram | 12.6.4 |
-| Forkgram Classic | 12.8.10.0 |
-| Turrit | 1.8.9.9.5 |
+- [Mustafa／TeleVip-LSPosed](https://github.com/mustafa1dev/TeleVip-LSPosed)：原项目。
+- [Re: TeleVIP](https://github.com/2B-4G10/Re-TeleVIP)：历史 GPL 版本的适配代码与设计参考。
+- [Re-Telegram](https://github.com/Sakion-Team/Re-Telegram)：原项目的部分基础。
 
-
-# 📢 Updates
-
-All TeleVip updates are published on Telegram:
-
-➡️ https://t.me/t_l0_e
-
-
-# ⚠️ Warning
-> This module is intended for educational purposes only. Its use may result in issues with your Telegram account, including the risk of banning or suspension. Use it at your own risk.
-
-
-# 📄 License
-
-This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.
-
-See the [LICENSE](./LICENSE) file for more information.
-
-
-# Credits
-
-Partially based on:
-
-- [Re-Telegram](https://github.com/Sakion-Team/Re-Telegram).
-
-
-Developed by **@mustafa1dev**
+具体来源、版本及本地改动见 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。本分支按 [GNU GPL v3.0](LICENSE) 发布。

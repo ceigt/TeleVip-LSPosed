@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 RECORD = ROOT / 'tests/compat/verified-play.json'
 
 def inputs_digest():
-    names = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', 'app/src/main', 'app/build.gradle', 'settingsadapter', 'tests/compat', 'tests/regression', '.github/workflows', 'gradle', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradlew', 'gradlew.bat'], cwd=ROOT).decode('utf-8').split('\0')
+    names = subprocess.check_output(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', 'app/src/main', 'app/build.gradle', 'settingsadapter', 'tests/compat', 'tests/regression', 'tests/release', '.github/scripts', '.github/workflows', 'gradle', 'build.gradle', 'settings.gradle', 'gradle.properties', 'gradlew', 'gradlew.bat'], cwd=ROOT).decode('utf-8').split('\0')
     files = [ROOT / name for name in names if name and (ROOT / name).is_file() and ROOT / name != RECORD and '__pycache__' not in Path(name).parts and not name.endswith('.pyc')]
     digest = hashlib.sha256()
     for p in sorted(files,key=lambda p:p.relative_to(ROOT).as_posix()):

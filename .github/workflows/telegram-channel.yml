@@ -1,0 +1,55 @@
+name: Publish APK to TeleVip Next
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published stable Release tag
+        type: string
+        required: true
+      dry_run:
+        description: Verify artifacts and bot access without sending
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: telegram-channel-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'ceigt/TeleVip-LSPosed' && github.ref == 'refs/heads/main'
+    environment: telegram-publishing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+        with:
+          packages: 'build-tools;36.0.0'
+      - name: Test publication guards
+        run: python3 -m unittest discover -s tests/release -p 'test_*.py'
+      - name: Verify and publish the signed Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHANNEL_USERNAME: ${{ vars.TELEGRAM_CHANNEL_USERNAME }}
+        run: python3 .github/scripts/publish_telegram.py
+      - name: Preserve the public receipt if upload was interrupted
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: telegram-publication-${{ inputs.tag }}
+          path: telegram-publication.json
+          if-no-files-found: ignore
+          retention-days: 90

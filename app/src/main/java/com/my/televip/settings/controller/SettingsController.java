@@ -49,7 +49,7 @@ public class SettingsController {
                 alertDialog.setMessage(Translator.get(Keys.JoinTeleVip));
 
                 alertDialog.setPositiveButton(Translator.get(Keys.Join), AlertDialog.click(() -> {
-                    Browser.openUrl(getContext(), "https://t.me/t_l0_e");
+                    Browser.openUrl(getContext(), com.my.televip.ProjectLinks.TELEGRAM_CHANNEL_URL);
                     hide();
                 }));
 
