@@ -112,7 +112,8 @@ def caption(release):
     lines = []
     for line in (release.get('body') or '').splitlines():
         if line.startswith('- '):
-            value = re.sub(r'[`*_]', '', line[2:]).strip()
+            # Underscores and asterisks may be part of URLs; plain-text captions need no Markdown escaping.
+            value = line[2:].replace('`', '').strip()
             if value:
                 lines.append('• ' + value[:150])
         if len(lines) == 4:

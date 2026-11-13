@@ -41,6 +41,12 @@ class PublicationGuards(unittest.TestCase):
         self.assertTrue(text.endswith('/releases/tag/v26.11.13.1'))
         self.assertLessEqual(text.count('• '), 4)
 
+    def test_caption_preserves_channel_username_and_url_characters(self):
+        self.release['body'] = '- 频道 https://t.me/televip_next\n- `name_with_underscore`'
+        text = p.caption(self.release)
+        self.assertIn('https://t.me/televip_next', text)
+        self.assertIn('name_with_underscore', text)
+
     def test_upload_preserves_binary_bytes(self):
         body, content_type = p.multipart(-100123, '更新', 'TeleVip-26.11.13.1.apk', self.apk)
         self.assertIn(b'\r\n\r\n' + self.apk + b'\r\n--', body)
