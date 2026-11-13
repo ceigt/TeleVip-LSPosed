@@ -48,7 +48,7 @@ public final class CompatAudit {
             if(FeatureShapeAudit.independent(index,wrongDialog).isEmpty())errors.add("Zero-argument dialog decoder passed the static-message route");
             Mapping enqueueOnly=Mapping.deserialize(mapping.serialize());enqueueOnly.methods.put("MessagesStorage#putMessagesStored",mapping.resolveMethod("MessagesStorage","putMessagesOJIIZIJ"));
             if(FeatureShapeAudit.independent(index,enqueueOnly).isEmpty())errors.add("Enqueue wrapper passed the actual-write audit");
-            for(String key:new String[]{"ChatMessageCell#instantTextNewLine","TLRPC$User#bot","TLRPC$Updates#chats","MessageObject#currentAccount","PhotoViewer#imagesArr"}){
+            for(String key:new String[]{"ChatActivity#highlightMessageId","ChatMessageCell#instantTextNewLine","TLRPC$User#bot","TLRPC$Updates#chats","MessageObject#currentAccount","PhotoViewer#imagesArr"}){
                 Mapping broken=Mapping.deserialize(mapping.serialize());broken.fields.put(key,"__missing__");
                 if(FeatureShapeAudit.independent(index,broken).isEmpty())errors.add("Broken independent feature field passed: "+key);
             }

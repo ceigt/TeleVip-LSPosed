@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 32;
+    public static final int VERSION = 33;
 
     private TelegramFingerprints() {
     }
@@ -94,6 +94,8 @@ public final class TelegramFingerprints {
         o.put("TLRPC$ChatFull", "org.telegram.tgnet.TLRPC$ChatFull");
         o.put("TLRPC$TL_messages_getOutboxReadDate", "org.telegram.tgnet.TLRPC$TL_messages_getOutboxReadDate");
         o.put("TLRPC$TL_outboxReadDate", "org.telegram.tgnet.TLRPC$TL_outboxReadDate");
+        o.put("TLRPC$TL_messages_deleteHistory", "org.telegram.tgnet.TLRPC$TL_messages_deleteHistory");
+        o.put("TLRPC$TL_messages_affectedHistory", "org.telegram.tgnet.TLRPC$TL_messages_affectedHistory");
         o.put("TLRPC$UserFull", "org.telegram.tgnet.TLRPC$UserFull");
         o.put("TLRPC$MessageMedia", "org.telegram.tgnet.TLRPC$MessageMedia");
         o.put("ForumUtilities", "org.telegram.ui.Components.Forum.ForumUtilities");
@@ -703,6 +705,11 @@ public final class TelegramFingerprints {
                 .where(callsAnyNamed("clear"), writesFieldOfType("org.telegram.messenger.UserConfig", "org.telegram.tgnet.TLRPC$User")));
         s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_getOutboxReadDate", 0x8c4bfe5d));
         s.add(tl("org.telegram.tgnet.TLRPC$TL_outboxReadDate", 0x3bb842ac));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_deleteHistory", -1332768214));
+        s.add(tl("org.telegram.tgnet.TLRPC$TL_messages_affectedHistory", -1269012015));
+        s.add(field("TLRPC$TL_messages_deleteHistory","min_date").type("int"));
+        s.add(field("TLRPC$TL_messages_deleteHistory","max_date").type("int"));
+        s.add(field("TLRPC$TL_messages_affectedHistory","offset").type("int"));
         s.add(field("TLRPC$TL_messages_getOutboxReadDate", "peer").type("org.telegram.tgnet.TLRPC$InputPeer").onlyOneOfType());
         s.add(field("TLRPC$TL_messages_getOutboxReadDate", "msg_id").type("int").onlyOneOfType());
         s.add(field("TLRPC$TL_outboxReadDate", "date").type("int").onlyOneOfType());

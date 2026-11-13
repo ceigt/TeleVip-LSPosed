@@ -53,6 +53,21 @@ final class LocalStateRaceTests {
             store.save(new LocalStateStore.Record(7003,202,7,100,1000,"page",new byte[8]));
             check(store.browse(7003,"PAGE",0,1).size()==1&&store.browse(7003,"page",1,1).isEmpty(),"background preview pagination");
         }finally{release.countDown();store.close();context.deleteDatabase(path.toString());}
+        File unopenedPath=new File(context.getCacheDir(),"logout-first-open-"+System.nanoTime()+".db");
+        LocalStateStore unopened=new LocalStateStore(context,unopenedPath.toString());
+        try{
+            unopened.revokeAccount(7101);LocalStateStore.Session revoked=unopened.session(7101);
+            check(!unopened.isCurrent(revoked),"revoked token valid before first open");
+            unopened.getWritableDatabase();
+            check(!unopened.isCurrent(unopened.session(7101)),"onOpen prematurely completed a live logout");
+            unopened.finishAccountCleanup(7101,false);
+            check(!unopened.isCurrent(unopened.session(7101)),"failed native logout released revocation");
+            unopened.finishAccountCleanup(7101,true);
+            check(unopened.isCurrent(unopened.session(7101))&&!unopened.isCurrent(revoked),"completed logout did not retain token isolation");
+            unopened.revokeAccount(7102);unopened.close();
+            unopened=new LocalStateStore(context,unopenedPath.toString());unopened.getWritableDatabase();
+            check(unopened.isCurrent(unopened.session(7102)),"prior-process marker was not recovered");
+        }finally{unopened.close();context.deleteDatabase(unopenedPath.toString());}
         return checks;
     }
 }

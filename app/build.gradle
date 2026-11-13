@@ -9,8 +9,8 @@ android {
         applicationId "org.televip"
         minSdk 27
         targetSdk 36
-        versionCode 364
-        versionName "26.11.12"
+        versionCode 365
+        versionName "26.11.13"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

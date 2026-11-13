@@ -34,6 +34,7 @@ public final class ArchiveUi {
     private ArchiveUi(){}
     private static SharedPreferences picker(){return ApplicationLoaderHook.getApplicationContext().getSharedPreferences("TeleVipArchivePicker",0);}
     public static synchronized void init(){
+        try{ArchiveTransfers.initialize(ApplicationLoaderHook.getApplicationContext());}catch(IOException error){LocalData.issue(error);}
         if(installed)return;
         try(HookInstallation attempt=HookInstallation.begin()){
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.LAUNCH_ACTIVITY),"onActivityResult",int.class,int.class,Intent.class,new BaseMethodHook(){
@@ -43,7 +44,7 @@ public final class ArchiveUi {
             });
             // External notifications/deep links can switch accounts without replacing the Activity.
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.LAUNCH_ACTIVITY),"onNewIntent",Intent.class,new BaseMethodHook(){
-                @Override protected void beforeMethod(MethodHookParam p){dismissAccount(0);}
+                @Override protected void beforeMethod(MethodHookParam p){dismissAccount(0);ArchiveTransfers.cancelAccount(0);}
             });
             installed=attempt.isComplete();
             if(installed)drainEarlyResult();
@@ -85,6 +86,14 @@ public final class ArchiveUi {
             for(AlertDialog box:close)box.dismiss();
         });
     }
+    public static synchronized void revokeAccount(long account){
+        ArchiveTransfers.cancelAccount(account);dismissAccount(account);
+        SharedPreferences prefs=picker();
+        if(prefs.getLong("account",0)==account){
+            prefs.edit().remove("request").remove("account").remove("export").commit();
+            liveRequest=0;earlyResult=null;
+        }
+    }
     private static long selected(){return UserConfig.getUserConfig().getClientUserId();}
     private static boolean alive(Activity a){return !a.isFinishing()&&!a.isDestroyed();}
     private static void toast(Activity a,String key){AndroidUtilities.runOnUIThread(()->{if(alive(a))Toast.makeText(a,Translator.get(key),Toast.LENGTH_LONG).show();});}
@@ -123,9 +132,10 @@ public final class ArchiveUi {
             }).create();
         showBound(confirm,activity,account);
     }
-    private static void copy(InputStream in,OutputStream out,LocalStateStore.Session token,long account)throws IOException{
+    private static void copy(InputStream in,OutputStream out,LocalStateStore.Session token,long account,ArchiveTransfers.Job job)throws IOException{
         byte[] buffer=new byte[32768];long total=0;int n;
         while((n=in.read(buffer))!=-1){
+            job.check();
             if(selected()!=account||!LocalData.store().isCurrent(token))throw new IOException("Account changed");
             if((total+=n)>LocalStateStore.MAX_BACKUP_BYTES)throw new IOException("Backup too large");
             out.write(buffer,0,n);
@@ -136,26 +146,38 @@ public final class ArchiveUi {
         Context context=activity.getApplicationContext();WeakReference<Activity> owner=new WeakReference<>(activity);
         LocalStateStore.Session token=LocalData.store().session(account);
         new Thread(()->{
-            File temporary=null;
+            ArchiveTransfers.Job job=null;
             try{
-                temporary=File.createTempFile("televip-archive-",".json",context.getCacheDir());int count=-1;
+                if(selected()!=account||!LocalData.store().isCurrent(token))throw new IOException("Account changed");
+                job=ArchiveTransfers.begin(context,account);int count=-1;
+                if(selected()!=account||!LocalData.store().isCurrent(token))throw new IOException("Account changed");
+                ArchiveTransfers.Job running=job;
+                AndroidUtilities.applicationHandler.postDelayed(new Runnable(){public void run(){
+                    try{running.check();}catch(IOException closed){return;}
+                    if(selected()!=account||!LocalData.store().isCurrent(token)){running.cancel();return;}
+                    AndroidUtilities.applicationHandler.postDelayed(this,200);
+                }},200);
                 if(export){
-                    try(OutputStream out=new FileOutputStream(temporary)){LocalData.store().exportBackup(out,account);}
-                    try(InputStream in=new FileInputStream(temporary);OutputStream out=context.getContentResolver().openOutputStream(uri,"wt")){
-                        if(out==null)throw new IOException("Cannot open destination");copy(in,out,token,account);
+                    try(OutputStream out=job.writer()){LocalData.store().exportBackup(out,account);}
+                    job.check();
+                    try(InputStream in=job.reader();android.os.ParcelFileDescriptor fd=context.getContentResolver().openFileDescriptor(uri,"wt",job.signal)){
+                        if(fd==null)throw new IOException("Cannot open destination");
+                        try(OutputStream out=job.track(new android.os.ParcelFileDescriptor.AutoCloseOutputStream(fd))){copy(in,out,token,account,job);}
                     }
                 }else{
-                    try(InputStream in=context.getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(temporary)){
-                        if(in==null)throw new IOException("Cannot open backup");copy(in,out,token,account);
+                    try(android.os.ParcelFileDescriptor fd=context.getContentResolver().openFileDescriptor(uri,"r",job.signal)){
+                        if(fd==null)throw new IOException("Cannot open backup");
+                        try(InputStream in=job.track(new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd));OutputStream out=job.writer()){copy(in,out,token,account,job);}
                     }
                     if(selected()!=account||!LocalData.store().isCurrent(token))throw new IOException("Account changed");
-                    try(InputStream in=new FileInputStream(temporary)){count=LocalData.store().importBackup(in,token);}
+                    job.check();try(InputStream in=job.reader()){count=LocalData.store().importBackup(in,token);}
                 }
+                job.check();if(selected()!=account||!LocalData.store().isCurrent(token))throw new IOException("Account changed");
                 int imported=count;
                 AndroidUtilities.runOnUIThread(()->{Activity a=owner.get();if(a!=null&&valid(a,account,token))showBound(new AlertDialog.Builder(a).setTitle(Translator.get("ArchiveComplete"))
                     .setMessage(imported<0?Translator.get("ArchiveExported"):Translator.get("ArchiveImported",imported)).setPositiveButton(android.R.string.ok,null).create(),a,account);});
-            }catch(Throwable error){LocalData.issue(error);Activity a=owner.get();if(a!=null)toast(a,"ArchiveFailed");}
-            finally{if(temporary!=null&&!temporary.delete())LocalData.issue(new IOException("Cannot remove temporary archive"));ioBusy.set(false);}
+            }catch(Throwable error){LocalData.issue(error);Activity a=owner.get();if(a!=null&&valid(a,account,token))toast(a,"ArchiveFailed");}
+            finally{if(job!=null)job.close();ioBusy.set(false);}
         },"TeleVip - Documents").start();
     }
     public static void show(Activity activity){

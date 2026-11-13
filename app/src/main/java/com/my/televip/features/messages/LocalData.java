@@ -30,7 +30,7 @@ import java.util.ArrayList;
 public final class LocalData {
     private static LocalStateStore database;
     private static final java.util.concurrent.Semaphore captureBytes=new java.util.concurrent.Semaphore((int)LocalStateStore.MAX_BYTES);
-    private static boolean cleanup, deletes, clears, views, pause, restore, ranges;
+    private static boolean cleanup, deletes, clears, views, pause, restore;
     private static final ThreadLocal<ArrayDeque<Long>> clearing=ThreadLocal.withInitial(ArrayDeque::new);
     private static final Map<Object,WeakReference<View>> roots=Collections.synchronizedMap(new WeakHashMap<>());
     public static volatile String lastIssue;
@@ -48,8 +48,8 @@ public final class LocalData {
             cleanup=HMethod.hookMethod(ClassLoad.getClass(ClassNames.USER_CONFIG),Obfuscate.getMethodName("UserConfig","clearConfig"),new BaseMethodHook(){
             @Override protected void beforeMethod(MethodHookParam p){
                 long account=new UserConfig(p.thisObject).getClientUserId();clearing.get().push(account);
-                ArchiveUi.dismissAccount(account);
                 try{store().revokeAccount(account);}catch(Throwable error){issue(error);}
+                finally{ArchiveUi.revokeAccount(account);}
             }
             @Override protected void afterMethod(MethodHookParam p){
                 ArrayDeque<Long> stack=clearing.get();if(stack.isEmpty())return;long account=stack.pop();if(stack.isEmpty())clearing.remove();
@@ -60,7 +60,7 @@ public final class LocalData {
         }
         ArchiveUi.init();
         installDeletionCleanup();
-        installRangeCleanup();
+        RangeDeletionCleanup.init();
     }
     public static synchronized void initArchive() {
         initCleanup();ShowDeletedMessages.init();ArchiveUi.init();
@@ -72,7 +72,7 @@ public final class LocalData {
                         // Native user deletion must never be undone by capture or an old backup.
                         long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();long dialog=(long)p.args[3];
                         List<Integer> ids=p.args[0]==null?Collections.emptyList():new ArrayList<>((ArrayList<Integer>)p.args[0]);
-                        if(Boolean.TRUE.equals(p.args[6])||((Number)p.args[5]).intValue()!=0)return;
+                        if(Boolean.TRUE.equals(p.args[6])||!usesOrdinaryMessageIds(((Number)p.args[5]).intValue()))return;
                         MessageStorage.post(()->{try{if(archiving()||store().hasLocalData())store().forget(account,dialog,ids);}catch(Throwable error){issue(error);}});
                     }
                 }));
@@ -84,15 +84,9 @@ public final class LocalData {
             }
         });
     }
-    private static void installRangeCleanup() {
-        if(!ranges)ranges=HMethod.hookMethod(ClassLoad.getClass(ClassNames.MESSAGES_CONTROLLER),Obfuscate.getMethodName("MessagesController","deleteMessagesRange"),ArgsResolver.merge("deleteMessagesRange",new Class[]{long.class,long.class,int.class,int.class,boolean.class,Runnable.class},new BaseMethodHook(){
-            @Override protected void beforeMethod(MethodHookParam p){
-                long account=new BaseController(p.thisObject).getUserConfig().getClientUserId();
-                long dialog=(long)p.args[0];int min=(int)p.args[2],max=(int)p.args[3];
-                MessageStorage.post(()->{try{if(archiving()||store().hasLocalData())store().forgetRange(account,dialog,min,max);}catch(Throwable error){issue(error);}});
-            }
-        }));
-    }
+    // Match native deleteMessages' three separate ID namespaces; pinned/saved/search views
+    // still delete ordinary messages and must invalidate their copies and old backups.
+    public static boolean usesOrdinaryMessageIds(int mode){return mode!=1&&mode!=5&&mode!=9;}
     /** Called on the owning host storage queue while its original serialized row is available. */
     public static LocalStateStore.Session captureSession(MessagesStorage storage){return store().session(storage::getAccountUserId);}
     public static void capture(MessagesStorage storage,long dialog,int id,NativeByteBuffer data) {capture(storage,dialog,id,data,captureSession(storage));}
@@ -138,7 +132,7 @@ public final class LocalData {
             @Override protected void beforeMethod(MethodHookParam p){
                 if(!remembering())return;ChatKey key=chat(p.thisObject);if(key==null)return;
                 Bundle args=(Bundle)XposedHelpers.getObjectField(p.thisObject,Obfuscate.getFieldName("BaseFragment","arguments"));
-                if((args.containsKey("message_id")&&!(key.topic>0&&args.getInt("message_id")==key.topic&&XposedHelpers.getIntField(p.thisObject,Obfuscate.getFieldName("ChatActivity","highlightMessageId"))==0))||args.containsKey("start_from_date")||args.containsKey("reply_to")||args.containsKey("poll_option_id"))return;
+                if((args.containsKey("message_id")&&!(key.topic>0&&args.getInt("message_id")==key.topic&&XposedHelpers.getIntField(p.thisObject,Obfuscate.getFieldName("ChatActivity","highlightMessageId"))==Integer.MAX_VALUE))||args.containsKey("start_from_date")||args.containsKey("reply_to")||args.containsKey("poll_option_id"))return;
                 LocalStateStore.Position pos=store().position(key.account,key.dialog,key.topic);
                 if(pos!=null)args.putInt("message_id",pos.scroll);
             }

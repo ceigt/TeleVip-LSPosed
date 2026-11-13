@@ -200,6 +200,16 @@ public final class DexClass {
             }
             return out;
         }
+        /** Known constant instance-field writes, used to verify native constructor sentinels. */
+        public java.util.Map<String,Long> instanceIntWrites(){
+            java.util.Map<String,Long> out=new java.util.LinkedHashMap<>();
+            if(codeOffset!=0)CodeScanner.constantFlow(owner.dex,codeOffset,new CodeScanner.ConstantSink(){
+                @Override public void instanceWrite(int field,long value){
+                    if(owner.dex.fieldClass(field).equals(owner.descriptor))out.put(owner.dex.fieldName(field),value);
+                }
+            });
+            return out;
+        }
 
         /**
          * The constant passed in argument register {@code register} (0 is {@code this} for an

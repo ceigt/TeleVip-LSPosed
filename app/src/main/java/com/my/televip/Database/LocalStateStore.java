@@ -54,7 +54,16 @@ public final class LocalStateStore extends SQLiteOpenHelper {
         db.execSQL("INSERT OR REPLACE INTO archive_usage SELECT 1,COUNT(*),COALESCE(SUM(length(payload)+length(CAST(text AS BLOB))),0) FROM archive");
         db.execSQL("CREATE TRIGGER IF NOT EXISTS archive_added AFTER INSERT ON archive BEGIN UPDATE archive_usage SET entries=entries+1,bytes=bytes+length(NEW.payload)+length(CAST(NEW.text AS BLOB)) WHERE singleton=1; END");
         db.execSQL("CREATE TRIGGER IF NOT EXISTS archive_removed AFTER DELETE ON archive BEGIN UPDATE archive_usage SET entries=entries-1,bytes=bytes-length(OLD.payload)-length(CAST(OLD.text AS BLOB)) WHERE singleton=1; END");
-        for(String key:cleanup.getAll().keySet()) if(key.startsWith("account_")) clearAccountRows(db,Long.parseLong(key.substring(8)));
+        for(String key:cleanup.getAll().keySet()) if(key.startsWith("account_")) {
+            long account=Long.parseLong(key.substring(8));
+            clearAccountRows(db,account,false);
+            synchronized(sessionLock){
+                // Recover prior-process markers, but never finish a live clearConfig().
+                // Revoke uses the same lock, so a new revocation cannot lose its marker.
+                if(!revoked.contains(account)&&!cleanup.edit().remove(key).commit())
+                    throw new IllegalStateException("Cannot recover local cleanup");
+            }
+        }
     }
     private static String key(long account,long dialog,long topic) { return account+":"+dialog+":"+topic; }
     private static String[] args(long... values) { String[] a=new String[values.length];for(int i=0;i<a.length;i++)a[i]=Long.toString(values[i]);return a; }
@@ -174,7 +183,6 @@ public final class LocalStateStore extends SQLiteOpenHelper {
     }
     public synchronized void finishAccountCleanup(long account) { finishAccountCleanup(account,true); }
     public synchronized void finishAccountCleanup(long account,boolean unblock) { clearAccountRows(getWritableDatabase(),account,unblock); }
-    private void clearAccountRows(SQLiteDatabase db,long account) {clearAccountRows(db,account,true);}
     private void clearAccountRows(SQLiteDatabase db,long account,boolean unblock) {
         db.beginTransaction();try {
 

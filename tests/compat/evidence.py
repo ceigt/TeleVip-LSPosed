@@ -21,7 +21,7 @@ def inputs_digest():
         digest.update(p.relative_to(ROOT).as_posix().encode() + b'\0' + hashlib.sha256(data).digest())
     return digest.hexdigest()
 
-def authenticated(apk, sdk, expected=None):
+def authenticated(apk, sdk, expected=None, allow_update=False):
     tools = Path(sdk) / 'build-tools/36.0.0'
     suffix = '.bat' if sys.platform == 'win32' else ''
     signed = subprocess.run([str(tools / ('apksigner' + suffix)), 'verify', '--verbose', '--print-certs', str(apk)], check=True, capture_output=True, text=True).stdout
@@ -31,7 +31,7 @@ def authenticated(apk, sdk, expected=None):
     if package != 'org.telegram.messenger':
         raise ValueError('A real Play package is required')
     sha = hashlib.sha256(Path(apk).read_bytes()).hexdigest()
-    if expected and (cert != expected['certificate_sha256'] or sha != expected['apk_sha256']):
+    if expected and (cert != expected['certificate_sha256'] or (not allow_update and sha != expected['apk_sha256'])):
         raise ValueError('APK differs from the authenticated Play baseline')
     return dict(package=package, version_name=version, version_code=int(code), certificate_sha256=cert, apk_sha256=sha)
 
@@ -53,7 +53,7 @@ def main():
     if not args.apk or not args.sdk:
         parser.error('--apk and --sdk are required for an actual APK audit')
     previous = json.loads(RECORD.read_text(encoding='utf-8')) if RECORD.exists() else None
-    proof = authenticated(args.apk, args.sdk, previous)
+    proof = authenticated(args.apk, args.sdk, previous, allow_update=args.record)
     command = [sys.executable, str(ROOT / 'tests/compat/run.py'), '--apk', args.apk, '--output', args.output]
     if args.java_home:
         command += ['--java-home', args.java_home]

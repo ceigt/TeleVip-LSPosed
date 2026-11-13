@@ -145,6 +145,8 @@ public final class CodeScanner {
         /** An sput of a value that follows from constants. */
         default void staticWrite(int fieldIndex, long value) {
         }
+        default void instanceWrite(int fieldIndex, long value) {
+        }
 
         /** Every invoke, with the constant each argument register holds (null where unknown). */
         default void invoke(int methodIndex, Long[] registers) {
@@ -178,6 +180,7 @@ public final class CodeScanner {
             switch (op) {
                 case 0x01: put(regs, a4, regs.get(b4)); break;                                  // move
                 case 0x02: put(regs, a, regs.get(DexFile.u2(d, pc + 2))); break;                // move/from16
+                case 0x03: put(regs,DexFile.u2(d,pc+2),regs.get(DexFile.u2(d,pc+4)));break;     // move/16
                 case 0x12: regs.put(a4, (long) (((short) unit) >> 12)); break;                  // const/4
                 case 0x13: regs.put(a, (long) (short) DexFile.u2(d, pc + 2)); break;            // const/16
                 case 0x14: regs.put(a, (long) DexFile.u4(d, pc + 2)); break;                    // const
@@ -202,6 +205,11 @@ public final class CodeScanner {
                 case 0x60:                                                                      // sget
                     put(regs, a, statics.get(DexFile.u2(d, pc + 2)));
                     break;
+                case 0x59: {                                                                    // iput
+                    Long value=regs.get(a4);
+                    if(value!=null)sink.instanceWrite(DexFile.u2(d,pc+2),value);
+                    break;
+                }
                 case 0x67: {                                                                    // sput
                     int field = DexFile.u2(d, pc + 2);
                     Long value = regs.get(a);
@@ -231,13 +239,21 @@ public final class CodeScanner {
                     if (op == 0x03 || op == 0x06 || op == 0x09) dst = DexFile.u2(d, pc + 2);  // move*/16
                     if (dst >= 0) {
                         regs.remove(dst);
-                        regs.remove(dst + 1);   // the wide forms write a pair
+                        if(writesWide(op))regs.remove(dst + 1);
                     }
                     break;
                 }
             }
             pc += WIDTH[op] * 2;
         }
+    }
+
+    private static boolean writesWide(int op){
+        return (op>=0x04&&op<=0x06)||op==0x0b||(op>=0x16&&op<=0x19)
+                ||op==0x45||op==0x53||op==0x61||op==0x7d||op==0x7e||op==0x80
+                ||op==0x81||op==0x83||op==0x86||op==0x88||op==0x89||op==0x8b
+                ||(op>=0x9b&&op<=0xa5)||(op>=0xab&&op<=0xaf)
+                ||(op>=0xbb&&op<=0xc5)||(op>=0xcb&&op<=0xcf);
     }
 
     /** The register an instruction writes, -1 if none: vA for the 4-bit formats, vAA otherwise. */

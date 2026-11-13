@@ -10,6 +10,10 @@ A powerful LSPosed module that adds advanced customization features to Telegram 
 
 This fork maintains Telegram compatibility independently. Public upstream feature descriptions may inform new local designs; repairs do not depend on upstream patches. See the [independent maintenance direction and feature shortlist](docs/maintenance/independent-maintenance-roadmap.md). Existing user choices and the actual-APK verification/signing/device gates remain the basis for changes.
 
+## v26.11.13 — Play 13.2.2
+
+Repairs the follow-up review gaps: ordinary-message deletion from pinned/saved views, success-bound date deletion cleanup, account-bound encrypted archive staging with cancellation/recovery, first-open logout isolation, and native forum navigation state. `main` is the maintained release branch; the historical development branch remains available. New switches retain their existing defaults. See [scope and validation](docs/releases/26.11.13.md).
+
 ## v26.11.12 review fixes
 
 Versions now use `vYY.MM.DD` release tags and `YY.MM.DD` Android version names; Android versionCode remains increasing for in-place upgrades. This revision addresses archive deletion/account/expiry correctness, safe legacy-message serialization, bounded asynchronous capture and import, paged archive previews, document-picker recovery, read-time completion, forum resume, formatter scoping and existing bot notification choices. New feature defaults remain unchanged. See [validation and review-item mapping](docs/releases/26.11.12.md).
@@ -58,7 +62,7 @@ Version 3.6.13 targets the installed Google Play Telegram 13.1.0 (72291). It ada
 
 The actual Play APK passes the 438-site inventory, 58 exact hook signatures, nine reviewed dynamic selector groups and 382 required active sites. Twelve isolated Android regression groups pass 2647 assertions. The GitHub-built artifact has now been signed on the original signing computer with the existing release certificate and installed in place. Startup, native settings entry, typing/media/ad switches, public-channel swipe, message jump and edit-history menu checks pass; original preferences and temporary screen settings are restored. These checks do not establish server-side privacy or end-to-end secret-media behavior. See [3.6.13 verification](docs/releases/3.6.13.md).
 
-GitHub Actions builds the APK without signing secrets, then signs it on a separate hosted runner for trusted pushes or manual runs on `telegram-12.10.5`. The original PKCS12 key and password are stored as encrypted secrets in the branch-restricted `release-signing` environment. Pull requests and forks receive unsigned build artifacts only. The signed artifact includes the APK, checksum and source/signing metadata; its certificate, package, version and API 102 declaration are verified before upload. See [cloud signing](docs/release-signing.md) for use and maintenance.
+GitHub Actions builds the APK without signing secrets, then signs it on a separate hosted runner for trusted pushes or manual runs on `main` (or the historical `telegram-12.10.5` development branch). The original PKCS12 key and password are stored as encrypted secrets in the branch-restricted `release-signing` environment. Pull requests and forks receive unsigned build artifacts only. The signed artifact includes the APK, checksum and source/signing metadata; its certificate, package, version and API 102 declaration are verified before upload. See [cloud signing](docs/release-signing.md) for use and maintenance.
 
 ## Telegram 13.0.3 / API 102 release
 

@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: ['telegram-12.10.5']
+    branches: ['main', 'telegram-12.10.5']
     paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/build-apk.yml']
   pull_request:
     paths: ['app/**', 'settingsadapter/**', 'gradle/**', 'build.gradle', 'settings.gradle', 'gradle.properties', 'tests/release/**', '.github/workflows/build-apk.yml']
@@ -55,7 +55,7 @@ jobs:
     # A fresh runner signs only this repository's trusted branch. PRs never access the key.
     if: >-
       github.repository == 'ceigt/TeleVip-LSPosed' &&
-      github.ref == 'refs/heads/telegram-12.10.5' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/telegram-12.10.5') &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     environment: release-signing
     runs-on: ubuntu-latest

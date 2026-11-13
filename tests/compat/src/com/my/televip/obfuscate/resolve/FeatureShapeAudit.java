@@ -46,6 +46,10 @@ final class FeatureShapeAudit {
     }
     static List<String> independent(DexIndex index,Mapping mapping){
         List<String> errors=new ArrayList<>();
+        DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");boolean nativeTopicSentinel=false;
+        if(chat!=null)for(DexClass.Method method:chat.methods)if(method.name().equals("<init>")
+                &&Long.valueOf(Integer.MAX_VALUE).equals(method.instanceIntWrites().get(mapping.resolveField("ChatActivity","highlightMessageId"))))nativeTopicSentinel=true;
+        if(!nativeTopicSentinel)errors.add("Native topic navigation sentinel differs from Integer.MAX_VALUE");
         String[][] fields={
             {"NativeByteBuffer","buffer","Ljava/nio/ByteBuffer;"},
             {"TLRPC$TL_messages_getOutboxReadDate","peer",descriptor(mapping,"org.telegram.tgnet.TLRPC$InputPeer")},

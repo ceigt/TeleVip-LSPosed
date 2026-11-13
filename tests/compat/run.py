@@ -30,6 +30,7 @@ source_list = output / 'sources.txt'
 source_list.write_text('\n'.join('"' + str(p).replace('\\', '/') + '"' for p in sources), encoding='utf-8')
 subprocess.run([str(javac), '-encoding', 'UTF-8', '-source', '8', '-target', '8', '-d', str(classes), '@' + str(source_list)], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.obfuscate.resolve.CompatSafetyTest'], check=True)
+subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.obfuscate.dex.ConstantFlowTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.ReflectionLookupTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.HookParameterTypesTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.FeatureSelectorsTest'], check=True)
