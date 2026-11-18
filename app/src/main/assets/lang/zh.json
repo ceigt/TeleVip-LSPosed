@@ -153,7 +153,7 @@
   "Desc_HideSeenPrivateChat": "阻止私聊已读回执；服务器可能继续返回较早的未读记录。",
   "Desc_HideSeenChannel": "阻止频道／群组已读同步；刷新服务器状态后，旧未读数量可能重新出现。",
   "Desc_DisableStories": "隐藏故事列表；开启时也可能无法发布故事，关闭后需要重启 Telegram。",
-  "Desc_DownloadSpeed": "只为下载所属的真实 Premium 账号使用额外连接；本地 Premium 不是真实订阅。",
+  "Desc_DownloadSpeed": "在受支持的 Play 版中，普通账号下载至少 32 MiB 的文件时，可在原生字节预算内轮转 4 个连接槽。",
   "Desc_CompatibilityStatus": "查看版本、当前挂钩和真实安装包的验证状态，不向服务器发送信息。",
   "Desc_SaveEditsHistory": "按账号和会话保留已缓存的旧文字，无法重建离线期间的中间版本或没有缓存的原文。",
   "Desc_ShowDeletedMessages": "在 Telegram 当前聊天缓存中保留服务器删除的消息。开启独立保存，可在缓存重建后从副本页查看已捕获记录。",

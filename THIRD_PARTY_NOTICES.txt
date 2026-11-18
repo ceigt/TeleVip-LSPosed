@@ -106,3 +106,9 @@ No additional upstream or closed-source implementation is imported. Legacy-messa
 normalization uses the host serializers, with protocol layouts checked against the
 same official Telegram structural reference above and the authenticated Play APK.
 No new dependency, telemetry or signing material is included.
+
+2026-11-18 download connection tuning:
+TGSpeed+ 4.2.0 inspired evaluating connection rotation. No code was taken from
+its APK. The implementation uses the native FileLoadOperation budget, request
+slot tracking and cancellation behavior in the official Telegram reference above.
+https://github.com/Xposed-Modules-Repo/io.github.catker.tgspeed/releases/tag/40200-4.2.0

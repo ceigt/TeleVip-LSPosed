@@ -11,7 +11,12 @@ final class FeatureShapeAudit {
         errors.addAll(stories(index, mapping));
         errors.addAll(upstreamUi(index, mapping));
         errors.addAll(adaptedRoutes(index, mapping));
-        if("org.telegram.messenger".equals(packageName))errors.addAll(independent(index,mapping));
+        if ("org.telegram.messenger".equals(packageName)) {
+            errors.addAll(independent(index, mapping));
+            if (mapping.resolveMethod("FileLoadOperation", "updateDownloadByteBudget") != null) {
+                errors.addAll(downloadRotation(index, mapping));
+            }
+        }
         DexClass chat=cls(index,mapping,"org.telegram.ui.ChatActivity");
         String mo=descriptor(mapping,"org.telegram.messenger.MessageObject");
         scheduler(index,chat,mapping.resolveMethod("ChatActivity","sendSecretMessageRead"),false,new String[]{mo,"Z"},errors);
@@ -277,6 +282,42 @@ final class FeatureShapeAudit {
         downloadField(user, mapping.resolveField("TLRPC$User", "premium"), "Z", errors);
         return errors;
     }
+    static List<String> downloadRotation(DexIndex index, Mapping mapping) {
+        List<String> errors = new ArrayList<>();
+        String key = "FileLoadOperation";
+        DexClass owner = cls(index, mapping, "org.telegram.messenger.FileLoadOperation");
+        if (owner == null) return Collections.singletonList("Missing download operation");
+        Set<String> names = new HashSet<>();
+        for (String[] field : new String[][]{
+                {"activeDownloadChunk", "I"}, {"activeDownloadRequests", "I"},
+                {"nativeDownloadBudget", "Z"}, {"downloadConnectionsCount", "I"},
+                {"totalDownloadBytes", "J"}, {"forceSmallChunk", "Z"}, {"downloadStory", "Z"}}) {
+            String name = mapping.resolveField(key, field[0]);
+            downloadField(owner, name, field[1], errors);
+            if (!names.add(name)) errors.add("Overlapping download rotation field " + field[0]);
+        }
+        Set<String> budgetFields = new HashSet<>(Arrays.asList(
+                mapping.resolveField(key, "activeDownloadRequests"), mapping.resolveField(key, "nativeDownloadBudget"),
+                mapping.resolveField(key, "downloadConnectionsCount")));
+        String dispatch = mapping.resolveMethod(key, "dispatchDownloadChunk");
+        int matches = 0;
+        for (DexClass.Method method : owner.methods) {
+            if (!method.name().equals(dispatch) || method.isStatic() || !method.returnType().equals("V")
+                    || !Arrays.equals(method.parameterTypes(), new String[]{"I"})) continue;
+            Set<String> reads = new HashSet<>();
+            method.scan(new CodeScanner.Visitor() {
+                @Override public void field(int opcode, int target, boolean write) {
+                    if (!write && owner.descriptor.equals(owner.dex.fieldClass(target))) {
+                        reads.add(owner.dex.fieldName(target));
+                    }
+                }
+            });
+            if (reads.containsAll(budgetFields)) matches++;
+        }
+        if (matches != 1) errors.add("Missing unique native download dispatch reading the budget and slots");
+        return errors;
+    }
+
     static List<String> stories(DexIndex index, Mapping mapping) {
         List<String> errors = new ArrayList<>();
         DexClass owner = cls(index,mapping,"org.telegram.ui.Stories.StoriesController");
@@ -307,7 +348,7 @@ final class FeatureShapeAudit {
     }
     private static void downloadField(DexClass owner, String name, String type, List<String> errors) {
         DexClass.Field field = owner == null || name == null ? null : owner.fieldNamed(name);
-        if (field == null || field.isStatic() || !field.type().equals(type)) errors.add("Invalid download account field: " + name);
+        if (field == null || field.isStatic() || !field.type().equals(type)) errors.add("Invalid download field: " + name);
     }
     private static void scheduler(DexIndex index,DexClass owner,String name,boolean staticized,String[] parameters,List<String> errors) {
         int count=0;

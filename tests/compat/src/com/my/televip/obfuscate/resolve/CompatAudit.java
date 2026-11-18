@@ -44,6 +44,17 @@ public final class CompatAudit {
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
         if("org.telegram.messenger".equals(pkg)){
+            if (mapping.resolveMethod("FileLoadOperation", "updateDownloadByteBudget") != null) {
+                Mapping brokenRotation = Mapping.deserialize(mapping.serialize());
+                brokenRotation.fields.put("FileLoadOperation#downloadConnectionsCount",
+                        mapping.resolveField("FileLoadOperation", "activeDownloadRequests"));
+                if (FeatureShapeAudit.downloadRotation(index, brokenRotation).isEmpty())
+                    errors.add("Overlapping download rotation fields passed audit");
+                Mapping brokenDispatch = Mapping.deserialize(mapping.serialize());
+                brokenDispatch.methods.put("FileLoadOperation#dispatchDownloadChunk", "__missing__");
+                if (FeatureShapeAudit.downloadRotation(index, brokenDispatch).isEmpty())
+                    errors.add("Missing download dispatch passed audit");
+            }
             Mapping wrongDialog=Mapping.deserialize(mapping.serialize());wrongDialog.methods.put("MessageObject#getDialogIdO",mapping.resolveMethod("MessageObject","getDialogId"));
             if(FeatureShapeAudit.independent(index,wrongDialog).isEmpty())errors.add("Zero-argument dialog decoder passed the static-message route");
             Mapping enqueueOnly=Mapping.deserialize(mapping.serialize());enqueueOnly.methods.put("MessagesStorage#putMessagesStored",mapping.resolveMethod("MessagesStorage","putMessagesOJIIZIJ"));

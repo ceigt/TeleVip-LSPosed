@@ -154,7 +154,7 @@
   "Desc_HideSeenPrivateChat": "Suppress private-chat read receipts. The server may continue to report older unread messages.",
   "Desc_HideSeenChannel": "Suppress channel/group read synchronization. Old unread counts may return after server refresh.",
   "Desc_DisableStories": "Hides the story lists. Posting stories may also be unavailable until this option is off and Telegram is restarted.",
-  "Desc_DownloadSpeed": "Extra connections are used only for the download’s actual Premium account. Local Premium is not a real subscription.",
+  "Desc_DownloadSpeed": "On supported Play builds, regular accounts can rotate across four connection slots for eligible files of at least 32 MiB, within Telegram’s existing byte budget.",
   "Desc_CompatibilityStatus": "Versions, local hook health and exact-APK test status. Nothing is sent to a server.",
   "Desc_SaveEditsHistory": "Keep previously cached text per account and conversation. Offline intermediate edits and uncached originals cannot be reconstructed.",
   "Desc_ShowDeletedMessages": "Keep server-deleted messages in Telegram’s current local cache. Enable independent copies to retain captured records through cache rebuilds.",

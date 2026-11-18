@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 33;
+    public static final int VERSION = 34;
 
     private TelegramFingerprints() {
     }
@@ -558,6 +558,30 @@ public final class TelegramFingerprints {
                 .where(callsSymbol("FileLoadOperation#updateParams")));
         s.add(method("FileLoadOperation", "updateDownloadByteBudget").sig("void")
                 .where(callsSymbol("UserConfig#isPremium")));
+        // Play splits initial download setup from start(); only this path may change chunk size.
+        s.add(method("FileLoadOperation", "initializeDownload").isStatic(false).sig("void")
+                .where(string("debug_loading: restart with small chunk"),
+                        callsSymbol("FileLoadOperation#updateParams"),
+                        callsSymbol("FileLoadOperation#updateDownloadByteBudget")));
+        s.add(field("FileLoadOperation", "activeDownloadChunk").type("int")
+                .writtenBy("FileLoadOperation#initializeDownload", 0));
+        s.add(field("FileLoadOperation", "nativeDownloadBudget").type("boolean")
+                .writtenBy("FileLoadOperation#updateDownloadByteBudget", 0));
+        s.add(field("FileLoadOperation", "downloadConnectionsCount").type("int")
+                .writtenBy("FileLoadOperation#updateDownloadByteBudget", 0));
+        s.add(field("FileLoadOperation", "activeDownloadRequests").type("int")
+                .writtenBy("FileLoadOperation#updateDownloadByteBudget", 1));
+        s.add(field("FileLoadOperation", "totalDownloadBytes").type("long")
+                .readBy("FileLoadOperation#updateDownloadByteBudget", 0));
+        s.add(field("FileLoadOperation", "forceSmallChunk").type("boolean")
+                .readBy("FileLoadOperation#updateParams", 0));
+        s.add(field("FileLoadOperation", "downloadStory").type("boolean")
+                .readBy("FileLoadOperation#updateParams", 1));
+        s.add(method("FileLoadOperation", "dispatchDownloadChunk").named("startDownloadRequest")
+                .isStatic(false).sig("void", "int")
+                .where(touchesFieldSymbol("FileLoadOperation.downloadConnectionsCount"),
+                        touchesFieldSymbol("FileLoadOperation.activeDownloadRequests"),
+                        touchesFieldSymbol("FileLoadOperation.nativeDownloadBudget")));
         s.add(field("FileLoadOperation", "currentAccount").type("int")
                 .handedTo("FileLoadOperation#updateDownloadByteBudget", "UserConfig#getInstance"));
         s.add(method("FileLoader", "getInstance").sig("org.telegram.messenger.FileLoader", "int"));

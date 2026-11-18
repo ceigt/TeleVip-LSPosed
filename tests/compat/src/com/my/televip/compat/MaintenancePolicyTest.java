@@ -1,6 +1,7 @@
 package com.my.televip.compat;
 
 import com.my.televip.features.connections.DownloadPremiumScope;
+import com.my.televip.features.connections.DownloadTuning;
 import com.my.televip.features.otherFeatures.ProfileStatusLine;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -57,6 +58,16 @@ public final class MaintenancePolicyTest {
         check(!DownloadPremiumScope.active());
         DownloadPremiumScope.exit();
         check(!DownloadPremiumScope.active());
+        int mib = 1024 * 1024;
+        check(DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 2, 128 * 1024, 16));
+        check(DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 2, 512 * 1024, 4));
+        check(!DownloadTuning.widenConnections(2, true, false, false, 32L * mib, 2, 128 * 1024, 16));
+        check(!DownloadTuning.widenConnections(-1, false, false, false, 32L * mib, 2, 128 * 1024, 16));
+        check(!DownloadTuning.widenConnections(-1, true, true, false, 32L * mib, 2, 128 * 1024, 16));
+        check(!DownloadTuning.widenConnections(-1, true, false, true, 32L * mib, 2, 128 * 1024, 16));
+        check(!DownloadTuning.widenConnections(-1, true, false, false, 32L * mib - 1, 2, 128 * 1024, 16));
+        check(!DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 8, 512 * 1024, 32));
+        check(!DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 2, 512 * 1024, 5));
         check(ProfileStatusLine.index(0, false, null) == -1);
         check(ProfileStatusLine.index(2, true, null) == 1);
         check(ProfileStatusLine.index(4, true, "online") == 3);
