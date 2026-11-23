@@ -41,6 +41,7 @@ public final class CompatAudit {
                 "org.telegram.tgnet.TLRPC$TL_messages_sponsoredMessagesEmpty",
                 "org.telegram.tgnet.TLRPC$TL_contacts_sponsoredPeersEmpty", "org.telegram.tgnet.TLRPC$TL_help_promoDataEmpty"};
         for (String name : requiredClasses) if (mapping.resolveClass(name) == null && index.findClass(name) == null) errors.add("Critical class missing: " + name);
+        if ("org.telegram.messenger".equals(pkg)) errors.addAll(TelegramExtrasAudit.check(index, mapping));
         errors.addAll(SettingsRouteAudit.check(index,mapping));
         errors.addAll(FeatureShapeAudit.check(index,mapping,pkg));
         if("org.telegram.messenger".equals(pkg)){

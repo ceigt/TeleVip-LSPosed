@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 34;
+    public static final int VERSION = 35;
 
     private TelegramFingerprints() {
     }
@@ -73,6 +73,20 @@ public final class TelegramFingerprints {
         Map<String, String> o = new HashMap<>();
         o.put("ActionBar", "org.telegram.ui.ActionBar.ActionBar");
         o.put("ActionBar$ActionBarMenuOnItemClick", "org.telegram.ui.ActionBar.ActionBar$ActionBarMenuOnItemClick");
+        o.put("TLRPC$TL_error", "org.telegram.tgnet.TLRPC$TL_error");
+        o.put("BuildVars", "org.telegram.messenger.BuildVars");
+        o.put("SmsFeeView", "org.telegram.ui.LoginActivity$SmsFeeView");
+        o.put("UserCell", "org.telegram.ui.Cells.UserCell");
+        o.put("SendMessagesHelper", "org.telegram.messenger.SendMessagesHelper");
+        o.put("TranslateController", "org.telegram.messenger.TranslateController");
+        o.put("TLRPC$UserProfilePhoto", "org.telegram.tgnet.TLRPC$UserProfilePhoto");
+        o.put("TLRPC$TL_messages_translateText", "org.telegram.tgnet.TLRPC$TL_messages_translateText");
+        o.put("TLRPC$TL_messages_translateResult", "org.telegram.tgnet.TLRPC$TL_messages_translateResult");
+        o.put("TLRPC$TL_textWithEntities", "org.telegram.tgnet.TLRPC$TL_textWithEntities");
+        o.put("TLRPC$TL_codeSettings", "org.telegram.tgnet.TLRPC$TL_codeSettings");
+        o.put("TLRPC$TL_auth_sendCode", "org.telegram.tgnet.TLRPC$TL_auth_sendCode");
+        o.put("TLRPC$TL_auth_sentCodeTypeFirebaseSms", "org.telegram.tgnet.TLRPC$TL_auth_sentCodeTypeFirebaseSms");
+        o.put("TLRPC$auth_SentCodeType", "org.telegram.tgnet.TLRPC$auth_SentCodeType");
         o.put("ActionBarMenuItem", "org.telegram.ui.ActionBar.ActionBarMenuItem");
         o.put("AndroidUtilities", "org.telegram.messenger.AndroidUtilities");
         o.put("ApplicationLoader", "org.telegram.messenger.ApplicationLoader");
@@ -254,7 +268,72 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.tgnet.TLRPC$MessageAction").from(superclassOf("org.telegram.tgnet.TLRPC$TL_messageActionChatAddUser")));
         s.add(field("TLRPC$Message","action").type("org.telegram.tgnet.TLRPC$MessageAction").onlyOneOfType());
         s.add(field("TLRPC$MessageAction","users").type("java.util.ArrayList"));
+        telegramExtras(s);
         return s;
+    }
+
+    private static void telegramExtras(List<Symbol> s) {
+        s.add(cls("org.telegram.tgnet.TLRPC$TL_error"));
+        s.add(field("TLRPC$TL_error", "code").type("int"));
+        s.add(field("TLRPC$TL_error", "text").type("java.lang.String"));
+        s.add(cls("org.telegram.messenger.BuildVars").from(declaringStrings("logsEnabled", "org.telegram.messenger.beta")));
+        s.add(method("BuildVars", "<clinit>").sig("void").isStatic(true).where(string("logsEnabled")));
+        s.add(field("BuildVars", "APP_ID").type("int").isStatic(true).onlyOneOfType());
+        s.add(field("BuildVars", "APP_HASH").type("java.lang.String").isStatic(true).writtenBy("BuildVars#<clinit>", 1));
+        s.add(field("BuildVars", "SAFETYNET_KEY").type("java.lang.String").isStatic(true).writtenBy("BuildVars#<clinit>", 2));
+        s.add(field("BuildVars", "SUPPORTS_PASSKEYS").type("boolean").isStatic(true).writtenBy("BuildVars#<clinit>", 2));
+        s.add(method("BuildVars", "useInvoiceBilling").sig("boolean").isStatic(true).where(callsSibling("boolean")));
+        s.add(cls("org.telegram.ui.LoginActivity$SmsFeeView").from(declaringMethodWhere(
+                Body.all(string("product"), string("phoneFormated"), string("phoneHash"), string("premium_days")),
+                "void", "android.os.Bundle", "boolean")));
+        s.add(method("SmsFeeView", "setParams").sig("void", "android.os.Bundle", "boolean")
+                .where(string("product"), string("phoneFormated"), string("phoneHash"), string("premium_days")));
+        s.add(method("BaseFragment", "getMessagesController").sig("org.telegram.messenger.MessagesController"));
+        s.add(method("BaseFragment", "getConnectionsManager").sig("org.telegram.tgnet.ConnectionsManager"));
+        s.add(cls("org.telegram.ui.Cells.UserCell").from(declaringMethod("java.lang.Object"))
+                .where(hasMethod(false, "void", "int"), (r, c) -> !c.methodsNamed("getCurrentObject").isEmpty()
+                        && !c.methodsNamed("setCallCellStyle").isEmpty()));
+        s.add(method("UserCell", "getCurrentObject").sig("java.lang.Object").isStatic(false)
+                .where((r, m) -> m.name().equals("getCurrentObject")));
+        s.add(method("UserCell", "bindContact").sig("void", "java.lang.Object", "java.lang.CharSequence", "java.lang.CharSequence", "boolean").isStatic(false));
+        s.add(method("UserCell", "update").sig("void", "int").isStatic(false).where((r, m) -> { com.my.televip.obfuscate.dex.DexClass.Method bind = r.methods.get("UserCell#bindContact"); if (bind == null) return null; final boolean[] found = {false}; bind.scan(new com.my.televip.obfuscate.dex.CodeScanner.Visitor() { public void invoke(int op, int target) { if (bind.owner.dex.methodClass(target).equals(m.owner.descriptor) && bind.owner.dex.methodName(target).equals(m.name())) found[0] = true; }}); return found[0]; }));
+        s.add(field("TLRPC$User", "mutual_contact").type("boolean").flagOf("TLRPC$TL_user#serializeToStream", 12));
+        s.add(field("TLRPC$User", "photo").type("org.telegram.tgnet.TLRPC$UserProfilePhoto"));
+        s.add(cls("org.telegram.tgnet.TLRPC$UserProfilePhoto"));
+        s.add(field("TLRPC$UserProfilePhoto", "dc_id").type("int"));
+        s.add(method("ConnectionsManager", "getCurrentDatacenterId").sig("int").isStatic(false));
+        s.add(cls("org.telegram.messenger.SendMessagesHelper").from(declaringStrings("fwd_id", "fwd_peer")));
+        s.add(method("SendMessagesHelper", "sendForward").named("sendMessage").sig("int", "java.util.ArrayList", "long", "boolean", "boolean", "boolean", "int", "int", "org.telegram.messenger.MessageObject", "int", "long", "long", Symbol.ANY)
+                .isStatic(false).where(string("fwd_id"), string("fwd_peer")));
+        s.add(cls("org.telegram.messenger.TranslateController").from(declaringStrings("translate_chat_button", "translate_button")).where(inherits("org.telegram.messenger.BaseController")));
+        s.add(method("TranslateController", "chatEnabled").sig("boolean").where(string("translate_chat_button")));
+        s.add(method("TranslateController", "contextEnabled").sig("boolean").where(string("translate_button")));
+        s.add(method("TranslateController", "featureAvailable").named("isFeatureAvailable").sig("boolean").where(callsSymbol("TranslateController#chatEnabled")));
+        s.add(method("TranslateController", "dialogFeatureAvailable").named("isFeatureAvailable").sig("boolean", "long").where(callsSymbol("TranslateController#chatEnabled")));
+        s.add(method("TranslateController", "pushToTranslate").sig("void", "org.telegram.messenger.MessageObject", "java.lang.String", Symbol.ANY)
+                .where((r, m) -> {
+                    com.my.televip.obfuscate.dex.DexClass callback = r.index.byDescriptor(m.parameterTypes()[2]);
+                    return callback != null && callback.methods.stream()
+                            .anyMatch(method -> !method.isStatic() && method.returnType().equals("V") && method.parameterTypes().length == 4);
+                }));
+        s.add(method("ConnectionsManager", "sendRequest").sig("int", "org.telegram.tgnet.TLObject", "org.telegram.tgnet.RequestDelegate").isStatic(false));
+        for (String name : new String[]{"TL_messages_translateText", "TL_messages_translateResult", "TL_textWithEntities", "TL_codeSettings", "TL_auth_sendCode", "TL_auth_sentCodeTypeFirebaseSms", "auth_SentCodeType"}) {
+            String full = "org.telegram.tgnet.TLRPC$" + name;
+            s.add(cls(full));
+            if (!name.equals("auth_SentCodeType")) s.add(method("TLRPC$" + name, "serializeToStream").sig("void", "org.telegram.tgnet.OutputSerializedData"));
+        }
+        s.add(field("TLRPC$TL_messages_translateText", "peer").type("org.telegram.tgnet.TLRPC$InputPeer"));
+        s.add(field("TLRPC$TL_messages_translateText", "id").type("java.util.ArrayList"));
+        s.add(field("TLRPC$TL_messages_translateText", "text").type("java.util.ArrayList"));
+        s.add(field("TLRPC$TL_messages_translateText", "to_lang").type("java.lang.String"));
+        s.add(field("TLRPC$TL_messages_translateResult", "result").type("java.util.ArrayList"));
+        s.add(field("TLRPC$TL_textWithEntities", "text").type("java.lang.String"));
+        s.add(field("TLRPC$TL_textWithEntities", "entities").type("java.util.ArrayList"));
+        s.add(field("TLRPC$TL_codeSettings", "allow_firebase").type("boolean"));
+        s.add(field("TLRPC$auth_SentCodeType", "verifiedFirebase").type("boolean"));
+        s.add(method("TLRPC$TL_auth_sentCodeTypeFirebaseSms", "readParams").sig("void", "org.telegram.tgnet.InputSerializedData", "boolean"));
+        s.add(field("TLRPC$TL_auth_sendCode", "api_id").type("int"));
+        s.add(field("TLRPC$TL_auth_sendCode", "api_hash").type("java.lang.String"));
     }
 
     /**

@@ -1,9 +1,9 @@
 {
   "package": "org.telegram.messenger",
-  "version_name": "13.2.2",
-  "version_code": 73031,
+  "version_name": "13.3.1",
+  "version_code": 73461,
   "certificate_sha256": "49c1522548ebacd46ce322b6fd47f6092bb745d0f88082145caf35e14dcc38e1",
-  "apk_sha256": "47ebdaac21ca00b20f2872a9eebcce63f808c059f5de2fc4cd6fe3d060be1031",
-  "input_digest": "cb99c0806df3c981398084feac5a40b1d55602e20d04bb631dbadaf83d41a6d6",
+  "apk_sha256": "d8e1bcbb8899c80a6308d9dbb449cecccae26076a40b357902054fc605ed11ea",
+  "input_digest": "e3f354fd4db6ef8065cf150f09b5d7218ccee857caf81f132d152448a2f94639",
   "active_failures": 0
 }

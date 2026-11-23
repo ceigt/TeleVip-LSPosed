@@ -23,6 +23,10 @@ public final class XposedBridge {
         else Log.i("TeleVip", message);
     }
 
+    public static boolean deoptimize(Executable target) {
+        return module != null && module.deoptimize(target);
+    }
+
     public static void hookMethod(Executable executable, XC_MethodHook callback) {
         if (module == null) throw new IllegalStateException("API 102 module not ready");
         HookInstallation.install(executable, callback.getClass(), () -> module.hook(executable).intercept(chain -> {

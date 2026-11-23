@@ -58,6 +58,14 @@ public final class MaintenancePolicyTest {
         check(!DownloadPremiumScope.active());
         DownloadPremiumScope.exit();
         check(!DownloadPremiumScope.active());
+        check(com.my.televip.features.telegram.ApiIdentity.valid("123", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        check(!com.my.televip.features.telegram.ApiIdentity.valid("0", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        check(!com.my.televip.features.telegram.ApiIdentity.valid("2147483648", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+        check(!com.my.televip.features.telegram.ApiIdentity.valid("123", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
+        check(!com.my.televip.features.telegram.ApiIdentity.valid(null, null));
+        check(ProfileStatusLine.hasId("online\nID: 42, DC: 5", "42"));
+        check(!ProfileStatusLine.hasId("ID: 420, DC: 5", "42"));
+        check(ProfileStatusLine.withoutId("online\nID: 42, DC: 5").toString().equals("online"));
         int mib = 1024 * 1024;
         check(DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 2, 128 * 1024, 16));
         check(DownloadTuning.widenConnections(-1, true, false, false, 32L * mib, 2, 512 * 1024, 4));

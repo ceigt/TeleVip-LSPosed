@@ -67,3 +67,5 @@ Device-discovered history repair: compile the production MessageObject wrapper, 
 Local optimistic edits now exercise the production ArrayList queue-write hook and regular-versus-scheduled mode guard; duplicate adjacent snapshots are suppressed without discarding A/B/A reversions. Current suite: 16 groups / 2822 assertions.
 
 The 26.11.12 suite compiles production ArchiveUi/ReadTimeMenu and adds deterministic local-state revocation/failure tests, real platform read-time request/dialog coordination (including a 30-second timeout), and four legacy-serializer conversion cases. These operate only in org.televip.regression with synthetic data; they do not log out a real account or contact Telegram servers.
+
+The additional translation group exercises ordered multi-segment responses and malformed/empty JSON rejection through the production parser. MainHook startup uses a native-init fixture because the isolated package has no Telegram DEX; the actual native_init signature is enforced by TelegramExtrasAudit against the authenticated Play APK.

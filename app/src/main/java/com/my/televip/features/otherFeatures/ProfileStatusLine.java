@@ -17,14 +17,14 @@ public final class ProfileStatusLine {
     }
 
     public static boolean hasId(CharSequence text, String id) {
-        return text != null && (text.toString().equals("ID: " + id) || text.toString().endsWith("\nID: " + id));
+        return text != null && id != null && text.toString().matches("(?s)(?:.*\\n)?ID: " + java.util.regex.Pattern.quote(id) + "(?:, DC: [1-9]\\d*)?");
     }
 
     public static CharSequence withoutId(CharSequence text) {
         if (text == null) return "";
         String value = text.toString();
         int start = value.lastIndexOf("\nID: ");
-        if (start >= 0 && value.substring(start + 5).matches("-?\\d+")) return text.subSequence(0, start);
-        return value.matches("ID: -?\\d+") ? "" : text;
+        if (start >= 0 && value.substring(start + 5).matches("-?\\d+(?:, DC: [1-9]\\d*)?")) return text.subSequence(0, start);
+        return value.matches("ID: -?\\d+(?:, DC: [1-9]\\d*)?") ? "" : text;
     }
 }

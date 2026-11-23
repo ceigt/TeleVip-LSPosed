@@ -21,7 +21,7 @@ base = root / 'app/src/main/java/com/my/televip'
 sources = list((base / 'obfuscate/dex').glob('*.java')) + list((base / 'obfuscate/resolve').glob('*.java'))
 sources += [base / 'obfuscate/StartupRequestQueue.java', base / 'obfuscate/StartupDispatchSelector.java', base / 'features/ui/AdResponseCallbacks.java']
 sources += [base / 'compat/HookParameterTypes.java', base / 'compat/ReflectionLookup.java', base / 'features/media/MediaHookSelector.java', base / 'features/media/MediaPathOverride.java', base / 'features/ui/AdResponseFilter.java']
-sources += [base / 'features/ghostMode/PrivacyRequestKind.java']
+sources += [base / 'features/ghostMode/PrivacyRequestKind.java', base / 'features/telegram/ApiIdentity.java']
 sources += [base / 'features/connections/DownloadPremiumScope.java', base / 'features/connections/DownloadTuning.java', base / 'features/otherFeatures/ProfileStatusLine.java']
 sources += [base / 'features/stories/StoryLists.java']
 sources += [base / 'features/otherFeatures/ProfileTextScope.java']
@@ -37,6 +37,8 @@ subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.FeatureSe
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.MaintenancePolicyTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.StoryListsTest'], check=True)
 subprocess.run([str(java), '-cp', str(classes), 'com.my.televip.compat.ProfileRenderTest'], check=True)
+if args.apk:
+    subprocess.run([str(java), '-Xmx2g', '-cp', str(classes), 'com.my.televip.obfuscate.resolve.TelegramExtrasAudit', str(Path(args.apk).resolve())], check=True)
 subprocess.run([sys.executable, str(root / 'tests/compat/test_audit.py')], check=True)
 subprocess.run([sys.executable, str(root / 'tests/compat/test_evidence.py')], check=True)
 inventory = output / 'inventory.tsv'

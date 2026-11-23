@@ -30,6 +30,8 @@ public final class MainHook {
     public void handleLoadPackage(String packageName,ClassLoader loader) {
         if (!ClientManager.containsPackage(packageName,loader) || !attached.compareAndSet(false,true)) return;
         Utils.classLoader=loader;Utils.pkgName=packageName;
+        if ("org.telegram.messenger".equals(packageName))
+            com.my.televip.features.telegram.TelegramIdentity.installEarly(loader);
         BootstrapRequests.install(loader);
         RuntimeMappings.prefetch(packageName,loader);
         HMethod.hookMethod(Application.class,"attach",Context.class,new BaseMethodHook() {

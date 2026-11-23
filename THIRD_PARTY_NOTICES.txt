@@ -112,3 +112,13 @@ TGSpeed+ 4.2.0 inspired evaluating connection rotation. No code was taken from
 its APK. The implementation uses the native FileLoadOperation budget, request
 slot tracking and cancellation behavior in the official Telegram reference above.
 https://github.com/Xposed-Modules-Repo/io.github.catker.tgspeed/releases/tag/40200-4.2.0
+
+2026-11-23 Telegram feature reference:
+MaiHoku by XiaoTong6666, commit 9b68c55a9cc1b67f6c5b549d80d9f179e9a44532:
+https://github.com/XiaoTong6666/MaiHoku/tree/9b68c55a9cc1b67f6c5b549d80d9f179e9a44532
+Reviewed mutual contacts, ID/DC, forwarding choices, translation, API identity
+and SMS login behavior. MaiHoku did not declare a source license in that snapshot.
+This fork independently implements these behaviors using its existing API 102,
+mapping, settings and callback code. Telegram's GPL-2.0-or-later source and actual
+authenticated Play 13.3.1 bytecode provide the host structural references.
+No MaiHoku source files or translator library are incorporated.

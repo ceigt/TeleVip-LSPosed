@@ -70,6 +70,7 @@ public class ConfigManager {
     // Connections
     public static ConfigItem connections;
     public static ConfigItem downloadSpeed;
+    public static ConfigItem mutualContacts, profileDc, forwardMode, googleTranslation, smsLoginCompatibility, customApiIdentity;
 
     // Media
     public static ConfigItem media;
@@ -180,6 +181,14 @@ public class ConfigManager {
         saveEditsHistory = new ConfigItem(ConfigItem.SWITCH, Keys.SaveEditsHistory, ConfigPreferences.getBoolean(Keys.SaveEditsHistory), SaveEditsHistory::init);
         items.add(saveEditsHistory);
 
+        if ("org.telegram.messenger".equals(com.my.televip.utils.Utils.pkgName)) {
+            forwardMode = new ConfigItem(ConfigItem.SWITCH, "ForwardMode", true,
+                    ConfigPreferences.getBoolean("ForwardMode"), com.my.televip.features.telegram.ForwardMode::init);
+            googleTranslation = new ConfigItem(ConfigItem.SWITCH, "GoogleTranslation", true,
+                    ConfigPreferences.getBoolean("GoogleTranslation"), com.my.televip.features.telegram.GoogleTranslation::init);
+            items.add(forwardMode);
+            items.add(googleTranslation);
+        }
         items.add(shadows);
 
         autoMuteNewChats = new ConfigItem(ConfigItem.SWITCH, "AutoMuteNewChats", true,
@@ -193,6 +202,15 @@ public class ConfigManager {
         downloadSpeed = new ConfigItem(ConfigItem.SWITCH, Keys.DownloadSpeed, ConfigPreferences.getBoolean(Keys.DownloadSpeed), DownloadSpeed::init);
         items.add(downloadSpeed);
 
+        if ("org.telegram.messenger".equals(com.my.televip.utils.Utils.pkgName)) {
+            customApiIdentity = new ConfigItem(ConfigItem.SWITCH, "CustomApiIdentity", true,
+                    ConfigPreferences.getBoolean("CustomApiIdentity"), com.my.televip.features.telegram.TelegramIdentity::init);
+            items.add(customApiIdentity);
+            items.add(new ConfigItem(ConfigItem.TEXT, "ConfigureApiIdentity"));
+            smsLoginCompatibility = new ConfigItem(ConfigItem.SWITCH, "SmsLoginCompatibility", true,
+                    ConfigPreferences.getBoolean("SmsLoginCompatibility"), com.my.televip.features.telegram.SmsLoginCompatibility::init);
+            items.add(smsLoginCompatibility);
+        }
         items.add(shadows);
 
         // Media
@@ -219,6 +237,14 @@ public class ConfigManager {
         ui = new ConfigItem(ConfigItem.HEADER, Keys.UiSettings);
         items.add(ui);
 
+        if ("org.telegram.messenger".equals(com.my.televip.utils.Utils.pkgName)) {
+            mutualContacts = new ConfigItem(ConfigItem.SWITCH, "MutualContacts", true,
+                    ConfigPreferences.getBoolean("MutualContacts"), com.my.televip.features.telegram.MutualContacts::init);
+            profileDc = new ConfigItem(ConfigItem.SWITCH, "ProfileDc", true,
+                    ConfigPreferences.getBoolean("ProfileDc"), com.my.televip.features.otherFeatures.EditOnlineTextView::init);
+            items.add(mutualContacts);
+            items.add(profileDc);
+        }
         hidePinnedMessages = new ConfigItem(ConfigItem.SWITCH, Keys.HidePinnedMessages, ConfigPreferences.getBoolean(Keys.HidePinnedMessages), HidePinnedMessages::init);
         items.add(hidePinnedMessages);
 

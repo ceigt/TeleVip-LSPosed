@@ -38,7 +38,8 @@ public class EditOnlineTextView {
     private static final class IdLabel {
         final String id;
         final boolean own;
-        IdLabel(String id, boolean own) { this.id = id; this.own = own; }
+        final int dc;
+        IdLabel(String id, boolean own, int dc) { this.id = id; this.own = own; this.dc = dc; }
     }
     private static final Map<View, IdLabel> labels = Collections.synchronizedMap(new WeakHashMap<>());
     private static final ThreadLocal<java.util.ArrayDeque<Integer>> drawing = ThreadLocal.withInitial(java.util.ArrayDeque::new);
@@ -62,7 +63,7 @@ public class EditOnlineTextView {
                 @Override protected void beforeMethod(MethodHookParam param) {
                     View view = (View) param.thisObject;
                     IdLabel label = labels.get(view);
-                    int state = label != null && ConfigManager.isUserIdShown(label.own) ? (view.isClickable() ? 1 : 0) : -1;
+                    int state = label != null && (ConfigManager.isUserIdShown(label.own) || com.my.televip.features.telegram.ProfileIdentity.enabled()) ? (view.isClickable() ? 1 : 0) : -1;
                     drawing.get().push(state);
                     // This host draws a permanent pill whenever isClickable() is true, not just when pressed.
                     if (state == 1) view.setClickable(false);
@@ -84,7 +85,7 @@ public class EditOnlineTextView {
             HMethod.hookMethod(textView, Obfuscate.getMethodName("SimpleTextView", "getExactWidth"), new BaseMethodHook() {
                 @Override protected void afterMethod(MethodHookParam param) {
                     IdLabel label = labels.get(param.thisObject);
-                    if (label == null || !ConfigManager.isUserIdShown(label.own) || !(param.getResult() instanceof Float)) return;
+                    if (label == null || !(ConfigManager.isUserIdShown(label.own) || com.my.televip.features.telegram.ProfileIdentity.enabled()) || !(param.getResult() instanceof Float)) return;
                     CharSequence text = new SimpleTextView(param.thisObject).getText();
                     if (!ProfileStatusLine.hasId(text, label.id)) return;
                     Paint paint = (Paint) XposedHelpers.callMethod(param.thisObject, Obfuscate.getMethodName("SimpleTextView", "getPaint"));
@@ -98,7 +99,7 @@ public class EditOnlineTextView {
             HMethod.hookMethod(ClassLoad.getClass(ClassNames.PROFILE_ACTIVITY),
                     Obfuscate.getMethodName("ProfileActivity", modern ? "updateStatusText" : "updateProfileData"),
                     ArgsResolver.merge("updateProfileData", modern ? new Class<?>[0] : new Class[]{boolean.class}, new BaseMethodHook() {
-                        @Override protected void beforeMethod(MethodHookParam param) {
+                        @Override protected void beforeMethod(MethodHookParam param) throws Throwable {
                             Object status = null, copy = null, idView = null;
                             String id = null, offline = null;
                             try {
@@ -112,7 +113,7 @@ public class EditOnlineTextView {
                                     offline = Translator.get(Keys.UserOffline);
                                 }
                                 long value = profile.getUserId() > 1 ? profile.getUserId() : profile.getChatId();
-                                if (ConfigManager.isUserIdShown(own) && value != 0) {
+                                if ((ConfigManager.isUserIdShown(own) || com.my.televip.features.telegram.ProfileIdentity.enabled()) && value != 0) {
                                     Object overlay = lines.length > 3 ? lines[3] : null;
                                     int index = ProfileStatusLine.index(lines.length, lines[1] != null,
                                             overlay == null ? null : new SimpleTextView(overlay).getText(), shown(lines[1]), shown(overlay));
@@ -121,7 +122,9 @@ public class EditOnlineTextView {
                                 for (Object line : lines) if (line instanceof View && line != idView && labels.remove(line) != null)
                                     ((View) line).setOnClickListener(null);
                                 if (idView instanceof View) {
-                                    labels.put((View) idView, new IdLabel(id, own));
+                                    int dc = com.my.televip.features.telegram.ProfileIdentity.enabled()
+                                            ? com.my.televip.features.telegram.ProfileIdentity.dc(param.thisObject) : 0;
+                                    labels.put((View) idView, new IdLabel(id, own, dc));
                                     new SimpleTextView(idView).setMaxLines(2);
                                     if (modern) new SimpleTextView(idView).setAlignment(android.text.Layout.Alignment.ALIGN_CENTER);
                                     // The host's gradient uses a cached hardware layer for a one-line status.
@@ -148,6 +151,12 @@ public class EditOnlineTextView {
                                 line.getSimpleTextView().requestLayout();
                                 line.getSimpleTextView().invalidate();
                                 String id = frame.id;
+                                IdLabel label = labels.get(frame.idView);
+                                line.getSimpleTextView().setOnLongClickListener(v -> {
+                                    com.my.televip.features.telegram.ProfileIdentity.copyMenu(
+                                            Utils.getCurrentActivity(), id, label == null ? 0 : label.dc);
+                                    return true;
+                                });
                                 line.getSimpleTextView().setOnClickListener(v -> {
                                     Context activity = Utils.getCurrentActivity();
                                     if (activity == null) return;
@@ -166,11 +175,15 @@ public class EditOnlineTextView {
         return value instanceof View && ((View) value).getVisibility() == View.VISIBLE && ((View) value).getAlpha() > 0f;
     }
     private static CharSequence withId(CharSequence text, String id) {
-        if (ProfileStatusLine.hasId(text, id)) return text;
+        ProfileTextScope.Frame frame = scope.current();
+        IdLabel label = frame == null ? null : labels.get(frame.idView);
+        int dc = label == null ? 0 : label.dc;
+        String suffix = dc > 0 ? ", DC: " + dc : "";
+        if (ProfileStatusLine.hasId(text, id) && text.toString().endsWith("ID: " + id + suffix)) return text;
         SpannableStringBuilder value = new SpannableStringBuilder(ProfileStatusLine.withoutId(text));
         if (value.length() > 0) value.append('\n');
         int start = value.length();
-        value.append("ID: ").append(id);
+        value.append("ID: ").append(id).append(suffix);
         value.setSpan(new ForegroundColorSpan(ThemeColors.getTextColor()), start, value.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return value;
     }

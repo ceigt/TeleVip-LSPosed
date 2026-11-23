@@ -180,7 +180,8 @@ public final class SettingsFallback {
 
     private static void runTextAction(Activity activity, ConfigItem item, Button action) {
         try {
-            if ("CompatibilityStatus".equals(item.getKey())) CompatibilityStatus.show(activity);
+            if ("ConfigureApiIdentity".equals(item.getKey())) com.my.televip.features.telegram.TelegramIdentity.configure(activity);
+            else if ("CompatibilityStatus".equals(item.getKey())) CompatibilityStatus.show(activity);
             else if ("ArchivedMessages".equals(item.getKey())) com.my.televip.features.messages.ArchiveUi.show(activity);
             else if ("ExportArchive".equals(item.getKey())) com.my.televip.features.messages.ArchiveUi.chooseExport(activity);
             else if ("ImportArchive".equals(item.getKey())) com.my.televip.features.messages.ArchiveUi.chooseImport(activity);
