@@ -11,6 +11,10 @@ The Build APK workflow produces an installable APK signed with the existing Tele
 
 The `-unsigned` artifact remains available for inspection. Pull requests, forks and other refs do not run the signing job. Publishing a GitHub release remains a separate operation after the required compatibility and device checks.
 
+## Standing release authorization
+
+On 2026-11-24 (Asia/Singapore), the user authorized future TeleVip maintenance versions to be published as GitHub Releases once the required compatibility, regression and actual-device tests pass and the original-certificate artifact is verified. Continue through publication without asking for release permission again. Use the established date-based version tags and attach the verified signed APK with accurate validation notes. Required tests that remain pending or fail must be reported instead of being described as passed.
+
 ## Signing environment
 
 Environment: `release-signing` in `ceigt/TeleVip-LSPosed`.
