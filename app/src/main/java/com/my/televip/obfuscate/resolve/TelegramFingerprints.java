@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class TelegramFingerprints {
 
-    public static final int VERSION = 35;
+    public static final int VERSION = 36;
 
     private TelegramFingerprints() {
     }
@@ -74,6 +74,7 @@ public final class TelegramFingerprints {
         o.put("ActionBar", "org.telegram.ui.ActionBar.ActionBar");
         o.put("ActionBar$ActionBarMenuOnItemClick", "org.telegram.ui.ActionBar.ActionBar$ActionBarMenuOnItemClick");
         o.put("TLRPC$TL_error", "org.telegram.tgnet.TLRPC$TL_error");
+        o.put("TL_account$initPasskeyLogin", "org.telegram.tgnet.tl.TL_account$initPasskeyLogin");
         o.put("BuildVars", "org.telegram.messenger.BuildVars");
         o.put("SmsFeeView", "org.telegram.ui.LoginActivity$SmsFeeView");
         o.put("UserCell", "org.telegram.ui.Cells.UserCell");
@@ -276,6 +277,11 @@ public final class TelegramFingerprints {
         s.add(cls("org.telegram.tgnet.TLRPC$TL_error"));
         s.add(field("TLRPC$TL_error", "code").type("int"));
         s.add(field("TLRPC$TL_error", "text").type("java.lang.String"));
+        s.add(cls("org.telegram.tgnet.tl.TL_account$initPasskeyLogin"));
+        s.add(method("TL_account$initPasskeyLogin", "serializeToStream").isStatic(false)
+                .sig("void", "org.telegram.tgnet.OutputSerializedData"));
+        s.add(field("TL_account$initPasskeyLogin", "api_id").type("int"));
+        s.add(field("TL_account$initPasskeyLogin", "api_hash").type("java.lang.String"));
         s.add(cls("org.telegram.messenger.BuildVars").from(declaringStrings("logsEnabled", "org.telegram.messenger.beta")));
         s.add(method("BuildVars", "<clinit>").sig("void").isStatic(true).where(string("logsEnabled")));
         s.add(field("BuildVars", "APP_ID").type("int").isStatic(true).onlyOneOfType());

@@ -7,6 +7,7 @@ import java.util.*;
 /** Required real-DEX targets for the independently implemented Telegram extras. */
 public final class TelegramExtrasAudit {
     private static final String[][] METHODS = {
+        {"TL_account$initPasskeyLogin", "serializeToStream", "V", "@OutputSerializedData"},
         {"UserCell", "getCurrentObject", "Ljava/lang/Object;"},
         {"UserCell", "update", "V", "I"},
         {"SendMessagesHelper", "sendForward", "I", "Ljava/util/ArrayList;", "J", "Z", "Z", "Z", "I", "I", "@MessageObject", "I", "J", "J", "*"},
@@ -27,6 +28,7 @@ public final class TelegramExtrasAudit {
         {"TLRPC$TL_auth_sentCodeTypeFirebaseSms", "readParams", "V", "@InputSerializedData", "Z"}
     };
     private static final String[][] FIELDS = {
+        {"TL_account$initPasskeyLogin", "api_id", "I"}, {"TL_account$initPasskeyLogin", "api_hash", "Ljava/lang/String;"},
         {"TLRPC$TL_error", "code", "I"}, {"TLRPC$TL_error", "text", "Ljava/lang/String;"},
         {"TLRPC$User", "mutual_contact", "Z"},
         {"TLRPC$User", "photo", "@TLRPC$UserProfilePhoto"},

@@ -66,7 +66,7 @@
 
 本次兼容审查覆盖 **543 个必需调用点**；Android 隔离回归通过 **23 组／3145 项断言**。本版实机检查覆盖设置入口、双向联系人标记、资料页 ID／DC、公开文章翻译，以及向自身 Saved Messages 的无来源转发。归档搜索、进程重建后的导入与加密暂存等历史实测范围见相应版本记录。登录、短信付款与自定义 API identity 的真实认证流程仍需单独验证。
 
-[详细验证记录](docs/releases/26.11.23.md) · [历史适配记录](docs/releases) · [兼容检查说明](tests/compat/README.md)
+[详细验证记录](docs/releases/26.11.24.md) · [历史适配记录](docs/releases) · [兼容检查说明](tests/compat/README.md)
 
 ## 数据与备份
 

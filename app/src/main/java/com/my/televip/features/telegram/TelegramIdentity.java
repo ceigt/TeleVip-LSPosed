@@ -51,18 +51,25 @@ public final class TelegramIdentity {
     public static synchronized void init() {
         if (installed) return;
         try (HookInstallation attempt = HookInstallation.begin()) {
-            java.lang.reflect.Field id = Host.field("TLRPC$TL_auth_sendCode", "api_id");
-            java.lang.reflect.Field hash = Host.field("TLRPC$TL_auth_sendCode", "api_hash");
-            HMethod.hookMethod(Host.method("TLRPC$TL_auth_sendCode", "serializeToStream", 1), new BaseMethodHook() {
-                @Override protected void beforeMethod(MethodHookParam call) throws Exception {
-                    if (!Host.enabled(ConfigManager.customApiIdentity)) return;
-                    String value = ConfigPreferences.getString("TelegramApiId");
-                    String secret = ConfigPreferences.getString("TelegramApiHash");
-                    if (!ApiIdentity.valid(value, secret)) return;
-                    id.setInt(call.thisObject, Integer.parseInt(value));
-                    hash.set(call.thisObject, secret);
-                }
-            });
+            java.lang.reflect.Field buildId = Host.field("BuildVars", "APP_ID");
+            java.lang.reflect.Field buildHash = Host.field("BuildVars", "APP_HASH");
+            for (String owner : new String[]{"TLRPC$TL_auth_sendCode", "TL_account$initPasskeyLogin"}) {
+                java.lang.reflect.Field id = Host.field(owner, "api_id");
+                java.lang.reflect.Field hash = Host.field(owner, "api_hash");
+                HMethod.hookMethod(Host.method(owner, "serializeToStream", 1), new BaseMethodHook() {
+                    @Override protected void beforeMethod(MethodHookParam call) throws Exception {
+                        if (!installed || !Host.enabled(ConfigManager.customApiIdentity)) return;
+                        ApiIdentity.apply(call.thisObject, id, hash,
+                                ConfigPreferences.getString("TelegramApiId"),
+                                ConfigPreferences.getString("TelegramApiHash"));
+                    }
+                });
+            }
+            if (attempt.isComplete() && Host.enabled(ConfigManager.customApiIdentity)) {
+                ApiIdentity.apply(null, buildId, buildHash,
+                        ConfigPreferences.getString("TelegramApiId"),
+                        ConfigPreferences.getString("TelegramApiHash"));
+            }
             installed = attempt.isComplete();
         } catch (Throwable error) { Logger.e(error); }
     }

@@ -20,6 +20,13 @@ public final class MaintenancePolicyTest {
         public boolean start(Object stream, long offset, boolean priority) { return true; }
         public boolean start(String stream, long offset, boolean priority) { return true; }
     }
+    public static class IdentityFields {
+        public static int staticId = 4;
+        public static String staticHash = "original";
+        public int requestId = 4;
+        public String requestHash = "original";
+        public static final String readOnlyHash = "original";
+    }
     private static int count;
     private static void check(boolean condition) { count++; if (!condition) throw new AssertionError("Maintenance policy " + count); }
 
@@ -63,6 +70,24 @@ public final class MaintenancePolicyTest {
         check(!com.my.televip.features.telegram.ApiIdentity.valid("2147483648", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
         check(!com.my.televip.features.telegram.ApiIdentity.valid("123", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"));
         check(!com.my.televip.features.telegram.ApiIdentity.valid(null, null));
+        Class<IdentityFields> identityType = IdentityFields.class;
+        java.lang.reflect.Field staticId = identityType.getField("staticId");
+        java.lang.reflect.Field staticHash = identityType.getField("staticHash");
+        String testHash = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        check(com.my.televip.features.telegram.ApiIdentity.apply(null, staticId, staticHash, "123", testHash));
+        check(IdentityFields.staticId == 123 && IdentityFields.staticHash.equals(testHash));
+        check(!com.my.televip.features.telegram.ApiIdentity.apply(null, staticId, staticHash, "0", testHash));
+        check(IdentityFields.staticId == 123 && IdentityFields.staticHash.equals(testHash));
+        IdentityFields request = new IdentityFields();
+        check(com.my.televip.features.telegram.ApiIdentity.apply(request, identityType.getField("requestId"),
+                identityType.getField("requestHash"), "123", testHash));
+        check(request.requestId == IdentityFields.staticId && request.requestHash.equals(IdentityFields.staticHash));
+        boolean rejectedIdentity = false;
+        try {
+            com.my.televip.features.telegram.ApiIdentity.apply(null, staticId,
+                    identityType.getField("readOnlyHash"), "456", testHash);
+        } catch (IllegalArgumentException expected) { rejectedIdentity = true; }
+        check(rejectedIdentity && IdentityFields.staticId == 123);
         check(ProfileStatusLine.hasId("online\nID: 42, DC: 5", "42"));
         check(!ProfileStatusLine.hasId("ID: 420, DC: 5", "42"));
         check(ProfileStatusLine.withoutId("online\nID: 42, DC: 5").toString().equals("online"));
